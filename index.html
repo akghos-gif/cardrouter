@@ -114,6 +114,7 @@
 <nav>
   <button data-tab="which" class="on"><span class="em">💳</span>Which card?</button>
   <button data-tab="cards"><span class="em">🗂️</span>My cards</button>
+  <button data-tab="benefits"><span class="em">🎁</span>Benefits</button>
   <button data-tab="promos"><span class="em">🎯</span>Promos</button>
   <button data-tab="settings"><span class="em">⚙️</span>Settings</button>
 </nav>
@@ -232,6 +233,104 @@ const CARD_DB = [
     notes:'Legacy rates shown — Bilt 2.0 tiers (Blue/Silver/Gold/Platinum) differ. Edit rates to match your tier.'},
 ];
 
+/* ---------- side benefits (verified July 2026; issuers change these often) ---------- */
+const BENEFIT_CATS = [
+  {id:'lounges',   name:'Airport lounges',        em:'🛋️'},
+  {id:'security',  name:'TSA / Global Entry / CLEAR', em:'🛂'},
+  {id:'travelcr',  name:'Travel & hotel credits', em:'🏨'},
+  {id:'diningcr',  name:'Dining & delivery',      em:'🍜'},
+  {id:'rideshare', name:'Rideshare',              em:'🚗'},
+  {id:'streamcr',  name:'Streaming & entertainment', em:'📺'},
+  {id:'fitness',   name:'Gym & fitness',          em:'🏋️'},
+  {id:'shopping',  name:'Shopping & memberships', em:'🛍️'},
+  {id:'status',    name:'Status & extras',        em:'⭐'},
+  {id:'protect',   name:'Protections & insurance', em:'🛡️'},
+];
+const BENEFITS = {
+  amex_plat: [
+    {cat:'lounges', name:'Centurion Lounges + Delta Sky Club', value:'', enroll:false, note:'Sky Club when flying Delta (visit caps apply)'},
+    {cat:'lounges', name:'Priority Pass Select', value:'1,300+ lounges', enroll:true, note:'enroll via your Amex account'},
+    {cat:'security', name:'CLEAR+ credit', value:'up to $209/yr', enroll:true, note:'covers CLEAR+ membership'},
+    {cat:'security', name:'Global Entry / TSA PreCheck credit', value:'$120 every 4 yrs', enroll:false, note:'pay the application fee with the card'},
+    {cat:'travelcr', name:'Hotel credit (FHR / Hotel Collection)', value:'$300 semiannual ($600/yr)', enroll:true, note:'prepaid via Amex Travel'},
+    {cat:'travelcr', name:'Airline fee credit', value:'$200/yr', enroll:true, note:'pick one airline; incidentals only'},
+    {cat:'diningcr', name:'Resy dining credit', value:'$100/qtr ($400/yr)', enroll:true, note:'participating Resy restaurants'},
+    {cat:'rideshare', name:'Uber Cash', value:'$15/mo (+$20 Dec)', enroll:true, note:'add card in Uber app'},
+    {cat:'rideshare', name:'Uber One membership credit', value:'$120/yr', enroll:true, note:'auto-renewing membership'},
+    {cat:'streamcr', name:'Digital entertainment credit', value:'$25/mo ($300/yr)', enroll:true, note:'Disney+, Hulu, YouTube TV, Peacock & more'},
+    {cat:'fitness', name:'Equinox credit', value:'up to $300/yr', enroll:true, note:'club or Equinox+ digital'},
+    {cat:'fitness', name:'Lululemon credit', value:'$75/qtr ($300/yr)', enroll:true, note:'stores or lululemon.com'},
+    {cat:'fitness', name:'Oura Ring credit', value:'$200/yr', enroll:true, note:'ouraring.com'},
+    {cat:'shopping', name:'Walmart+ membership', value:'~$155/yr', enroll:true, note:'covers monthly membership'},
+    {cat:'status', name:'Marriott Bonvoy Gold + Hilton Honors Gold', value:'', enroll:true, note:'hotel elite status'},
+    {cat:'protect', name:'Trip delay/cancellation, purchase protection, extended warranty', value:'', enroll:false, note:''},
+  ],
+  csr: [
+    {cat:'lounges', name:'Sapphire Lounge by The Club', value:'', enroll:false, note:'cardholder + guests per policy'},
+    {cat:'lounges', name:'Priority Pass Select', value:'1,300+ lounges', enroll:true, note:'one-time activation'},
+    {cat:'security', name:'Global Entry / TSA PreCheck / NEXUS credit', value:'$120 every 4 yrs', enroll:false, note:'pay the fee with the card'},
+    {cat:'travelcr', name:'Annual travel credit', value:'$300/yr', enroll:false, note:'auto — applies to nearly any travel'},
+    {cat:'travelcr', name:'The Edit hotel credit', value:'$250 semiannual ($500/yr)', enroll:false, note:'prepaid 2+ night stays via Chase Travel'},
+    {cat:'diningcr', name:'Exclusive Tables dining credit', value:'$150 semiannual ($300/yr)', enroll:true, note:'book via OpenTable'},
+    {cat:'diningcr', name:'DoorDash promos + DashPass', value:'up to $300/yr + DashPass', enroll:true, note:'activate DashPass by 12/2027'},
+    {cat:'rideshare', name:'Lyft credit', value:'$10/mo ($120/yr)', enroll:false, note:'thru 9/2027; plus 5x points on Lyft'},
+    {cat:'streamcr', name:'Apple TV+ & Apple Music', value:'~$288/yr', enroll:true, note:'complimentary thru 6/2027; activate'},
+    {cat:'streamcr', name:'StubHub / viagogo credit', value:'$150 semiannual ($300/yr)', enroll:true, note:'one-time activation'},
+    {cat:'fitness', name:'Peloton credit', value:'$10/mo ($120/yr)', enroll:true, note:'one-time activation'},
+    {cat:'protect', name:'Top-tier travel insurance + primary rental CDW, purchase protection', value:'', enroll:false, note:''},
+  ],
+  csp: [
+    {cat:'travelcr', name:'Hotel credit', value:'$50/yr', enroll:false, note:'via Chase Travel bookings'},
+    {cat:'diningcr', name:'DashPass + DoorDash promo credit', value:'$10/mo promo', enroll:true, note:'activate by 12/2027'},
+    {cat:'status', name:'10% anniversary points boost', value:'', enroll:false, note:'on your yearly spend'},
+    {cat:'protect', name:'Primary rental CDW, trip delay/cancellation, purchase protection', value:'', enroll:false, note:''},
+  ],
+  prime_visa: [
+    {cat:'protect', name:'Purchase protection & extended warranty (Visa Signature)', value:'', enroll:false, note:''},
+    {cat:'status', name:'No foreign transaction fees', value:'', enroll:false, note:''},
+  ],
+  amex_gold: [
+    {cat:'diningcr', name:'Dining credit (Grubhub, Cheesecake Factory & more)', value:'$10/mo ($120/yr)', enroll:true, note:''},
+    {cat:'diningcr', name:'Resy credit', value:'$50 semiannual ($100/yr)', enroll:true, note:''},
+    {cat:'diningcr', name:'Dunkin credit', value:'$7/mo ($84/yr)', enroll:true, note:''},
+    {cat:'rideshare', name:'Uber Cash', value:'$10/mo ($120/yr)', enroll:true, note:'add card in Uber app'},
+    {cat:'protect', name:'Purchase protection, extended warranty', value:'', enroll:false, note:''},
+  ],
+  venture_x: [
+    {cat:'lounges', name:'Capital One Lounges', value:'', enroll:false, note:'guest policy changed 2/2026 — guests may cost extra'},
+    {cat:'lounges', name:'Priority Pass + Plaza Premium', value:'', enroll:true, note:'enroll in your C1 account'},
+    {cat:'security', name:'Global Entry / TSA PreCheck credit', value:'$120 every 4 yrs', enroll:false, note:''},
+    {cat:'travelcr', name:'Capital One Travel credit', value:'$300/yr', enroll:false, note:'portal bookings only'},
+    {cat:'status', name:'10,000 anniversary miles + Hertz President\'s Circle', value:'~$100/yr', enroll:true, note:'Hertz status needs enrollment'},
+    {cat:'protect', name:'Primary rental CDW, cell phone protection, trip protections', value:'', enroll:false, note:''},
+  ],
+  bcp: [
+    {cat:'streamcr', name:'Disney Bundle credit', value:'$7/mo ($84/yr)', enroll:true, note:'with $9.99+ Disney Bundle subscription'},
+    {cat:'protect', name:'Purchase protection, return protection', value:'', enroll:false, note:''},
+  ],
+  freedom_flex: [
+    {cat:'diningcr', name:'DashPass', value:'complimentary', enroll:true, note:'activate by 12/2027'},
+    {cat:'protect', name:'Cell phone protection', value:'up to $800/claim', enroll:false, note:'pay your phone bill with the card'},
+  ],
+  cfu: [
+    {cat:'diningcr', name:'DashPass', value:'complimentary', enroll:true, note:'activate by 12/2027'},
+    {cat:'protect', name:'Purchase protection, extended warranty', value:'', enroll:false, note:''},
+  ],
+  strata_premier: [
+    {cat:'travelcr', name:'Hotel credit', value:'$100/yr', enroll:false, note:'on a $500+ Citi Travel booking'},
+  ],
+  wf_autograph: [
+    {cat:'protect', name:'Cell phone protection', value:'up to $600/claim', enroll:false, note:'pay your phone bill with the card'},
+  ],
+  wf_active: [
+    {cat:'protect', name:'Cell phone protection', value:'up to $600/claim', enroll:false, note:'pay your phone bill with the card'},
+  ],
+  bilt: [
+    {cat:'status', name:'Rent Day (1st of month) bonuses', value:'', enroll:false, note:'varies by Bilt 2.0 tier'},
+    {cat:'protect', name:'Cell phone protection', value:'', enroll:false, note:'pay your phone bill with the card'},
+  ],
+};
+
 const PROGRAMS = {
   chase:{name:'Chase Ultimate Rewards', cpp:1.5},
   amex:{name:'Amex Membership Rewards', cpp:1.5},
@@ -317,6 +416,7 @@ function render(){
   const hdr = document.getElementById('hdr'), sub=document.getElementById('hdrsub');
   if(TAB==='which'){ hdr.textContent='Which card?'; sub.textContent = S.myCards.length? '' : 'set up your cards first'; renderWhich(); }
   if(TAB==='cards'){ hdr.textContent='My cards'; sub.textContent='priority order breaks ties'; renderCards(); }
+  if(TAB==='benefits'){ hdr.textContent='Benefits'; sub.textContent='what your cards give you'; renderBenefits(); }
   if(TAB==='promos'){ hdr.textContent='Promos & activations'; sub.textContent=currentQuarter().replace('-',' '); renderPromos(); }
   if(TAB==='settings'){ hdr.textContent='Settings'; sub.textContent=''; renderSettings(); }
 }
@@ -462,6 +562,46 @@ function openCustomCard(){
     S.custom.push({id, name, issuer:'Custom', program:document.getElementById('ccprog').value, rates:{other:{v:1,u:'%'}}, notes:''});
     S.myCards.push(id); saveState(S); closeModal(); render();
   };
+}
+
+let selectedBenefitCat = null;
+function heldBenefits(){
+  const out = [];
+  S.myCards.forEach(id=>{ const c=getCard(id); if(!c) return;
+    (BENEFITS[id]||[]).forEach(b=>out.push({card:c, ...b})); });
+  return out;
+}
+function renderBenefits(){
+  if(!S.myCards.length){
+    mainEl.innerHTML = `<div class="panel empty">Add your cards first — then this tab shows every perk they carry, grouped by category.</div>`;
+    return;
+  }
+  const all = heldBenefits();
+  const cats = BENEFIT_CATS.filter(bc=>all.some(b=>b.cat===bc.id));
+  if(!cats.length){ mainEl.innerHTML = `<div class="panel empty">Your cards don't carry notable side benefits — or they're not in the benefits database yet.</div>`; return; }
+  if(selectedBenefitCat && !cats.some(c=>c.id===selectedBenefitCat)) selectedBenefitCat=null;
+  let html = `<div class="panel"><div class="catgrid">` +
+    cats.map(bc=>{ const n = all.filter(b=>b.cat===bc.id).length;
+      return `<button class="catbtn ${selectedBenefitCat===bc.id?'active':''}" data-bcat="${bc.id}">
+        <span class="em">${bc.em}</span>${bc.name}<span class="tag">${n} perk${n>1?'s':''}</span></button>`; }).join('') +
+    `</div></div>`;
+  if(selectedBenefitCat){
+    const bc = BENEFIT_CATS.find(x=>x.id===selectedBenefitCat);
+    const rows = all.filter(b=>b.cat===selectedBenefitCat);
+    html += `<h2>${bc.em} ${bc.name}</h2><div class="panel">` +
+      rows.map(b=>`<div class="row"><div class="grow">
+          <div class="title">${esc(b.name)} ${b.enroll?'<span class="badge warn">enrollment required</span>':'<span class="badge good">automatic</span>'}</div>
+          <div class="sub2">${esc(b.card.name)}${b.note?' · '+esc(b.note):''}</div>
+        </div>${b.value?`<div class="rc-rate" style="font-size:13.5px">${esc(b.value)}</div>`:''}</div>`).join('') +
+      `</div>
+      <p class="hint" style="margin:8px 4px">"Enrollment required" = it does nothing until you turn it on — usually in the issuer's app or website under card benefits. Worth doing today.</p>`;
+  } else {
+    html += `<p class="hint" style="margin:6px 4px">Tap a category to see which of your cards cover it — and which perks need enrolling before they work.</p>`;
+  }
+  const missed = all.filter(b=>b.enroll).length;
+  html += `<div class="section-note" style="margin-top:10px">Benefits data verified July 2026 · ${missed} of your perks need enrollment to be active.</div>`;
+  mainEl.innerHTML = html;
+  mainEl.querySelectorAll('[data-bcat]').forEach(b=>b.onclick=()=>{ selectedBenefitCat = (selectedBenefitCat===b.dataset.bcat)?null:b.dataset.bcat; render(); });
 }
 
 function renderPromos(){
