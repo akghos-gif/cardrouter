@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CardRouter">
+<title>CardRouter — Which card?</title>
+<style>
+  :root{
+    --bg:#f4f5f7; --card:#ffffff; --ink:#1a1d21; --muted:#6b7280; --line:#e5e7eb;
+    --accent:#2563eb; --accent-ink:#ffffff; --gold:#b45309; --good:#047857; --warn:#b91c1c;
+    --chip:#eef2ff; --chip-ink:#3730a3; --radius:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0f1115; --card:#191c22; --ink:#f3f4f6; --muted:#9ca3af; --line:#2a2f38;
+      --accent:#3b82f6; --gold:#f59e0b; --good:#34d399; --warn:#f87171; --chip:#1e2a4a; --chip-ink:#a5b4fc; }
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--ink); padding-bottom:calc(74px + env(safe-area-inset-bottom));}
+  header{padding:18px 18px 8px; display:flex; align-items:baseline; gap:8px}
+  header h1{font-size:22px; margin:0; letter-spacing:-.02em}
+  header .sub{color:var(--muted); font-size:13px}
+  main{padding:0 14px; max-width:560px; margin:0 auto}
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:14px; margin:10px 0}
+  .catgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+  .catbtn{display:flex; flex-direction:column; align-items:center; gap:4px; padding:12px 4px;
+    background:var(--card); border:1px solid var(--line); border-radius:14px; cursor:pointer; font-size:12.5px;
+    color:var(--ink); font-weight:500}
+  .catbtn .em{font-size:22px}
+  .catbtn.active{border-color:var(--accent); background:var(--chip); color:var(--chip-ink)}
+  .locbtn{width:100%; margin-top:8px; padding:12px; border-radius:14px; border:1px dashed var(--line);
+    background:transparent; color:var(--muted); font-size:14px; cursor:pointer}
+  .result-card{display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; border:1px solid var(--line); margin-top:8px}
+  .result-card.winner{border:2px solid var(--accent); background:var(--chip)}
+  .rank{font-size:20px; width:28px; text-align:center}
+  .rc-body{flex:1; min-width:0}
+  .rc-name{font-weight:650; font-size:15px}
+  .rc-note{color:var(--muted); font-size:12.5px; margin-top:2px; line-height:1.35}
+  .rc-rate{font-weight:700; font-size:16px; white-space:nowrap}
+  .winner .rc-rate{color:var(--accent)}
+  .badge{display:inline-block; font-size:11px; padding:2px 7px; border-radius:99px; background:var(--chip); color:var(--chip-ink); margin-left:6px; vertical-align:1px}
+  .badge.warn{background:rgba(185,28,28,.12); color:var(--warn)}
+  .badge.good{background:rgba(4,120,87,.12); color:var(--good)}
+  .hint{color:var(--muted); font-size:13px; line-height:1.45}
+  nav{position:fixed; bottom:0; left:0; right:0; display:flex; background:var(--card);
+    border-top:1px solid var(--line); padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
+  nav button{flex:1; background:none; border:none; color:var(--muted); font-size:11px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px}
+  nav button .em{font-size:20px}
+  nav button.on{color:var(--accent)}
+  .row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:none}
+  .row .grow{flex:1; min-width:0}
+  .row .title{font-weight:600; font-size:14.5px}
+  .row .sub2{color:var(--muted); font-size:12.5px; margin-top:1px}
+  .iconbtn{border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px;
+    width:32px; height:32px; font-size:15px; cursor:pointer}
+  .iconbtn:disabled{opacity:.3}
+  .pill{border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:99px;
+    padding:8px 14px; font-size:13.5px; cursor:pointer; font-weight:500}
+  .pill.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+  h2{font-size:16px; margin:14px 4px 6px}
+  h3{font-size:14px; margin:0 0 6px}
+  .section-note{font-size:12px; color:var(--muted); margin:2px 4px 8px}
+  label.check{display:flex; gap:10px; align-items:center; font-size:14px; padding:8px 0}
+  input[type=checkbox]{width:18px; height:18px; accent-color:var(--accent)}
+  input[type=text], input[type=number], textarea, select{width:100%; padding:9px 10px; border-radius:10px; border:1px solid var(--line);
+    background:var(--bg); color:var(--ink); font-size:14px; font-family:inherit}
+  .rate-grid{display:grid; grid-template-columns:1fr 84px; gap:6px 10px; align-items:center; font-size:13.5px}
+  .modal{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:flex-end; z-index:50}
+  .modal.open{display:flex}
+  .sheet{background:var(--card); width:100%; max-height:86vh; overflow:auto; border-radius:18px 18px 0 0; padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
+  .sheet-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
+  .empty{color:var(--muted); text-align:center; padding:22px 10px; font-size:14px; line-height:1.5}
+  .toast{position:fixed; bottom:calc(84px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%);
+    background:var(--ink); color:var(--bg); padding:9px 16px; border-radius:99px; font-size:13px; opacity:0; transition:opacity .25s; pointer-events:none; z-index:60; max-width:88%; text-align:center}
+  .toast.show{opacity:.95}
+  .tag{font-size:11px; color:var(--muted)}
+  .quarter-banner{font-size:12.5px; color:var(--muted); margin:2px 4px 8px}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="hdr">Which card?</h1>
+  <span class="sub" id="hdrsub"></span>
+</header>
+<main id="main"></main>
+
+<nav>
+  <button data-tab="which" class="on"><span class="em">💳</span>Which card?</button>
+  <button data-tab="cards"><span class="em">🗂️</span>My cards</button>
+  <button data-tab="promos"><span class="em">🎯</span>Promos</button>
+  <button data-tab="settings"><span class="em">⚙️</span>Settings</button>
+</nav>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ============================================================
+   CardRouter — personal rewards butler
+   Rules data verified July 2026. Rates are editable in-app;
+   card programs change often — treat this as a starting point.
+   ============================================================ */
+
+const CATS = [
+  {id:'dining',    name:'Dining',        em:'🍽️'},
+  {id:'groceries', name:'Groceries',     em:'🛒'},
+  {id:'gas',       name:'Gas / EV',      em:'⛽'},
+  {id:'flights',   name:'Flights',       em:'✈️'},
+  {id:'hotels',    name:'Hotels',        em:'🏨'},
+  {id:'transit',   name:'Transit',       em:'🚇'},
+  {id:'streaming', name:'Streaming',     em:'📺'},
+  {id:'drugstores',name:'Drugstores',    em:'💊'},
+  {id:'online',    name:'Online retail', em:'📦'},
+  {id:'entertain', name:'Entertainment', em:'🎟️'},
+  {id:'rent',      name:'Rent',          em:'🏠'},
+  {id:'other',     name:'Everything else', em:'🧾'},
+];
+const CAT = Object.fromEntries(CATS.map(c=>[c.id,c]));
+
+/* Rotating 5% categories by quarter. Update each quarter (Settings → check for updates). */
+const ROTATING = {
+  '2026-Q3': {
+    freedom_flex: {cats:['gas','transit','entertain'], label:'Gas & EV charging, public transit, select live entertainment'},
+    discover_it:  {cats:['gas','flights','transit','drugstores'], label:'Gas & EV, airlines & public transit, drugstores'},
+  },
+  '2026-Q4': null, // TBA — edit when announced
+};
+
+/* unit: 'x' = points per $, '%' = cash back. program → point valuation applied. */
+const CARD_DB = [
+  {id:'csr', name:'Chase Sapphire Reserve', issuer:'Chase', program:'chase',
+    rates:{dining:{v:3,u:'x'}, flights:{v:4,u:'x',note:'booked direct; 8x via Chase Travel'},
+      hotels:{v:4,u:'x',note:'booked direct; 8x via Chase Travel'}, other:{v:1,u:'x'}},
+    notes:'5x Lyft through 9/2027. Portal (Chase Travel) bookings earn 8x.'},
+  {id:'csp', name:'Chase Sapphire Preferred', issuer:'Chase', program:'chase',
+    rates:{dining:{v:3,u:'x'}, streaming:{v:3,u:'x'}, gas:{v:3,u:'x'},
+      groceries:{v:3,u:'x',note:'online grocery only (not in-store)'},
+      flights:{v:2,u:'x',note:'direct; 5x via Chase Travel'}, hotels:{v:2,u:'x',note:'direct; 5x via Chase Travel; 3x vacation rentals'},
+      transit:{v:2,u:'x'}, other:{v:1,u:'x'}},
+    notes:'5x Lyft through 9/2027. Portal bookings earn 5x.'},
+  {id:'freedom_flex', name:'Chase Freedom Flex', issuer:'Chase', program:'chase', rotating:true,
+    rates:{dining:{v:3,u:'%'}, drugstores:{v:3,u:'%'},
+      hotels:{v:5,u:'%',note:'via Chase Travel only'}, other:{v:1,u:'%'}},
+    notes:'5% rotating categories each quarter (activate; $1,500/qtr cap). Points become UR if you also hold a Sapphire.'},
+  {id:'cfu', name:'Chase Freedom Unlimited', issuer:'Chase', program:'chase',
+    rates:{dining:{v:3,u:'%'}, drugstores:{v:3,u:'%'}, hotels:{v:5,u:'%',note:'via Chase Travel only'}, other:{v:1.5,u:'%'}},
+    notes:'1.5% floor on everything. Points become UR if you also hold a Sapphire.'},
+  {id:'prime_visa', name:'Prime Visa (Chase Amazon)', issuer:'Chase', program:'cash',
+    rates:{online:{v:5,u:'%',note:'Amazon.com; also 5% at Whole Foods & Amazon Fresh in store'},
+      dining:{v:2,u:'%'}, gas:{v:2,u:'%'}, transit:{v:2,u:'%',note:'local transit & rideshare'},
+      flights:{v:5,u:'%',note:'via Chase Travel ONLY — 1% booked direct'},
+      hotels:{v:5,u:'%',note:'via Chase Travel ONLY — 1% booked direct'}, other:{v:1,u:'%'}},
+    notes:'Assumes active Prime membership (3% at Amazon/Whole Foods without Prime — edit if so). Regular supermarkets earn just 1% here.'},
+  {id:'amex_gold', name:'Amex Gold', issuer:'Amex', program:'amex',
+    rates:{dining:{v:4,u:'x',cap:'up to $50k/yr, then 1x'}, groceries:{v:4,u:'x',cap:'US supermarkets, up to $25k/yr, then 1x'},
+      flights:{v:3,u:'x',note:'direct or Amex Travel'}, hotels:{v:5,u:'x',note:'prepaid via Amex Travel'}, other:{v:1,u:'x'}},
+    notes:'2025–26 refresh added 5x prepaid hotels via Amex Travel.'},
+  {id:'amex_plat', name:'Amex Platinum', issuer:'Amex', program:'amex',
+    rates:{flights:{v:5,u:'x',cap:'direct or Amex Travel; up to $500k/yr', note:'book direct with airline or Amex Travel'},
+      hotels:{v:5,u:'x',note:'prepaid via Amex Travel'}, other:{v:1,u:'x'}},
+    notes:'Weak outside travel — pair with a dining/grocery card.'},
+  {id:'bcp', name:'Amex Blue Cash Preferred', issuer:'Amex', program:'cash',
+    rates:{groceries:{v:6,u:'%',cap:'US supermarkets, $6k/yr, then 1%'}, streaming:{v:6,u:'%'},
+      transit:{v:3,u:'%'}, gas:{v:3,u:'%'}, other:{v:1,u:'%'}},
+    notes:''},
+  {id:'bce', name:'Amex Blue Cash Everyday', issuer:'Amex', program:'cash',
+    rates:{groceries:{v:3,u:'%',cap:'US supermarkets, $6k/yr'}, gas:{v:3,u:'%',cap:'$6k/yr'},
+      online:{v:3,u:'%',cap:'US online retail, $6k/yr'}, other:{v:1,u:'%'}},
+    notes:''},
+  {id:'custom_cash', name:'Citi Custom Cash', issuer:'Citi', program:'citi',
+    rates:{dining:{v:5,u:'%',cap:'top category, $500/billing cycle'}, groceries:{v:5,u:'%',cap:'top category, $500/billing cycle'},
+      gas:{v:5,u:'%',cap:'top category, $500/billing cycle'}, transit:{v:5,u:'%',cap:'top category, $500/billing cycle'},
+      streaming:{v:5,u:'%',cap:'top category, $500/billing cycle'}, drugstores:{v:5,u:'%',cap:'top category, $500/billing cycle'},
+      entertain:{v:5,u:'%',cap:'top category, $500/billing cycle'}, other:{v:1,u:'%'}},
+    notes:'5% applies to your TOP eligible category each billing cycle, first $500. Use it for ONE category only. Closed to new applicants (5/2026); existing cardholders keep it.'},
+  {id:'double_cash', name:'Citi Double Cash', issuer:'Citi', program:'citi',
+    rates:{other:{v:2,u:'%'}}, notes:'2% on everything (1% buy + 1% pay).'},
+  {id:'strata_premier', name:'Citi Strata Premier', issuer:'Citi', program:'citi',
+    rates:{dining:{v:3,u:'x'}, groceries:{v:3,u:'x',note:'supermarkets'}, gas:{v:3,u:'x',note:'gas & EV'},
+      flights:{v:3,u:'x'}, hotels:{v:3,u:'x',note:'10x via Citi Travel portal'}, other:{v:1,u:'x'}},
+    notes:'10x hotels/cars/attractions via Citi Travel.'},
+  {id:'venture_x', name:'Capital One Venture X', issuer:'Capital One', program:'c1',
+    rates:{hotels:{v:10,u:'x',note:'via Capital One Travel; 2x direct'}, flights:{v:5,u:'x',note:'via Capital One Travel; 2x direct'},
+      other:{v:2,u:'x'}},
+    notes:'2x floor on everything.'},
+  {id:'savor', name:'Capital One Savor', issuer:'Capital One', program:'cash',
+    rates:{dining:{v:3,u:'%'}, entertain:{v:3,u:'%',note:'8% on Capital One Entertainment'}, groceries:{v:3,u:'%',note:'excl. Walmart/Target'},
+      streaming:{v:3,u:'%'}, hotels:{v:5,u:'%',note:'via Capital One Travel'}, other:{v:1,u:'%'}},
+    notes:'Cash back converts 1:1 to miles if you also hold a Venture X.'},
+  {id:'discover_it', name:'Discover it', issuer:'Discover', program:'cash', rotating:true,
+    rates:{other:{v:1,u:'%'}},
+    notes:'5% rotating categories (activate BEFORE buying — not retroactive; $1,500/qtr cap).'},
+  {id:'usb_cashplus', name:'US Bank Cash+', issuer:'US Bank', program:'cash', configurable:true,
+    rates:{streaming:{v:5,u:'%',cap:'your chosen 5% category; $2k/qtr combined'}, gas:{v:2,u:'%',note:'your chosen 2% everyday category'}, other:{v:1,u:'%'}},
+    notes:'You choose two 5% categories and one 2% category each quarter — edit this card\'s rates to match your picks.'},
+  {id:'wf_autograph', name:'Wells Fargo Autograph', issuer:'Wells Fargo', program:'wf',
+    rates:{dining:{v:3,u:'x'}, flights:{v:3,u:'x'}, hotels:{v:3,u:'x'}, gas:{v:3,u:'x'},
+      transit:{v:3,u:'x'}, streaming:{v:3,u:'x'}, other:{v:1,u:'x'}},
+    notes:'Also 3x phone plans.'},
+  {id:'wf_active', name:'Wells Fargo Active Cash', issuer:'Wells Fargo', program:'cash',
+    rates:{other:{v:2,u:'%'}}, notes:'2% flat on everything.'},
+  {id:'bilt', name:'Bilt Mastercard', issuer:'Bilt / Cardless', program:'bilt',
+    rates:{rent:{v:1,u:'x',note:'no transaction fee on rent'}, dining:{v:3,u:'x'}, flights:{v:2,u:'x'}, hotels:{v:2,u:'x'}, other:{v:1,u:'x'}},
+    notes:'Legacy rates shown — Bilt 2.0 tiers (Blue/Silver/Gold/Platinum) differ. Edit rates to match your tier.'},
+];
+
+const PROGRAMS = {
+  chase:{name:'Chase Ultimate Rewards', cpp:1.5},
+  amex:{name:'Amex Membership Rewards', cpp:1.5},
+  citi:{name:'Citi ThankYou', cpp:1.5},
+  c1:{name:'Capital One Miles', cpp:1.5},
+  wf:{name:'Wells Fargo Rewards', cpp:1.0},
+  bilt:{name:'Bilt Rewards', cpp:1.8},
+  cash:{name:'Cash back', cpp:1.0},
+};
+
+const ACTIVATION_LINKS = {
+  freedom_flex:'https://www.chase.com/personal/credit-cards/freedom/freedomfive',
+  discover_it:'https://www.discover.com/credit-cards/cash-back/5-percent.html',
+};
+
+/* ---------- state ---------- */
+/* Anup's lineup, preloaded in priority order — reorder or edit in "My cards". */
+const DEFAULT_STATE = { myCards:['csp','csr','amex_plat','prime_visa'], overrides:{}, cpp:{}, activations:{}, custom:[] };
+let mem = null;
+function loadState(){
+  try{
+    if(location.hash.length>2){
+      const s = JSON.parse(decodeURIComponent(atob(location.hash.slice(1))));
+      if(s && s.myCards){ saveState(s); history.replaceState(null,'',location.pathname+location.search); return s; }
+    }
+  }catch(e){}
+  try{ const raw = localStorage.getItem('cardrouter'); if(raw) return {...structuredClone(DEFAULT_STATE), ...JSON.parse(raw)}; }catch(e){}
+  return mem ? mem : structuredClone(DEFAULT_STATE);
+}
+function saveState(s){ mem = s; try{ localStorage.setItem('cardrouter', JSON.stringify(s)); }catch(e){} }
+let S = loadState();
+
+/* ---------- helpers ---------- */
+function currentQuarter(){ const d=new Date(); return d.getFullYear()+'-Q'+(Math.floor(d.getMonth()/3)+1); }
+function quarterEndsInDays(){ const d=new Date(); const q=Math.floor(d.getMonth()/3); const end=new Date(d.getFullYear(), q*3+3, 1); return Math.ceil((end-d)/86400000); }
+function allCards(){ return [...CARD_DB, ...S.custom]; }
+function getCard(id){ return allCards().find(c=>c.id===id); }
+function cardRates(card){
+  const o = S.overrides[card.id]||{};
+  const merged = {};
+  for(const [k,r] of Object.entries(card.rates)) merged[k] = {...r};
+  for(const [k,r] of Object.entries(o)) merged[k] = {...(merged[k]||{u:merged.other?merged.other.u:'%'}), ...r};
+  return merged;
+}
+function cpp(card){ const p = S.cpp[card.program]; return (p!=null?p:PROGRAMS[card.program].cpp); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2600); }
+
+/* Effective % return for card on category. Returns {eff, disp, note, viaRotating, needsActivation, cap} or null */
+function evaluate(card, catId){
+  const rates = cardRates(card);
+  let r = rates[catId];
+  let viaRotating=false, needsActivation=false, rotLabel='';
+  if(card.rotating){
+    const rot = (ROTATING[currentQuarter()]||{})[card.id];
+    if(rot && rot.cats.includes(catId)){
+      const rotRate = {v:5,u:'%',cap:'$1,500/qtr cap'};
+      const base = r || rates.other;
+      const effBase = base ? base.v * (base.u==='x'?cpp(card):1) : 0;
+      if(5 >= effBase){ r = rotRate; viaRotating = true; needsActivation = !(S.activations[currentQuarter()+':'+card.id]); rotLabel = ' (rotating 5% this quarter)'; }
+    }
+  }
+  if(!r) r = rates.other;
+  if(!r) return null;
+  const eff = r.v * (r.u==='x' ? cpp(card) : 1);
+  const disp = r.u==='x' ? r.v+'x pts' : r.v+'%';
+  const note = [r.note, r.cap, rotLabel && rotLabel.trim()].filter(Boolean).join(' · ');
+  return {eff, disp, note, viaRotating, needsActivation, unit:r.u, raw:r.v};
+}
+function rankFor(catId){
+  const held = S.myCards.map(getCard).filter(Boolean);
+  const rows = held.map((c,i)=>{ const e=evaluate(c,catId); return e?{card:c, ...e, prio:i}:null; }).filter(Boolean);
+  rows.sort((a,b)=> b.eff-a.eff || a.prio-b.prio);
+  return rows;
+}
+
+/* ---------- views ---------- */
+const mainEl = document.getElementById('main');
+let TAB='which', selectedCat=null;
+
+function render(){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b.dataset.tab===TAB));
+  const hdr = document.getElementById('hdr'), sub=document.getElementById('hdrsub');
+  if(TAB==='which'){ hdr.textContent='Which card?'; sub.textContent = S.myCards.length? '' : 'set up your cards first'; renderWhich(); }
+  if(TAB==='cards'){ hdr.textContent='My cards'; sub.textContent='priority order breaks ties'; renderCards(); }
+  if(TAB==='promos'){ hdr.textContent='Promos & activations'; sub.textContent=currentQuarter().replace('-',' '); renderPromos(); }
+  if(TAB==='settings'){ hdr.textContent='Settings'; sub.textContent=''; renderSettings(); }
+}
+
+function renderWhich(){
+  if(!S.myCards.length){
+    mainEl.innerHTML = `<div class="panel empty">👋 Welcome. Add the cards you carry in the <b>My cards</b> tab — then this screen tells you which one to tap.</div>`;
+    return;
+  }
+  let html = `<div class="panel"><div class="catgrid">` +
+    CATS.map(c=>`<button class="catbtn ${selectedCat===c.id?'active':''}" data-cat="${c.id}"><span class="em">${c.em}</span>${c.name}</button>`).join('') +
+    `</div><button class="locbtn" id="locbtn">📍 Guess category from my location</button></div>`;
+  if(selectedCat){
+    const rows = rankFor(selectedCat);
+    html += `<h2>${CAT[selectedCat].em} ${CAT[selectedCat].name}</h2>`;
+    if(!rows.length) html += `<div class="panel empty">None of your cards earn a bonus here.</div>`;
+    else {
+      html += rows.slice(0,4).map((r,i)=>`
+        <div class="result-card ${i===0?'winner':''}">
+          <div class="rank">${i===0?'🏆':(i+1)+'.'}</div>
+          <div class="rc-body">
+            <div class="rc-name">${esc(r.card.name)}
+              ${r.needsActivation?'<span class="badge warn">activate first!</span>':''}
+              ${r.viaRotating&&!r.needsActivation?'<span class="badge good">activated ✓</span>':''}
+            </div>
+            ${r.note?`<div class="rc-note">${esc(r.note)}</div>`:''}
+          </div>
+          <div class="rc-rate">${r.disp}<div class="tag" style="text-align:right">≈${r.eff.toFixed(1)}%</div></div>
+        </div>`).join('');
+      html += `<p class="hint" style="margin:10px 4px">≈% converts points to value using your point valuations (Settings). Ties go to your priority order.</p>`;
+    }
+  } else {
+    html += `<p class="hint" style="margin:6px 4px">Tap a category, or use location to guess it.</p>`;
+  }
+  mainEl.innerHTML = html;
+  mainEl.querySelectorAll('.catbtn').forEach(b=>b.onclick=()=>{selectedCat=b.dataset.cat; render();});
+  const lb = document.getElementById('locbtn'); if(lb) lb.onclick = guessFromLocation;
+}
+
+function guessFromLocation(){
+  const lb=document.getElementById('locbtn'); lb.textContent='📍 Locating…';
+  if(!navigator.geolocation){ toast('Geolocation not available'); return; }
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    try{
+      lb.textContent='📍 Looking up merchant…';
+      const {latitude:lat, longitude:lon} = pos.coords;
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=18`, {headers:{'Accept':'application/json'}});
+      const j = await res.json();
+      const t = (j.type||'')+' '+(j.category||'')+' '+((j.name||''));
+      const map = [
+        [/restaurant|cafe|fast_food|bar|pub|food_court|ice_cream/i,'dining'],
+        [/fuel|charging_station/i,'gas'],
+        [/supermarket|grocery|greengrocer|convenience/i,'groceries'],
+        [/pharmacy|chemist|drugstore/i,'drugstores'],
+        [/cinema|theatre|stadium|nightclub|attraction|theme_park|zoo|museum/i,'entertain'],
+        [/hotel|motel|hostel|guest_house/i,'hotels'],
+        [/airport|aerodrome/i,'flights'],
+        [/station|bus_stop|subway|tram|platform/i,'transit'],
+      ];
+      const hit = map.find(([re])=>re.test(t));
+      if(hit){ selectedCat = hit[1]; toast(`Looks like: ${j.name||j.type||'a '+hit[1]+' spot'}`); }
+      else toast(`Couldn't classify "${j.name||j.type||'this spot'}" — pick manually`);
+      render();
+    }catch(e){ toast('Lookup failed — pick a category manually'); render(); }
+  }, ()=>{ toast('Location permission denied'); render(); }, {enableHighAccuracy:true, timeout:8000});
+}
+
+function renderCards(){
+  const held = S.myCards.map(getCard).filter(Boolean);
+  let html = '';
+  if(held.length){
+    html += `<div class="panel">` + held.map((c,i)=>`
+      <div class="row">
+        <div class="grow"><div class="title">${i+1}. ${esc(c.name)}</div><div class="sub2">${esc(c.issuer)} · ${esc(PROGRAMS[c.program].name)}</div></div>
+        <button class="iconbtn" data-up="${c.id}" ${i===0?'disabled':''}>↑</button>
+        <button class="iconbtn" data-down="${c.id}" ${i===held.length-1?'disabled':''}>↓</button>
+        <button class="iconbtn" data-edit="${c.id}">✎</button>
+        <button class="iconbtn" data-del="${c.id}">✕</button>
+      </div>`).join('') + `</div>
+      <p class="section-note">Order = tie-break priority (your original spec). ✎ to view/edit a card's earn rates.</p>`;
+  } else html += `<div class="panel empty">No cards yet — add the 4–6 you carry.</div>`;
+
+  const avail = allCards().filter(c=>!S.myCards.includes(c.id));
+  html += `<h2>Add a card</h2><div class="panel">` +
+    (avail.length? avail.map(c=>`
+      <div class="row"><div class="grow"><div class="title">${esc(c.name)}</div><div class="sub2">${esc(c.issuer)}</div></div>
+      <button class="pill" data-add="${c.id}">Add</button></div>`).join('') : '<div class="empty">All database cards added.</div>') +
+    `</div><div style="margin:10px 0 20px; text-align:center"><button class="pill" id="addcustom">+ Custom card</button></div>`;
+  mainEl.innerHTML = html;
+
+  mainEl.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{ S.myCards.push(b.dataset.add); saveState(S); render(); });
+  mainEl.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ S.myCards=S.myCards.filter(x=>x!==b.dataset.del); saveState(S); render(); });
+  mainEl.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{ move(b.dataset.up,-1); });
+  mainEl.querySelectorAll('[data-down]').forEach(b=>b.onclick=()=>{ move(b.dataset.down,1); });
+  mainEl.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit));
+  document.getElementById('addcustom').onclick = openCustomCard;
+}
+function move(id,d){ const i=S.myCards.indexOf(id); const j=i+d; if(j<0||j>=S.myCards.length)return;
+  [S.myCards[i],S.myCards[j]]=[S.myCards[j],S.myCards[i]]; saveState(S); render(); }
+
+function openEditor(id){
+  const card = getCard(id); const rates = cardRates(card);
+  const sheet = document.getElementById('sheet');
+  sheet.innerHTML = `<div class="sheet-head"><h3>${esc(card.name)}</h3><button class="iconbtn" id="closex">✕</button></div>
+    ${card.notes?`<p class="hint">${esc(card.notes)}</p>`:''}
+    <div class="rate-grid">` +
+    CATS.map(c=>{ const r = rates[c.id];
+      return `<div>${c.em} ${c.name}${r&&r.note?`<div class="tag">${esc(r.note)}</div>`:''}${r&&r.cap?`<div class="tag">⚠ ${esc(r.cap)}</div>`:''}</div>
+        <input type="text" inputmode="decimal" data-rk="${c.id}" value="${r? r.v+(r.u==='x'?'x':'%') :''}" placeholder="—">`;
+    }).join('') +
+    `</div><p class="hint" style="margin-top:10px">Enter like <b>3x</b> (points) or <b>5%</b> (cash back). Blank = falls back to "everything else". Rules drift — edit here when issuers change them.</p>
+    <div style="display:flex; gap:8px; margin-top:12px"><button class="pill primary" id="saveRates" style="flex:1">Save</button></div>`;
+  openModal();
+  document.getElementById('closex').onclick=closeModal;
+  document.getElementById('saveRates').onclick=()=>{
+    const ov = {};
+    sheet.querySelectorAll('[data-rk]').forEach(inp=>{
+      const t = inp.value.trim(); if(!t) return;
+      const m = t.match(/^([\d.]+)\s*(x|%)?$/i); if(!m) return;
+      ov[inp.dataset.rk] = {v:parseFloat(m[1]), u:(m[2]||'%').toLowerCase()};
+    });
+    S.overrides[id]=ov; saveState(S); closeModal(); render(); toast('Rates saved');
+  };
+}
+function openCustomCard(){
+  const sheet=document.getElementById('sheet');
+  sheet.innerHTML = `<div class="sheet-head"><h3>Custom card</h3><button class="iconbtn" id="closex">✕</button></div>
+    <div style="display:grid; gap:8px">
+      <input type="text" id="ccname" placeholder="Card name">
+      <select id="ccprog">${Object.entries(PROGRAMS).map(([k,p])=>`<option value="${k}">${p.name}</option>`).join('')}</select>
+      <button class="pill primary" id="ccsave">Create — then set rates with ✎</button></div>`;
+  openModal();
+  document.getElementById('closex').onclick=closeModal;
+  document.getElementById('ccsave').onclick=()=>{
+    const name=document.getElementById('ccname').value.trim(); if(!name){toast('Name it first');return;}
+    const id='cust_'+name.toLowerCase().replace(/[^a-z0-9]+/g,'_');
+    S.custom.push({id, name, issuer:'Custom', program:document.getElementById('ccprog').value, rates:{other:{v:1,u:'%'}}, notes:''});
+    S.myCards.push(id); saveState(S); closeModal(); render();
+  };
+}
+
+function renderPromos(){
+  const q = currentQuarter(); const days = quarterEndsInDays();
+  const rot = ROTATING[q];
+  let html = `<div class="quarter-banner">${q.replace('-',' ')} · ${days} days left in the quarter</div>`;
+  const heldRotating = S.myCards.map(getCard).filter(c=>c&&c.rotating);
+  if(heldRotating.length){
+    html += `<div class="panel">` + heldRotating.map(c=>{
+      const info = rot ? rot[c.id] : null; const key=q+':'+c.id; const done=!!S.activations[key];
+      return `<div class="row"><div class="grow">
+        <div class="title">${esc(c.name)} ${done?'<span class="badge good">activated ✓</span>':'<span class="badge warn">not activated</span>'}</div>
+        <div class="sub2">${info? '5%: '+esc(info.label) : 'Categories TBA — check issuer'}${c.id==='discover_it'?' · not retroactive!':''}</div>
+        ${ACTIVATION_LINKS[c.id]?`<div class="sub2"><a href="${ACTIVATION_LINKS[c.id]}" target="_blank" rel="noopener">Activate on ${esc(c.issuer)} →</a></div>`:''}
+      </div>
+      <label class="check"><input type="checkbox" data-act="${c.id}" ${done?'checked':''}>done</label>
+      </div>`;
+    }).join('') + `</div>`;
+  } else html += `<div class="panel empty">None of your cards have rotating categories.</div>`;
+
+  html += `<h2>Never miss a quarter</h2><div class="panel">
+    <p class="hint">Add recurring reminders to your calendar for the first day of each quarter — activate 5% categories, re-pick US Bank Cash+ choices, and check this app's rotating data.</p>
+    <div style="margin-top:8px"><button class="pill primary" id="ics">📅 Download reminders (.ics)</button></div></div>`;
+
+  html += `<h2>Worth knowing</h2><div class="panel"><p class="hint">
+    Registration-required promos (Amex Offers, Chase Offers, targeted spend bonuses) live behind issuer logins, so this app can't fetch them.
+    Check the Amex/Chase apps' "Offers" tab when you're already in them — or MaxRewards Gold automates activation if you want to pay for it.</p></div>`;
+  mainEl.innerHTML = html;
+  mainEl.querySelectorAll('[data-act]').forEach(cb=>cb.onchange=()=>{ S.activations[q+':'+cb.dataset.act]=cb.checked; saveState(S); render(); });
+  document.getElementById('ics').onclick = downloadICS;
+}
+function downloadICS(){
+  const mk=(mo,uid)=>['BEGIN:VEVENT',`UID:cardrouter-${uid}@local`,`DTSTART;VALUE=DATE:20260${mo}01`,
+    'RRULE:FREQ=YEARLY','SUMMARY:💳 Activate quarterly 5% categories (Freedom Flex / Discover / Cash+)',
+    'DESCRIPTION:Activate rotating categories and update CardRouter rules.','BEGIN:VALARM','TRIGGER:PT9H','ACTION:DISPLAY','DESCRIPTION:Activate 5% categories','END:VALARM','END:VEVENT'].join('\r\n');
+  const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//CardRouter//EN',mk(1,'q1'),mk(4,'q2'),mk(7,'q3'),'BEGIN:VEVENT','UID:cardrouter-q4@local','DTSTART;VALUE=DATE:20261001','RRULE:FREQ=YEARLY','SUMMARY:💳 Activate quarterly 5% categories','END:VEVENT','END:VCALENDAR'].join('\r\n');
+  const a=document.createElement('a'); a.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics); a.download='cardrouter-reminders.ics'; a.click();
+}
+
+function renderSettings(){
+  let html = `<h2>Point valuations</h2><p class="section-note">Cents per point — used to compare points cards against cash back fairly.</p><div class="panel"><div class="rate-grid">` +
+    Object.entries(PROGRAMS).filter(([k])=>k!=='cash').map(([k,p])=>{
+      const v = S.cpp[k]!=null?S.cpp[k]:p.cpp;
+      return `<div>${esc(p.name)}</div><input type="text" inputmode="decimal" data-cpp="${k}" value="${v}">`;
+    }).join('') + `</div></div>
+    <h2>Backup / transfer</h2><div class="panel">
+      <p class="hint">Copy a link that carries your whole setup — open it on another device (or after clearing Safari data) to restore.</p>
+      <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap">
+        <button class="pill primary" id="copycfg">🔗 Copy setup link</button>
+        <button class="pill" id="reset">Reset app</button></div></div>
+    <h2>About the rules data</h2><div class="panel"><p class="hint">
+      Earn rates verified July 2026 (incl. the Sapphire Reserve revamp, the Amex Gold refresh, and ${currentQuarter().replace('-',' ')} rotating categories).
+      Issuers change rules constantly — when they do, tap ✎ on a card to update it. Rotating categories for future quarters need a new app version (or edit rates manually).</p></div>`;
+  mainEl.innerHTML = html;
+  mainEl.querySelectorAll('[data-cpp]').forEach(inp=>inp.onchange=()=>{
+    const v=parseFloat(inp.value); if(!isNaN(v)&&v>0){ S.cpp[inp.dataset.cpp]=v; saveState(S); toast('Saved'); } });
+  document.getElementById('copycfg').onclick=async()=>{
+    const url = location.origin+location.pathname+'#'+btoa(encodeURIComponent(JSON.stringify(S)));
+    try{ await navigator.clipboard.writeText(url); toast('Setup link copied'); }
+    catch(e){ prompt('Copy this link:', url); }
+  };
+  document.getElementById('reset').onclick=()=>{ if(confirm('Erase your cards and settings?')){ S=structuredClone(DEFAULT_STATE); saveState(S); render(); } };
+}
+
+/* ---------- modal & nav ---------- */
+function openModal(){ document.getElementById('modal').classList.add('open'); }
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal(); });
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ TAB=b.dataset.tab; render(); });
+render();
+</script>
+</body>
+</html>
