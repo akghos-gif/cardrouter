@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="CardRouter">
-<title>CardRouter — Which card?</title>
+<meta name="apple-mobile-web-app-title" content="ChooseMyCard">
+<title>ChooseMyCard — Which card?</title>
 <style>
   :root{
     --bg:#f4f5f7; --card:#ffffff; --ink:#1a1d21; --muted:#6b7280; --line:#e5e7eb;
@@ -103,7 +103,7 @@
     <circle cx="16.5" cy="10.8" r="2.1" fill="#fff"/><circle cx="31.5" cy="10.8" r="2.1" fill="#fff"/>
     <circle cx="33" cy="31" r="2.4" fill="#fff" opacity=".9"/><circle cx="29" cy="31" r="2.4" fill="#fff" opacity=".55"/>
   </svg>
-  <div><div class="bname">CardRouter</div><div class="btag">your rewards butler</div></div>
+  <div><div class="bname">ChooseMyCard</div><div class="btag">your rewards butler</div></div>
 </div>
 <header>
   <h1 id="hdr">Which card?</h1>
@@ -125,7 +125,7 @@
 <script>
 'use strict';
 /* ============================================================
-   CardRouter — personal rewards butler
+   ChooseMyCard — personal rewards butler
    Rules data verified July 2026. Rates are editable in-app;
    card programs change often — treat this as a starting point.
    ============================================================ */
@@ -272,7 +272,7 @@ const BENEFITS = {
     {cat:'travelcr', name:'Annual travel credit', value:'$300/yr', enroll:false, note:'auto — applies to nearly any travel'},
     {cat:'travelcr', name:'The Edit hotel credit', value:'$250 semiannual ($500/yr)', enroll:false, note:'prepaid 2+ night stays via Chase Travel'},
     {cat:'diningcr', name:'Exclusive Tables dining credit', value:'$150 semiannual ($300/yr)', enroll:true, note:'book via OpenTable'},
-    {cat:'diningcr', name:'DoorDash promos + DashPass', value:'up to $300/yr + DashPass', enroll:true, note:'activate DashPass by 12/2027'},
+    {cat:'diningcr', name:'DoorDash promos + DashPass', value:'up to $300/yr + DashPass', enroll:true, note:'activate DashPass by 12/2027', link:'https://www.doordash.com/chase'},
     {cat:'rideshare', name:'Lyft credit', value:'$10/mo ($120/yr)', enroll:false, note:'thru 9/2027; plus 5x points on Lyft'},
     {cat:'streamcr', name:'Apple TV+ & Apple Music', value:'~$288/yr', enroll:true, note:'complimentary thru 6/2027; activate'},
     {cat:'streamcr', name:'StubHub / viagogo credit', value:'$150 semiannual ($300/yr)', enroll:true, note:'one-time activation'},
@@ -281,7 +281,7 @@ const BENEFITS = {
   ],
   csp: [
     {cat:'travelcr', name:'Hotel credit', value:'$50/yr', enroll:false, note:'via Chase Travel bookings'},
-    {cat:'diningcr', name:'DashPass + DoorDash promo credit', value:'$10/mo promo', enroll:true, note:'activate by 12/2027'},
+    {cat:'diningcr', name:'DashPass + DoorDash promo credit', value:'$10/mo promo', enroll:true, note:'activate by 12/2027', link:'https://www.doordash.com/chase'},
     {cat:'status', name:'10% anniversary points boost', value:'', enroll:false, note:'on your yearly spend'},
     {cat:'protect', name:'Primary rental CDW, trip delay/cancellation, purchase protection', value:'', enroll:false, note:''},
   ],
@@ -329,6 +329,18 @@ const BENEFITS = {
     {cat:'status', name:'Rent Day (1st of month) bonuses', value:'', enroll:false, note:'varies by Bilt 2.0 tier'},
     {cat:'protect', name:'Cell phone protection', value:'', enroll:false, note:'pay your phone bill with the card'},
   ],
+};
+
+/* Where "enrollment required" perks get switched on (issuer benefit hubs; login required). */
+const ENROLL_LINKS = {
+  amex_plat:'https://global.americanexpress.com/card-benefits',
+  amex_gold:'https://global.americanexpress.com/card-benefits',
+  bcp:'https://global.americanexpress.com/card-benefits',
+  csr:'https://account.chase.com/sapphire/reserve/benefits',
+  csp:'https://account.chase.com/sapphire/preferred/benefits',
+  freedom_flex:'https://www.doordash.com/chase',
+  cfu:'https://www.doordash.com/chase',
+  venture_x:'https://www.capitalone.com/signin',
 };
 
 const PROGRAMS = {
@@ -425,7 +437,7 @@ function renderWhich(){
   if(!S.myCards.length){
     mainEl.innerHTML = `<div class="panel" style="text-align:center; padding:26px 18px">
       <div style="font-size:40px">👋</div>
-      <h3 style="margin:10px 0 6px">Welcome to CardRouter</h3>
+      <h3 style="margin:10px 0 6px">Welcome to ChooseMyCard</h3>
       <p class="hint" style="margin:0 0 16px">Pick the credit cards you carry and set their priority — then this screen tells you which one to tap for every kind of purchase. Your picks stay on <b>this device only</b>, so everyone who uses this app sets up their own.</p>
       <button class="pill primary" id="onboard" style="font-size:15px; padding:11px 22px">Pick my cards →</button>
     </div>`;
@@ -592,6 +604,7 @@ function renderBenefits(){
       rows.map(b=>`<div class="row"><div class="grow">
           <div class="title">${esc(b.name)} ${b.enroll?'<span class="badge warn">enrollment required</span>':'<span class="badge good">automatic</span>'}</div>
           <div class="sub2">${esc(b.card.name)}${b.note?' · '+esc(b.note):''}</div>
+          ${(b.enroll&&(b.link||ENROLL_LINKS[b.card.id]))?`<div class="sub2"><a href="${b.link||ENROLL_LINKS[b.card.id]}" target="_blank" rel="noopener">Activate →</a></div>`:''}
         </div>${b.value?`<div class="rc-rate" style="font-size:13.5px">${esc(b.value)}</div>`:''}</div>`).join('') +
       `</div>
       <p class="hint" style="margin:8px 4px">"Enrollment required" = it does nothing until you turn it on — usually in the issuer's app or website under card benefits. Worth doing today.</p>`;
@@ -636,9 +649,9 @@ function renderPromos(){
 function downloadICS(){
   const mk=(mo,uid)=>['BEGIN:VEVENT',`UID:cardrouter-${uid}@local`,`DTSTART;VALUE=DATE:20260${mo}01`,
     'RRULE:FREQ=YEARLY','SUMMARY:💳 Activate quarterly 5% categories (Freedom Flex / Discover / Cash+)',
-    'DESCRIPTION:Activate rotating categories and update CardRouter rules.','BEGIN:VALARM','TRIGGER:PT9H','ACTION:DISPLAY','DESCRIPTION:Activate 5% categories','END:VALARM','END:VEVENT'].join('\r\n');
+    'DESCRIPTION:Activate rotating categories and update ChooseMyCard rules.','BEGIN:VALARM','TRIGGER:PT9H','ACTION:DISPLAY','DESCRIPTION:Activate 5% categories','END:VALARM','END:VEVENT'].join('\r\n');
   const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//CardRouter//EN',mk(1,'q1'),mk(4,'q2'),mk(7,'q3'),'BEGIN:VEVENT','UID:cardrouter-q4@local','DTSTART;VALUE=DATE:20261001','RRULE:FREQ=YEARLY','SUMMARY:💳 Activate quarterly 5% categories','END:VEVENT','END:VCALENDAR'].join('\r\n');
-  const a=document.createElement('a'); a.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics); a.download='cardrouter-reminders.ics'; a.click();
+  const a=document.createElement('a'); a.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics); a.download='choosemycard-reminders.ics'; a.click();
 }
 
 function renderSettings(){
