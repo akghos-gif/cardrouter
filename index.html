@@ -54,12 +54,21 @@
   .badge.warn{background:rgba(185,28,28,.12); color:var(--warn)}
   .badge.good{background:rgba(4,120,87,.12); color:var(--good)}
   .hint{color:var(--muted); font-size:13px; line-height:1.45}
-  nav{position:fixed; bottom:0; left:0; right:0; display:flex; background:var(--card);
-    border-top:1px solid var(--line); padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
-  nav button{flex:1; background:none; border:none; color:var(--muted); font-size:11px; cursor:pointer;
-    display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px}
-  nav button .em{font-size:20px}
+  nav{position:fixed; bottom:0; left:0; right:0; display:flex; gap:2px; background:var(--card);
+    border-top:1px solid var(--line); padding:7px 6px calc(7px + env(safe-area-inset-bottom));
+    box-shadow:0 -6px 18px rgba(0,0,0,.08)}
+  nav button{flex:1; background:none; border:none; color:var(--muted); font-size:10.5px; font-weight:600;
+    cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; padding:0; font-family:inherit}
+  nav button .em{font-size:19px; line-height:1; display:flex; align-items:center; justify-content:center;
+    width:54px; height:30px; border-radius:99px; background:rgba(125,125,125,.10);
+    border:1.5px solid transparent; transition:background .18s, transform .18s, border-color .18s, box-shadow .18s}
+  nav button:not(.on) .em{filter:grayscale(1); opacity:.75}
+  nav button:active .em{transform:scale(.9)}
   nav button.on{color:var(--accent)}
+  nav button.on .em{background:var(--chip); border-color:var(--accent); box-shadow:0 1px 8px rgba(37,99,235,.28)}
+  @keyframes tabpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+  nav button.pulse .em{animation:tabpulse .8s ease-in-out 5; background:var(--chip); border-color:var(--accent);
+    box-shadow:0 1px 10px rgba(37,99,235,.4); filter:none; opacity:1}
   .row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line)}
   .row:last-child{border-bottom:none}
   .row .grow{flex:1; min-width:0}
@@ -472,7 +481,15 @@ function cardRates(card){
 }
 function cpp(card){ const p = S.cpp[card.program]; return (p!=null?p:PROGRAMS[card.program].cpp); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2600); }
+function toast(msg,ms){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),ms||2600); }
+/* One-time coach mark: after the first card is added, point at the "Which card?" tab. */
+function coachWhichTab(){
+  if(S.coachDone) return;
+  S.coachDone = true; saveState(S);
+  const b = document.querySelector('nav button[data-tab="which"]');
+  if(b){ b.classList.add('pulse'); setTimeout(()=>b.classList.remove('pulse'), 4200); }
+  toast('Card added! Tap 💳 "Which card?" below to get recommendations', 4200);
+}
 
 /* Effective % return for card on category. Returns {eff, disp, note, viaRotating, needsActivation, cap} or null */
 function evaluate(card, catId){
@@ -609,7 +626,7 @@ function renderCards(){
     `</div><div style="margin:10px 0 20px; text-align:center"><button class="pill" id="addcustom">+ Custom card</button></div>`;
   mainEl.innerHTML = html;
 
-  mainEl.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{ S.myCards.push(b.dataset.add); saveState(S); render(); });
+  mainEl.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{ S.myCards.push(b.dataset.add); saveState(S); render(); coachWhichTab(); });
   mainEl.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ S.myCards=S.myCards.filter(x=>x!==b.dataset.del); saveState(S); render(); });
   mainEl.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{ move(b.dataset.up,-1); });
   mainEl.querySelectorAll('[data-down]').forEach(b=>b.onclick=()=>{ move(b.dataset.down,1); });
@@ -656,7 +673,7 @@ function openCustomCard(){
     const name=document.getElementById('ccname').value.trim(); if(!name){toast('Name it first');return;}
     const id='cust_'+name.toLowerCase().replace(/[^a-z0-9]+/g,'_');
     S.custom.push({id, name, issuer:'Custom', program:document.getElementById('ccprog').value, rates:{other:{v:1,u:'%'}}, notes:''});
-    S.myCards.push(id); saveState(S); closeModal(); render();
+    S.myCards.push(id); saveState(S); closeModal(); render(); coachWhichTab();
   };
 }
 
