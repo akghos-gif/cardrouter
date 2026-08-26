@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<title>Credit Radar tests</title>
+<style>
+  body{font:15px/1.5 system-ui,sans-serif;max-width:760px;margin:32px auto;padding:0 18px;color:#172033;background:#f7f8fb}
+  h1{font-size:24px}.pass{color:#08704f}.fail{color:#b42318}li{margin:5px 0}iframe{display:none}
+</style>
+</head>
+<body>
+<h1>Credit Radar tests</h1>
+<p id="summary">Running…</p>
+<ol id="results"></ol>
+<iframe id="app" src="../index.html"></iframe>
+<script>
+'use strict';
+const tests=[];
+function test(name,fn){tests.push({name,fn});}
+function assert(value,message){if(!value)throw new Error(message||'Assertion failed');}
+function equal(actual,expected,message){if(actual!==expected)throw new Error(message||`Expected ${expected}, received ${actual}`);}
+
+document.getElementById('app').addEventListener('load',()=>{
+  const app=document.getElementById('app').contentWindow, R=app.CardRouterRadar;
+  test('calendar periods use local month, quarter, and half-year keys',()=>{
+    equal(R.periodInfo('month',new Date(2026,7,26)).key,'2026-08');
+    equal(R.periodInfo('quarter',new Date(2026,7,26)).key,'2026-Q3');
+    equal(R.periodInfo('half',new Date(2026,7,26)).key,'2026-H2');
+  });
+  test('period ends are exclusive local boundaries',()=>{
+    equal(R.periodEndFromKey('2026-08').getDate(),1);
+    equal(R.periodEndFromKey('2026-08').getMonth(),8);
+    equal(R.periodEndFromKey('2026-Q4').getFullYear(),2027);
+  });
+  test('calendar-day math is stable across daylight-saving boundaries',()=>{
+    equal(R.calendarDays(new Date(2026,2,7),new Date(2026,2,10)),3);
+  });
+  test('24-calendar-month subtraction clamps leap-day dates',()=>{
+    const d=R.minusCalendarMonths(new Date(2028,1,29),24);
+    equal(d.getFullYear(),2026); equal(d.getMonth(),1); equal(d.getDate(),28);
+  });
+  test('legacy truthy activation records migrate once to canonical completion keys',()=>{
+    const now=new Date(2026,7,26,12), raw={myCards:['freedom_flex'],activations:{'2026-Q3:freedom_flex':true,'2026-Q3:discover_it':false}};
+    const once=R.normalizeState(raw,now), twice=R.normalizeState(once,now);
+    equal(Object.keys(once.completions)[0],'activate:freedom_flex:freedom_flex_5x:2026-Q3');
+    equal(Object.keys(twice.completions).length,1);
+    equal(once.completions[Object.keys(once.completions)[0]].completedAt,null);
+  });
+  test('Radar derives the exact held-card task set and prioritizes non-retroactive work',()=>{
+    const now=new Date(2026,7,26,12), state=R.normalizeState({myCards:['amex_gold','discover_it']},now), radar=R.buildRadarTasks(state,now);
+    equal(radar.all.length,5); equal(radar.all[0].itemId,'discover_5pct');
+    assert(radar.all.slice(1).every(t=>t.kind==='enroll-task'),'Gold credits should begin with enrollment');
+  });
+  test('enrollment changes one recurring row into its usage phase',()=>{
+    const now=new Date(2026,7,26,12), state=R.normalizeState({myCards:['amex_gold'],enrollments:[{
+      cardId:'amex_gold',benefitId:'dining_credit',enrolledAt:'2026-08-20T12:00:00.000Z'
+    }]},now), radar=R.buildRadarTasks(state,now), dining=radar.all.find(t=>t.itemId==='dining_credit');
+    equal(dining.kind,'use'); equal(dining.markLabel,'Mark used');
+  });
+  test('normalization rebuilds canonical completion keys and prunes old history',()=>{
+    const now=new Date(2026,7,26,12), state=R.normalizeState({myCards:['discover_it'],completions:{wrong:{
+      actionType:'activate',cardId:'discover_it',itemId:'discover_5pct',periodKey:'2026-Q3',completedAt:'2026-08-01T12:00:00.000Z'
+    },old:{actionType:'activate',cardId:'discover_it',itemId:'discover_5pct',periodKey:'2023-Q1',completedAt:'2023-01-01T12:00:00.000Z'}}},now);
+    equal(Object.keys(state.completions).length,1);
+    equal(Object.keys(state.completions)[0],'activate:discover_it:discover_5pct:2026-Q3');
+  });
+  test('calendar download contains four consistent private recurring events',()=>{
+    const ics=R.buildICS(new Date(2026,7,26,12));
+    equal((ics.match(/BEGIN:VEVENT/g)||[]).length,4);
+    equal((ics.match(/BEGIN:VALARM/g)||[]).length,4);
+    assert(ics.includes('\r\n'),'Expected CRLF line endings');
+    assert(!/Freedom|Discover|Cash\+|Amex/i.test(ics),'Calendar must not reveal held-card data');
+  });
+
+  let passed=0; const list=document.getElementById('results');
+  for(const t of tests){
+    const li=document.createElement('li');
+    try{t.fn();passed++;li.className='pass';li.textContent='PASS: '+t.name;}
+    catch(error){li.className='fail';li.textContent='FAIL: '+t.name+' ('+error.message+')';}
+    list.appendChild(li);
+  }
+  const summary=document.getElementById('summary'); summary.textContent=`${passed} of ${tests.length} passed`; summary.className=passed===tests.length?'pass':'fail';
+  document.title=`${passed} of ${tests.length} Radar tests passed`;
+});
+</script>
+</body>
+</html>

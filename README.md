@@ -10,12 +10,14 @@ Tap a purchase category — dining, groceries, gas, flights, hotels, and more �
 
 - **Which card?** — tap a category and get a ranked answer. Points cards are compared against cash-back cards using cents-per-point valuations, so "3x Ultimate Rewards" and "5% cash back" compete on equal footing (shown as an effective ≈% for every card).
 - **Built-in rules database** — earn rates for ~19 popular US rewards cards, verified July 2026, including the Chase Sapphire Reserve revamp, the Amex Gold refresh, the Prime Visa, and the Citi Custom Cash closure to new applicants.
-- **Rotating 5% categories** — the current quarter's Chase Freedom Flex and Discover it categories are built in. Cards that need activation show an "activate first!" warning until you check them off in the Promos tab, which links straight to each issuer's activation page.
+- **Rotating 5% categories** — the current quarter's Chase Freedom Flex and Discover it categories are built in. Cards that need activation show an "activate first!" warning until you check them off in the Promos tab, which links straight to each issuer's activation page. When rates tie, activated rotating categories rank ahead of unactivated ones.
+- **Credit Radar:** the Promos tab prioritizes quarterly activations, Cash+ category selection, and verified calendar-based card credits before they expire. Open Radar for the full list, mark actions complete, skip a period, hide benefits you do not use, and restore anything from the inline "Not shown" section.
+- **Shared completion status:** activation, enrollment, and benefit-use checkboxes stay synchronized across Radar, Quarterly Activations, Benefits, and card recommendations. Recent completions remain visible in Radar temporarily and activity history stays on the device for 24 months.
 - **Priority tie-break** — when two cards earn the same, your hand-set card order decides (drag your true favorite to the top).
 - **Location guessing** — optionally let the app read your location and guess the category from the nearest merchant (via OpenStreetMap; no API key, no tracking).
 - **Everything is editable** — issuers change rules constantly. Tap ✎ on any card to override its rates, add custom cards, or adjust point valuations in Settings.
-- **Quarterly reminders** — download an `.ics` calendar file that reminds you every quarter to activate rotating categories.
-- **Per-device setups & setup links** — each person's card selection lives in their own browser. A "setup link" (Settings → Copy setup link) encodes your whole configuration into a URL for backup or moving devices.
+- **Quarterly reminders:** download a generic `.ics` calendar file with four recurring reminders and no card or activity data.
+- **Per-device setups & setup links:** each person's card selection lives in their own browser. A "setup link" (Settings → Copy setup link) carries the card setup, permanent enrollments, hidden preferences, and current-period checkmarks, but omits older activity history.
 
 ## Install on iPhone
 
@@ -40,7 +42,7 @@ Two flavors of link exist:
 | Plain URL (`.../cardrouter/`) | Fresh start for a new person; remembers each device's own setup |
 | Setup link (`.../cardrouter/#eyJt...`) | Preloads a specific card lineup, then hands off to normal per-device storage |
 
-⚠️ Opening a setup link **replaces** the setup already on that device — share the plain URL with other people, and keep setup links for your own backups.
+Opening a setup link asks before replacing a setup already on that device. The link contains readable card and current-status data, so share the plain URL with other people and keep setup links private for your own backups.
 
 ## Using the app well
 
@@ -49,6 +51,10 @@ Two flavors of link exist:
 **Portal vs. direct.** Several cards earn dramatically more through their bank's travel portal (e.g., Sapphire Reserve: 4x direct but 8x via Chase Travel; Prime Visa: 5% via Chase Travel but 1% direct). The rankings use the *direct* rate and the notes tell you when the portal beats it — read the note before booking travel.
 
 **Caps.** Cards with spending caps (Amex Gold's $25k supermarket cap, Custom Cash's $500/cycle, rotating cards' $1,500/quarter) show a ⚠ note. The app doesn't track your spend against caps — it trusts you to know when you've blown through one.
+
+**Radar completion.** Issuers do not report completion back to this app. Use the labeled checkboxes after you activate, enroll, select, or use a benefit. Uncheck any status to correct it. Radar retains a completion briefly in the main list so it does not appear to vanish, then keeps it in the inline history for up to 24 months.
+
+**Radar coverage.** Radar intentionally tracks only benefits with issuer-verified terms, a clear calendar reset, and an effective action page. Other perks remain available in Benefits without becoming recurring tasks. Benefit terms were checked in August 2026 and can still change.
 
 **Quarterly upkeep (5 minutes, 4× a year).** At each quarter's start: activate rotating categories (Promos tab links), re-check the new categories are reflected (see below), and re-pick US Bank Cash+ choices if you hold it.
 
@@ -82,13 +88,16 @@ Valid category ids: `dining, groceries, gas, flights, hotels, transit, streaming
 
 - It recommends; it doesn't route. You still tap the card yourself.
 - No logged-in promo scraping (Amex Offers, Chase Offers) — those live behind issuer logins, and automating them is fragile and against issuer terms. The Promos tab reminds you where to look; MaxRewards Gold automates it commercially if you want that.
+- Radar completion is manual. It cannot verify issuer activation, enrollment, selection, or statement-credit usage.
 - No spend-cap tracking.
 - Location guessing is a guess — OpenStreetMap data quality varies by area.
 - Clearing Safari website data wipes your setup — keep a setup link as backup.
 
 ## Tech notes
 
-Single self-contained `index.html` (~no dependencies, no build step): vanilla JS, CSS custom properties with automatic dark mode, `localStorage` persistence with in-memory fallback, config export via base64 URL hash, `.ics` generation via data URL, geolocation + [Nominatim](https://nominatim.org/) reverse geocoding. Works from any static host.
+Single self-contained production `index.html` (no dependencies, no build step): vanilla JS, CSS custom properties with automatic dark mode, versioned `localStorage` persistence with verified in-memory fallback, allowlisted config export via base64 URL hash, private `.ics` Blob generation, browser-history Promos subviews, geolocation + [Nominatim](https://nominatim.org/) reverse geocoding. Works from any static host.
+
+Pure Radar date, migration, task-building, and calendar helpers are exposed through the internal `CardRouterRadar` namespace. Serve the repository locally and open `tests/radar-tests.html` to run the dependency-free test harness.
 
 ## Background
 

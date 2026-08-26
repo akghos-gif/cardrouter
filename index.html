@@ -94,11 +94,65 @@
   .sheet-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
   .empty{color:var(--muted); text-align:center; padding:22px 10px; font-size:14px; line-height:1.5}
   .toast{position:fixed; bottom:calc(84px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%);
-    background:var(--ink); color:var(--bg); padding:9px 16px; border-radius:99px; font-size:13px; opacity:0; transition:opacity .25s; pointer-events:none; z-index:60; max-width:88%; text-align:center}
-  .toast.show{opacity:.95}
+    background:var(--ink); color:var(--bg); padding:7px 9px 7px 16px; border-radius:99px; font-size:13px; opacity:0;
+    transition:opacity .2s ease-out; pointer-events:none; z-index:60; max-width:92%; text-align:center;
+    display:flex; align-items:center; gap:10px; box-shadow:0 8px 24px rgba(0,0,0,.24)}
+  .toast.show{opacity:.97; pointer-events:auto}
+  .toast button{border:0; border-radius:99px; background:var(--bg); color:var(--ink); min-height:36px; padding:0 12px;
+    font:inherit; font-weight:700; cursor:pointer}
   .tag{font-size:11px; color:var(--muted)}
   .quarter-banner{font-size:12.5px; color:var(--muted); margin:2px 4px 8px}
   a{color:var(--accent)}
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+    outline:3px solid color-mix(in srgb, var(--accent) 42%, transparent); outline-offset:2px}
+  .storage-warning{max-width:532px; margin:0 auto 10px; padding:10px 14px; border:1px solid var(--warn); border-radius:12px;
+    color:var(--ink); background:color-mix(in srgb, var(--warn) 8%, var(--card)); font-size:13px; line-height:1.4}
+  .storage-warning button{border:0; background:none; color:var(--accent); font:inherit; font-weight:700; padding:7px 4px; cursor:pointer}
+  .section-head{display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin:16px 4px 6px}
+  .section-head h2{margin:0}
+  .section-head .section-link{border:0; background:none; color:var(--accent); font:inherit; font-size:13px; font-weight:700;
+    padding:7px 2px; min-height:36px; cursor:pointer; white-space:nowrap}
+  .radar-summary{font-size:14px; line-height:1.4; margin:0 4px 9px}
+  .radar-summary strong{font-weight:750}
+  .action-list{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); margin:8px 0}
+  .action-row{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; padding:13px 14px;
+    border-bottom:1px solid var(--line)}
+  .action-row:last-child{border-bottom:0}
+  .action-row.completed{background:color-mix(in srgb, var(--good) 4%, var(--card))}
+  .action-title{font-size:14.5px; font-weight:680; line-height:1.3}
+  .action-meta{font-size:12.5px; color:var(--muted); line-height:1.4; margin-top:3px}
+  .action-meta.urgent{color:var(--warn); font-weight:750}
+  .action-links{display:flex; gap:13px; align-items:center; flex-wrap:wrap; margin-top:7px}
+  .action-links a, .action-links button{border:0; background:none; padding:4px 0; min-height:32px; color:var(--accent);
+    font:inherit; font-size:12.5px; font-weight:650; cursor:pointer; text-decoration:underline; text-underline-offset:2px}
+  .task-check{display:flex; align-items:center; gap:7px; max-width:138px; min-height:44px; font-size:12.5px; line-height:1.25;
+    font-weight:650; cursor:pointer}
+  .task-check input{flex:none; width:20px; height:20px}
+  .back-btn{border:0; background:none; color:var(--accent); min-height:44px; padding:4px 4px; margin:0 0 4px;
+    font:inherit; font-size:13.5px; font-weight:700; cursor:pointer}
+  .quiet-state{padding:17px 14px; color:var(--muted); font-size:13.5px; line-height:1.45}
+  .quiet-state a, .quiet-state button{font:inherit; font-weight:700; color:var(--accent)}
+  .disclosure{margin:14px 0 0; border-top:1px solid var(--line); padding-top:8px}
+  .disclosure > button{width:100%; display:flex; justify-content:space-between; align-items:center; border:0; background:none;
+    color:var(--muted); font:inherit; font-size:12.5px; font-weight:700; padding:10px 4px; min-height:44px; cursor:pointer}
+  .history-month{font-size:12px; color:var(--muted); font-weight:750; margin:13px 4px 5px; text-transform:uppercase; letter-spacing:.04em}
+  .history-row{display:flex; justify-content:space-between; gap:12px; padding:9px 4px; border-bottom:1px solid var(--line); font-size:12.5px}
+  .history-row:last-child{border-bottom:0}
+  .history-row .when{color:var(--muted); white-space:nowrap}
+  .progress-line{display:flex; align-items:center; justify-content:space-between; gap:12px; color:var(--muted); font-size:12.5px; margin:0 4px 7px}
+  .progress-line strong{color:var(--ink)}
+  .reminder-row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 0 2px}
+  .reminder-row .hint{margin:0}
+  .not-shown-list{border:1px solid var(--line); border-radius:12px; padding:0 12px; background:var(--card)}
+  @media (max-width:420px){
+    .action-row{grid-template-columns:1fr; gap:5px}
+    .task-check{max-width:none; width:max-content}
+    .action-links{margin-top:5px}
+    .reminder-row{align-items:flex-start; flex-direction:column}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *, *::before, *::after{scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important}
+  }
 </style>
 </head>
 <body>
@@ -135,9 +189,12 @@
   <div><div class="bname">ChooseMyCard</div><div class="btag">your rewards butler</div></div>
 </div>
 <header>
-  <h1 id="hdr">Which card?</h1>
+  <h1 id="hdr" tabindex="-1">Which card?</h1>
   <span class="sub" id="hdrsub"></span>
 </header>
+<div class="storage-warning" id="storageWarning" role="status" hidden>
+  Saved for this session only. Browser storage is unavailable. <button id="storageBackup">Copy setup link</button>
+</div>
 <main id="main"></main>
 
 <nav>
@@ -149,7 +206,9 @@
 </nav>
 
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
+  <span id="toastmsg"></span><button id="toastundo" hidden>Undo</button>
+</div>
 
 <script>
 'use strict';
@@ -321,14 +380,14 @@ const BENEFITS = {
     {cat:'lounges', name:'Priority Pass Select', value:'1,300+ lounges', enroll:true, note:'enroll via your Amex account'},
     {cat:'security', name:'CLEAR+ credit', value:'up to $209/yr', enroll:true, note:'covers CLEAR+ membership'},
     {cat:'security', name:'Global Entry / TSA PreCheck credit', value:'$120 every 4 yrs', enroll:false, note:'pay the application fee with the card'},
-    {cat:'travelcr', name:'Hotel credit (FHR / Hotel Collection)', value:'$300 semiannual ($600/yr)', enroll:true, note:'prepaid via Amex Travel'},
+    {id:'fhr_hotel_credit', cat:'travelcr', name:'Hotel credit (FHR / Hotel Collection)', value:'$300 semiannual ($600/yr)', enroll:false, note:'prepaid via Amex Travel'},
     {cat:'travelcr', name:'Airline fee credit', value:'$200/yr', enroll:true, note:'pick one airline; incidentals only'},
-    {cat:'diningcr', name:'Resy dining credit', value:'$100/qtr ($400/yr)', enroll:true, note:'participating Resy restaurants'},
-    {cat:'rideshare', name:'Uber Cash', value:'$15/mo (+$20 Dec)', enroll:true, note:'add card in Uber app'},
+    {id:'resy_dining_credit', cat:'diningcr', name:'Resy dining credit', value:'$100/qtr ($400/yr)', enroll:true, note:'participating Resy restaurants'},
+    {id:'uber_cash', cat:'rideshare', name:'Uber Cash', value:'$15/mo (+$20 Dec)', enroll:true, note:'add card in Uber app'},
     {cat:'rideshare', name:'Uber One membership credit', value:'$120/yr', enroll:true, note:'auto-renewing membership'},
-    {cat:'streamcr', name:'Digital entertainment credit', value:'$25/mo ($300/yr)', enroll:true, note:'Disney+, Hulu, YouTube TV, Peacock & more'},
+    {id:'digital_entertainment_credit', cat:'streamcr', name:'Digital entertainment credit', value:'$25/mo ($300/yr)', enroll:true, note:'Disney+, Hulu, YouTube TV, Peacock & more'},
     {cat:'fitness', name:'Equinox credit', value:'up to $300/yr', enroll:true, note:'club or Equinox+ digital'},
-    {cat:'fitness', name:'Lululemon credit', value:'$75/qtr ($300/yr)', enroll:true, note:'stores or lululemon.com'},
+    {id:'lululemon_credit', cat:'fitness', name:'Lululemon credit', value:'$75/qtr ($300/yr)', enroll:true, note:'stores or lululemon.com'},
     {cat:'fitness', name:'Oura Ring credit', value:'$200/yr', enroll:true, note:'ouraring.com'},
     {cat:'shopping', name:'Walmart+ membership', value:'~$155/yr', enroll:true, note:'covers monthly membership'},
     {cat:'status', name:'Marriott Bonvoy Gold + Hilton Honors Gold', value:'', enroll:true, note:'hotel elite status'},
@@ -340,17 +399,17 @@ const BENEFITS = {
     {cat:'security', name:'Global Entry / TSA PreCheck / NEXUS credit', value:'$120 every 4 yrs', enroll:false, note:'pay the fee with the card'},
     {cat:'travelcr', name:'Annual travel credit', value:'$300/yr', enroll:false, note:'auto — applies to nearly any travel'},
     {cat:'travelcr', name:'The Edit hotel credit', value:'$250 semiannual ($500/yr)', enroll:false, note:'prepaid 2+ night stays via Chase Travel'},
-    {cat:'diningcr', name:'Exclusive Tables dining credit', value:'$150 semiannual ($300/yr)', enroll:true, note:'book via OpenTable'},
+    {id:'exclusive_tables_credit', cat:'diningcr', name:'Exclusive Tables dining credit', value:'$150 semiannual ($300/yr)', enroll:true, note:'book via OpenTable'},
     {cat:'diningcr', name:'DoorDash promos + DashPass', value:'up to $300/yr + DashPass', enroll:true, note:'activate DashPass by 12/2027', link:'https://www.doordash.com/chase'},
     {cat:'rideshare', name:'Lyft credit', value:'$10/mo ($120/yr)', enroll:false, note:'thru 9/2027; plus 5x points on Lyft'},
     {cat:'streamcr', name:'Apple TV+ & Apple Music', value:'~$288/yr', enroll:true, note:'complimentary thru 6/2027; activate'},
-    {cat:'streamcr', name:'StubHub / viagogo credit', value:'$150 semiannual ($300/yr)', enroll:true, note:'one-time activation'},
-    {cat:'fitness', name:'Peloton credit', value:'$10/mo ($120/yr)', enroll:true, note:'one-time activation'},
+    {id:'stubhub_viagogo_credit', cat:'streamcr', name:'StubHub / viagogo credit', value:'$150 semiannual ($300/yr)', enroll:true, note:'activation required'},
+    {id:'peloton_credit', cat:'fitness', name:'Peloton credit', value:'$10/mo ($120/yr)', enroll:true, note:'activation required'},
     {cat:'protect', name:'Top-tier travel insurance + primary rental CDW, purchase protection', value:'', enroll:false, note:''},
   ],
   csp: [
     {cat:'travelcr', name:'Hotel credit', value:'$50/yr', enroll:false, note:'via Chase Travel bookings'},
-    {cat:'diningcr', name:'DashPass + DoorDash promo credit', value:'$10/mo promo', enroll:true, note:'activate by 12/2027', link:'https://www.doordash.com/chase'},
+    {id:'doordash_promo_credit', cat:'diningcr', name:'DashPass + DoorDash promo credit', value:'$10/mo promo', enroll:true, note:'activate by 12/2027', link:'https://www.doordash.com/en/dashpass/partner/chase/preferred'},
     {cat:'status', name:'10% anniversary points boost', value:'', enroll:false, note:'on your yearly spend'},
     {cat:'protect', name:'Primary rental CDW, trip delay/cancellation, purchase protection', value:'', enroll:false, note:''},
   ],
@@ -359,10 +418,10 @@ const BENEFITS = {
     {cat:'status', name:'No foreign transaction fees', value:'', enroll:false, note:''},
   ],
   amex_gold: [
-    {cat:'diningcr', name:'Dining credit (Grubhub, Cheesecake Factory & more)', value:'$10/mo ($120/yr)', enroll:true, note:''},
-    {cat:'diningcr', name:'Resy credit', value:'$50 semiannual ($100/yr)', enroll:true, note:''},
-    {cat:'diningcr', name:'Dunkin credit', value:'$7/mo ($84/yr)', enroll:true, note:''},
-    {cat:'rideshare', name:'Uber Cash', value:'$10/mo ($120/yr)', enroll:true, note:'add card in Uber app'},
+    {id:'dining_credit', cat:'diningcr', name:'Dining credit (Grubhub, Cheesecake Factory & more)', value:'$10/mo ($120/yr)', enroll:true, note:''},
+    {id:'resy_credit', cat:'diningcr', name:'Resy credit', value:'$50 semiannual ($100/yr)', enroll:true, note:''},
+    {id:'dunkin_credit', cat:'diningcr', name:'Dunkin credit', value:'$7/mo ($84/yr)', enroll:true, note:''},
+    {id:'uber_cash', cat:'rideshare', name:'Uber Cash', value:'$10/mo ($120/yr)', enroll:true, note:'add card in Uber app'},
     {cat:'protect', name:'Purchase protection, extended warranty', value:'', enroll:false, note:''},
   ],
   venture_x: [
@@ -377,23 +436,23 @@ const BENEFITS = {
     {cat:'lounges', name:'Centurion Lounges + Delta Sky Club + Priority Pass', value:'1,550+ lounges', enroll:true, note:'Priority Pass needs enrollment; Sky Club when flying Delta'},
     {cat:'security', name:'CLEAR+ credit', value:'$209/yr', enroll:true, note:''},
     {cat:'security', name:'Global Entry / TSA PreCheck credit', value:'$120 every 4 yrs', enroll:false, note:'pay the fee with the card'},
-    {cat:'travelcr', name:'Hotel credit (FHR / Hotel Collection)', value:'$300 semiannual ($600/yr)', enroll:true, note:'prepaid via Amex Travel'},
+    {id:'fhr_hotel_credit', cat:'travelcr', name:'Hotel credit (FHR / Hotel Collection)', value:'$300 semiannual ($600/yr)', enroll:false, note:'prepaid via Amex Travel'},
     {cat:'travelcr', name:'Airline fee credit', value:'$200/yr', enroll:true, note:'pick one airline; incidentals only'},
     {cat:'shopping', name:'Dell Technologies credit', value:'up to $1,150/yr', enroll:true, note:'$150 base + $1,000 after $5k Dell spend'},
     {cat:'shopping', name:'ChatGPT Business credit', value:'$300/yr', enroll:true, note:''},
     {cat:'shopping', name:'Adobe credit', value:'$250/yr', enroll:true, note:'after $600 Adobe spend'},
-    {cat:'shopping', name:'Indeed credit', value:'$90/qtr ($360/yr)', enroll:true, note:''},
-    {cat:'shopping', name:'Wireless service credit', value:'$10/mo ($120/yr)', enroll:true, note:''},
+    {id:'indeed_credit', cat:'shopping', name:'Indeed credit', value:'$90/qtr ($360/yr)', enroll:true, note:''},
+    {id:'wireless_service_credit', cat:'shopping', name:'Wireless service credit', value:'$10/mo ($120/yr)', enroll:true, note:''},
     {cat:'status', name:'Marriott/Hilton Gold + Hilton for Business credit', value:'$200/yr', enroll:true, note:''},
     {cat:'protect', name:'Trip protections, purchase protection, extended warranty', value:'', enroll:false, note:''},
   ],
   biz_gold: [
-    {cat:'shopping', name:'Flexible business credit (FedEx, Grubhub, office supply)', value:'$20/mo ($240/yr)', enroll:true, note:''},
+    {id:'flexible_business_credit', cat:'shopping', name:'Flexible business credit (FedEx, Grubhub, office supply)', value:'$20/mo ($240/yr)', enroll:true, note:'FedEx eligibility ends 10/1/2026; other eligible partners continue'},
     {cat:'shopping', name:'Walmart+ membership', value:'~$155/yr', enroll:true, note:''},
     {cat:'protect', name:'Purchase protection, extended warranty', value:'', enroll:false, note:''},
   ],
   bcp: [
-    {cat:'streamcr', name:'Disney Bundle credit', value:'$7/mo ($84/yr)', enroll:true, note:'with $9.99+ Disney Bundle subscription'},
+    {id:'disney_bundle_credit', cat:'streamcr', name:'Disney streaming credit', value:'$10/mo ($120/yr)', enroll:true, note:'eligible Disney+, Hulu, and ESPN subscriptions'},
     {cat:'protect', name:'Purchase protection, return protection', value:'', enroll:false, note:''},
   ],
   freedom_flex: [
@@ -450,28 +509,227 @@ const ACTIVATION_LINKS = {
   discover_it:'https://www.discover.com/credit-cards/cash-back/5-percent.html',
 };
 
+/* Radar v1 uses only issuer-verified, calendar-aligned actions. */
+const RADAR_CATALOG_VERSION = '2026-08-26';
+const QUARTERLY_ACTIONS = [
+  {cardId:'freedom_flex', id:'freedom_flex_5x', actionType:'activate', name:'Freedom Flex categories',
+    link:ACTIVATION_LINKS.freedom_flex, externalLabel:'Activate on Chase', nonRetroactive:false, affectsRanking:true},
+  {cardId:'discover_it', id:'discover_5pct', actionType:'activate', name:'Discover categories',
+    link:ACTIVATION_LINKS.discover_it, externalLabel:'Activate on Discover', nonRetroactive:true, affectsRanking:true},
+  {cardId:'usb_cashplus', id:'usb_cashplus_categories', actionType:'select', name:'Cash+ categories',
+    link:'https://cashplus.usbank.com/?redirect=cashplus', externalLabel:'Choose categories', nonRetroactive:true, affectsRanking:false},
+];
+const RADAR_BENEFITS = [
+  {cardId:'amex_plat', benefitId:'fhr_hotel_credit', cadence:'half', amount:'$300', requiresEnrollment:false,
+    link:'https://www.americanexpress.com/en-us/account/get-started/platinum/benefits-overview'},
+  {cardId:'amex_plat', benefitId:'resy_dining_credit', cadence:'quarter', amount:'$100', requiresEnrollment:true,
+    link:'https://www.americanexpress.com/en-us/account/get-started/platinum/lifestyle-benefits'},
+  {cardId:'amex_plat', benefitId:'uber_cash', cadence:'month', amount:'$15', decemberAmount:'$35', requiresEnrollment:true,
+    link:'https://www.americanexpress.com/en-us/account/get-started/platinum/benefits-overview'},
+  {cardId:'amex_plat', benefitId:'digital_entertainment_credit', cadence:'month', amount:'$25', requiresEnrollment:true,
+    link:'https://www.americanexpress.com/en-us/account/get-started/platinum/benefits-overview'},
+  {cardId:'amex_plat', benefitId:'lululemon_credit', cadence:'quarter', amount:'$75', requiresEnrollment:true,
+    link:'https://www.americanexpress.com/en-us/account/get-started/platinum/benefits-overview'},
+  {cardId:'csr', benefitId:'exclusive_tables_credit', cadence:'half', amount:'$150', requiresEnrollment:true,
+    link:'https://www.chase.com/personal/credit-cards/education/basics/how-to-use-dining-credit-chase-sapphire-reserve-exclusive-tables'},
+  {cardId:'csr', benefitId:'stubhub_viagogo_credit', cadence:'half', amount:'$150', requiresEnrollment:true,
+    link:'https://www.chase.com/personal/credit-cards/education/rewards-benefits/how-to-use-the-%24300-stubhub-credit-with-chase-sapphire-reserve'},
+  {cardId:'csr', benefitId:'peloton_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
+    link:'https://www.chase.com/personal/credit-cards/education/rewards-benefits/how-to-earn-10x-points-on-peloton-with-chase-sapphire-reserve'},
+  {cardId:'csp', benefitId:'doordash_promo_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
+    link:'https://www.doordash.com/en/dashpass/partner/chase/preferred'},
+  {cardId:'amex_gold', benefitId:'dining_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
+    link:'https://www.americanexpress.com/en-us/account/get-started/gold/explore-benefits'},
+  {cardId:'amex_gold', benefitId:'resy_credit', cadence:'half', amount:'$50', requiresEnrollment:true,
+    link:'https://global.americanexpress.com/card-benefits/detail/resy-credit/gold'},
+  {cardId:'amex_gold', benefitId:'dunkin_credit', cadence:'month', amount:'$7', requiresEnrollment:true,
+    link:'https://www.americanexpress.com/en-us/account/get-started/gold/explore-benefits'},
+  {cardId:'amex_gold', benefitId:'uber_cash', cadence:'month', amount:'$10', requiresEnrollment:true,
+    link:'https://www.americanexpress.com/en-us/account/get-started/gold/explore-benefits'},
+  {cardId:'biz_plat', benefitId:'fhr_hotel_credit', cadence:'half', amount:'$300', requiresEnrollment:false,
+    link:'https://global.americanexpress.com/card-benefits/detail/hotel-credit/business-platinum'},
+  {cardId:'biz_plat', benefitId:'indeed_credit', cadence:'quarter', amount:'$90', requiresEnrollment:true,
+    link:'https://global.americanexpress.com/card-benefits/detail/indeed-benefit/business-platinum'},
+  {cardId:'biz_plat', benefitId:'wireless_service_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
+    link:'https://global.americanexpress.com/card-benefits/detail/wireless-credit/business-platinum'},
+  {cardId:'biz_gold', benefitId:'flexible_business_credit', cadence:'month', amount:'$20', requiresEnrollment:true,
+    link:'https://global.americanexpress.com/card-benefits/detail/240-flexible-business-credit/business-gold'},
+  {cardId:'bcp', benefitId:'disney_bundle_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
+    link:'https://global.americanexpress.com/card-benefits/detail/disney-streaming-credit/blue-cash-preferred'},
+].map(x=>({...x, sourceVerifiedAt:RADAR_CATALOG_VERSION}));
+const RADAR_BENEFIT_MAP = Object.fromEntries(RADAR_BENEFITS.map(x=>[x.cardId+':'+x.benefitId,x]));
+
 /* ---------- state ---------- */
 /* Each device keeps its own setup (browser storage). A setup link (#hash) preloads a lineup. */
-const DEFAULT_STATE = { myCards:[], overrides:{}, cpp:{}, activations:{}, custom:[] };
-let mem = null;
-function loadState(){
-  try{
-    if(location.hash.length>2){
-      const s = JSON.parse(decodeURIComponent(atob(location.hash.slice(1))));
-      if(s && s.myCards){ saveState(s); history.replaceState(null,'',location.pathname+location.search); return s; }
-    }
-  }catch(e){}
-  try{ const raw = localStorage.getItem('cardrouter'); if(raw) return {...structuredClone(DEFAULT_STATE), ...JSON.parse(raw)}; }catch(e){}
-  return mem ? mem : structuredClone(DEFAULT_STATE);
+const DEFAULT_STATE = {schemaVersion:2, myCards:[], overrides:{}, cpp:{}, custom:[], enrollments:{}, completions:{}, radarHidden:{}, radarSkips:{}};
+const IDENT_RE = /^[A-Za-z0-9_-]{1,64}$/;
+const PERIOD_RE = /^\d{4}-(?:\d{2}|Q[1-4]|H[12])$/;
+let mem = null, storagePersistent = true, startupNotice = '';
+
+function plainObject(v){ return !!v && typeof v==='object' && !Array.isArray(v); }
+function cleanText(v,max){ return typeof v==='string' ? v.slice(0,max||200) : ''; }
+function cleanId(v){ return typeof v==='string' && IDENT_RE.test(v) ? v : ''; }
+function validIso(v){ if(typeof v!=='string') return false; const d=new Date(v); return !isNaN(d) && d.toISOString()===v; }
+function recordsOf(v){ return Array.isArray(v) ? v : plainObject(v) ? Object.values(v) : []; }
+function canonicalEnrollmentKey(cardId,benefitId){ return `enroll:${cardId}:${benefitId}`; }
+function canonicalTaskKey(kind,cardId,itemId,periodKey){ return `${kind}:${cardId}:${itemId}:${periodKey}`; }
+function canonicalHiddenKey(cardId,benefitId){ return `${cardId}:${benefitId}`; }
+function localDay(d){ return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+function calendarDays(a,b){ return Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate())-Date.UTC(a.getFullYear(),a.getMonth(),a.getDate()))/86400000); }
+function minusCalendarMonths(date,months){
+  const targetMonth=date.getMonth()-months, last=new Date(date.getFullYear(),targetMonth+1,0).getDate();
+  return new Date(date.getFullYear(),targetMonth,Math.min(date.getDate(),last));
 }
-function saveState(s){ mem = s; try{ localStorage.setItem('cardrouter', JSON.stringify(s)); }catch(e){} }
+function periodInfo(cadence,now){
+  const d=localDay(now), y=d.getFullYear(), m=d.getMonth();
+  if(cadence==='month') return {key:`${y}-${String(m+1).padStart(2,'0')}`, start:new Date(y,m,1), end:new Date(y,m+1,1)};
+  if(cadence==='quarter'){ const q=Math.floor(m/3); return {key:`${y}-Q${q+1}`, start:new Date(y,q*3,1), end:new Date(y,q*3+3,1)}; }
+  const h=m<6?0:1; return {key:`${y}-H${h+1}`, start:new Date(y,h*6,1), end:new Date(y,h*6+6,1)};
+}
+function periodEndFromKey(key){
+  let m=String(key).match(/^(\d{4})-(\d{2})$/); if(m) return new Date(+m[1],+m[2],1);
+  m=String(key).match(/^(\d{4})-Q([1-4])$/); if(m) return new Date(+m[1],+m[2]*3,1);
+  m=String(key).match(/^(\d{4})-H([12])$/); if(m) return new Date(+m[1],+m[2]*6,1);
+  return null;
+}
+function recordWithinHistory(record,now){
+  const cutoff=minusCalendarMonths(localDay(now),24);
+  if(record.completedAt){ const d=new Date(record.completedAt); return !isNaN(d) && localDay(d)>=cutoff; }
+  const end=periodEndFromKey(record.periodKey); return !!end && end>=cutoff;
+}
+function sanitizeRates(raw){
+  const out={}; if(!plainObject(raw)) return out;
+  for(const [cat,r] of Object.entries(raw)){
+    if(!CAT[cat] && cat!=='other') continue;
+    if(!plainObject(r) || !Number.isFinite(Number(r.v)) || !['x','%'].includes(r.u)) continue;
+    out[cat]={v:Number(r.v),u:r.u};
+    if(typeof r.note==='string') out[cat].note=cleanText(r.note,500);
+    if(typeof r.cap==='string') out[cat].cap=cleanText(r.cap,500);
+  }
+  return out;
+}
+function normalizeState(raw,now=new Date(),options={}){
+  raw=plainObject(raw)?raw:{};
+  const out=structuredClone(DEFAULT_STATE);
+  out.coachDone=!!raw.coachDone;
+  out.myCards=Array.isArray(raw.myCards)?raw.myCards.slice(0,50).map(cleanId).filter(Boolean):[];
+  out.cpp={};
+  if(plainObject(raw.cpp)) for(const [k,v] of Object.entries(raw.cpp).slice(0,25)) if(cleanId(k)&&Number.isFinite(Number(v))&&Number(v)>0) out.cpp[k]=Number(v);
+  out.custom=Array.isArray(raw.custom)?raw.custom.slice(0,25).map(c=>{
+    if(!plainObject(c)) return null; const id=cleanId(c.id), name=cleanText(c.name,120), program=cleanId(c.program);
+    if(!id||!name||!PROGRAMS[program]) return null;
+    return {id,name,issuer:cleanText(c.issuer||'Custom',120),program,rates:sanitizeRates(c.rates),notes:cleanText(c.notes,500)};
+  }).filter(Boolean):[];
+  const knownIds=new Set([...CARD_DB.map(c=>c.id),...out.custom.map(c=>c.id)]);
+  out.myCards=[...new Set(out.myCards.filter(id=>knownIds.has(id)))];
+  out.overrides={};
+  if(plainObject(raw.overrides)) for(const [cardId,rates] of Object.entries(raw.overrides).slice(0,50)) if(cleanId(cardId)) out.overrides[cardId]=sanitizeRates(rates);
+
+  for(const r of recordsOf(raw.enrollments).slice(0,500)){
+    if(!plainObject(r)) continue; const cardId=cleanId(r.cardId), benefitId=cleanId(r.benefitId);
+    if(!cardId||!benefitId||!validIso(r.enrolledAt)) continue;
+    const key=canonicalEnrollmentKey(cardId,benefitId), card=CARD_DB.find(c=>c.id===cardId), benefit=(BENEFITS[cardId]||[]).find(b=>b.id===benefitId);
+    out.enrollments[key]={cardId,benefitId,enrolledAt:r.enrolledAt,
+      labelSnapshot:options.fromImport?cleanText(benefit&&benefit.name,120):cleanText(r.labelSnapshot||(benefit&&benefit.name),120),
+      cardNameSnapshot:options.fromImport?cleanText(card&&card.name,120):cleanText(r.cardNameSnapshot||(card&&card.name),120)};
+  }
+  for(const r of recordsOf(raw.completions).slice(0,500)){
+    if(!plainObject(r)||!['activate','select','use'].includes(r.actionType)) continue;
+    const cardId=cleanId(r.cardId), itemId=cleanId(r.itemId||r.benefitId||r.quarterlyActionId), periodKey=typeof r.periodKey==='string'&&PERIOD_RE.test(r.periodKey)?r.periodKey:'';
+    const completedAt=r.completedAt===null?null:(validIso(r.completedAt)?r.completedAt:'');
+    if(!cardId||!itemId||!periodKey||completedAt==='') continue;
+    const rec={actionType:r.actionType,cardId,itemId,periodKey,completedAt,
+      labelSnapshot:options.fromImport?'':cleanText(r.labelSnapshot,120),cardNameSnapshot:options.fromImport?'':cleanText(r.cardNameSnapshot,120)};
+    if(recordWithinHistory(rec,now)) out.completions[canonicalTaskKey(r.actionType,cardId,itemId,periodKey)]=rec;
+  }
+  for(const r of recordsOf(raw.radarHidden).slice(0,500)){
+    if(!plainObject(r)) continue; const cardId=cleanId(r.cardId), benefitId=cleanId(r.benefitId);
+    if(cardId&&benefitId&&validIso(r.hiddenAt)) out.radarHidden[canonicalHiddenKey(cardId,benefitId)]={cardId,benefitId,hiddenAt:r.hiddenAt};
+  }
+  for(const r of recordsOf(raw.radarSkips).slice(0,500)){
+    if(!plainObject(r)||!['activate','select','use','enroll-task'].includes(r.taskKind)) continue;
+    const cardId=cleanId(r.cardId), itemId=cleanId(r.itemId), periodKey=typeof r.periodKey==='string'&&PERIOD_RE.test(r.periodKey)?r.periodKey:'';
+    if(!cardId||!itemId||!periodKey||!validIso(r.skippedAt)||!validIso(r.expiresAt)||new Date(r.expiresAt)<=now) continue;
+    out.radarSkips[canonicalTaskKey(r.taskKind,cardId,itemId,periodKey)]={taskKind:r.taskKind,cardId,itemId,periodKey,skippedAt:r.skippedAt,expiresAt:r.expiresAt};
+  }
+  if(plainObject(raw.activations)) for(const [legacyKey,value] of Object.entries(raw.activations)){
+    if(!value) continue; const m=legacyKey.match(/^(\d{4}-Q[1-4]):(freedom_flex|discover_it)$/); if(!m) continue;
+    const cardId=m[2], action=QUARTERLY_ACTIONS.find(a=>a.cardId===cardId), key=canonicalTaskKey('activate',cardId,action.id,m[1]);
+    if(!out.completions[key]){
+      const card=CARD_DB.find(c=>c.id===cardId), rec={actionType:'activate',cardId,itemId:action.id,periodKey:m[1],completedAt:null,labelSnapshot:action.name,cardNameSnapshot:card.name};
+      if(recordWithinHistory(rec,now)) out.completions[key]=rec;
+    }
+  }
+  return out;
+}
+function inspectImportValue(v,depth,counter){
+  if(depth>8) throw new Error('Setup link is too deeply nested');
+  if(typeof v==='string' && v.length>500) throw new Error('Setup link contains oversized text');
+  if(!v||typeof v!=='object') return;
+  for(const key of Object.keys(v)){
+    counter.n++; if(counter.n>2000) throw new Error('Setup link contains too many fields');
+    if(['__proto__','prototype','constructor'].includes(key)) throw new Error('Setup link contains unsafe fields');
+    if(/^(url|link|href)$/i.test(key)) throw new Error('Setup links cannot provide external URLs');
+    const val=v[key];
+    if(/(?:At|expiresAt)$/.test(key)&&val!==null&&typeof val==='string'&&!validIso(val)) throw new Error('Setup link contains an invalid timestamp');
+    inspectImportValue(val,depth+1,counter);
+  }
+}
+function validateImportPayload(raw,encodedLength,decodedBytes){
+  if(encodedLength>32768||decodedBytes>24576) throw new Error('Setup link is too large');
+  if(!plainObject(raw)||Number(raw.schemaVersion||1)>2) throw new Error('Setup link version is not supported');
+  inspectImportValue(raw,0,{n:0});
+  if((raw.myCards||[]).length>50||(raw.custom||[]).length>25) throw new Error('Setup link contains too many cards');
+  if(plainObject(raw.overrides)&&Object.keys(raw.overrides).length>50) throw new Error('Setup link contains too many overrides');
+  if(plainObject(raw.cpp)&&Object.keys(raw.cpp).length>25) throw new Error('Setup link contains too many valuations');
+  const recordCount=['enrollments','completions','radarHidden','radarSkips'].reduce((n,k)=>n+recordsOf(raw[k]).length,0);
+  if(recordCount>500) throw new Error('Setup link contains too many activity records');
+}
+function stateHasData(s){
+  return s.myCards.length||s.custom.length||Object.keys(s.overrides).length||Object.keys(s.cpp).length||
+    Object.keys(s.enrollments).length||Object.keys(s.completions).length||Object.keys(s.radarHidden).length||Object.keys(s.radarSkips).length;
+}
+function stripSetupHash(){ history.replaceState(history.state,'',location.pathname+location.search); }
+function loadState(){
+  let local=structuredClone(DEFAULT_STATE);
+  try{ const raw=localStorage.getItem('cardrouter'); if(raw) local=normalizeState(JSON.parse(raw)); }catch(e){ storagePersistent=false; }
+  if(location.hash.length>1){
+    const encoded=location.hash.slice(1); stripSetupHash();
+    try{
+      if(encoded.length>32768) throw new Error('Setup link is too large');
+      const decoded=decodeURIComponent(atob(encoded)), bytes=new TextEncoder().encode(decoded).length, raw=JSON.parse(decoded);
+      validateImportPayload(raw,encoded.length,bytes);
+      const imported=normalizeState(raw,new Date(),{fromImport:true});
+      if(stateHasData(local)&&!confirm('Replace this device\'s cards, settings, enrollments, and current checkmarks with the setup link?')){
+        startupNotice='Setup import canceled'; return local;
+      }
+      startupNotice='Setup imported'; return imported;
+    }catch(e){ startupNotice=e.message||'Setup link could not be imported'; }
+  }
+  return local;
+}
+function updateStorageWarning(){
+  const el=document.getElementById('storageWarning'); if(!el) return; el.hidden=storagePersistent;
+}
+function saveState(s){
+  const normalized=normalizeState(s); S=normalized; mem=normalized;
+  try{
+    const json=JSON.stringify(normalized); localStorage.setItem('cardrouter',json);
+    if(localStorage.getItem('cardrouter')!==json) throw new Error('Storage verification failed');
+    storagePersistent=true;
+  }catch(e){ storagePersistent=false; }
+  updateStorageWarning(); return normalized;
+}
 let S = loadState();
+saveState(S);
 
 /* ---------- helpers ---------- */
-function currentQuarter(){ const d=new Date(); return d.getFullYear()+'-Q'+(Math.floor(d.getMonth()/3)+1); }
-function quarterEndsInDays(){ const d=new Date(); const q=Math.floor(d.getMonth()/3); const end=new Date(d.getFullYear(), q*3+3, 1); return Math.ceil((end-d)/86400000); }
-function allCards(){ return [...CARD_DB, ...S.custom]; }
-function getCard(id){ return allCards().find(c=>c.id===id); }
+function currentQuarter(now=new Date()){ return periodInfo('quarter',now).key; }
+function quarterEndsInDays(now=new Date()){ const p=periodInfo('quarter',now); return calendarDays(localDay(now),p.end); }
+function allCardsFor(state){ return [...CARD_DB,...state.custom]; }
+function getCardFor(id,state){ return allCardsFor(state).find(c=>c.id===id); }
+function allCards(){ return allCardsFor(S); }
+function getCard(id){ return getCardFor(id,S); }
 function cardRates(card){
   const o = S.overrides[card.id]||{};
   const merged = {};
@@ -481,7 +739,24 @@ function cardRates(card){
 }
 function cpp(card){ const p = S.cpp[card.program]; return (p!=null?p:PROGRAMS[card.program].cpp); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function toast(msg,ms){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),ms||2600); }
+let pendingUndo=null;
+function toast(msg,ms,undoFn){
+  const t=document.getElementById('toast'), text=document.getElementById('toastmsg'), undo=document.getElementById('toastundo');
+  text.textContent=msg; pendingUndo=undoFn||null; undo.hidden=!undoFn; t.classList.add('show'); clearTimeout(t._h);
+  undo.onclick=()=>{ if(!pendingUndo) return; const fn=pendingUndo; pendingUndo=null; undo.hidden=true; fn(); };
+  t._h=setTimeout(()=>{pendingUndo=null; undo.hidden=true; t.classList.remove('show');},ms||2600);
+}
+function mutateWithUndo(message,mutator,focusId){
+  const before=structuredClone(S); mutator(); saveState(S); render(); restoreFocus(focusId);
+  toast(message,5000,()=>{ S=before; saveState(S); render(); restoreFocus(focusId); toast('Change undone'); });
+}
+function restoreFocus(focusId){
+  requestAnimationFrame(()=>{
+    const exact=focusId&&document.querySelector(`[data-focus-id="${focusId}"]`);
+    const fallback=document.getElementById('radar-view-all')||document.querySelector('main button, main a');
+    (exact||fallback)?.focus({preventScroll:true});
+  });
+}
 /* One-time coach mark: after the first card is added, point at the "Which card?" tab. */
 function coachWhichTab(){
   if(S.coachDone) return;
@@ -490,6 +765,132 @@ function coachWhichTab(){
   if(b){ b.classList.add('pulse'); setTimeout(()=>b.classList.remove('pulse'), 4200); }
   toast('Card added! Tap 💳 "Which card?" below to get recommendations', 4200);
 }
+
+/* ---------- Radar task engine ---------- */
+function benefitById(cardId,benefitId){ return (BENEFITS[cardId]||[]).find(b=>b.id===benefitId); }
+function quarterlyActionForCard(cardId){ return QUARTERLY_ACTIONS.find(a=>a.cardId===cardId); }
+function displayDate(value){
+  if(!value) return ''; const d=value instanceof Date?value:new Date(value); if(isNaN(d)) return '';
+  return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+}
+function completionFor(kind,cardId,itemId,periodKey,state=S){ return state.completions[canonicalTaskKey(kind,cardId,itemId,periodKey)]||null; }
+function enrollmentFor(cardId,benefitId,state=S){ return state.enrollments[canonicalEnrollmentKey(cardId,benefitId)]||null; }
+function benefitAmount(meta,now){ return meta.decemberAmount&&now.getMonth()===11?meta.decemberAmount:meta.amount; }
+function completedLabel(task){
+  const verb=task.actionType==='activate'?'Activated':task.actionType==='select'?'Selected':'Used';
+  return task.completedAt?`${verb} ${displayDate(task.completedAt)}`:verb;
+}
+function taskRetentionVisible(task,now){
+  if(!task.done) return true;
+  if(!task.completedAt) return now<task.end;
+  const after30=new Date(task.completedAt); after30.setDate(after30.getDate()+30);
+  return now<(after30<task.end?after30:task.end);
+}
+function buildQuarterlyTasks(now=new Date(),state=S){
+  const period=periodInfo('quarter',now), rot=ROTATING[period.key];
+  return QUARTERLY_ACTIONS.filter(a=>state.myCards.includes(a.cardId)).map(a=>{
+    const card=getCardFor(a.cardId,state), key=canonicalTaskKey(a.actionType,a.cardId,a.id,period.key), record=state.completions[key]||null;
+    const info=rot&&rot[a.cardId], unavailable=a.cardId!=='usb_cashplus'&&!info;
+    const detail=a.cardId==='usb_cashplus'?'Choose two 5% categories and one 2% category':
+      info?`5%: ${info.label}`:'Current-quarter categories unavailable. Check the issuer.';
+    return {key,kind:a.actionType,actionType:a.actionType,itemId:a.id,periodKey:period.key,end:period.end,card,title:a.name,
+      detail,unavailable,link:a.link,externalLabel:a.externalLabel,nonRetroactive:a.nonRetroactive,affectsRanking:a.affectsRanking,
+      done:!!record,completedAt:record&&record.completedAt,group:'act',daysLeft:Math.max(0,calendarDays(localDay(now),period.end)-1),
+      markLabel:a.actionType==='select'?'Mark selected':'Mark activated'};
+  });
+}
+function buildBenefitTasks(now=new Date(),state=S){
+  const cardOrder=new Map(state.myCards.map((id,i)=>[id,i]));
+  return RADAR_BENEFITS.filter(meta=>state.myCards.includes(meta.cardId)).map(meta=>{
+    const card=getCardFor(meta.cardId,state), benefit=benefitById(meta.cardId,meta.benefitId), period=periodInfo(meta.cadence,now);
+    if(!card||!benefit) return null;
+    const enrolled=enrollmentFor(meta.cardId,meta.benefitId,state), needsEnrollment=meta.requiresEnrollment&&!enrolled;
+    const kind=needsEnrollment?'enroll-task':'use', key=canonicalTaskKey(kind,meta.cardId,meta.benefitId,period.key);
+    const record=kind==='use'?state.completions[key]:null, daysLeft=Math.max(0,calendarDays(localDay(now),period.end)-1);
+    return {key,kind,actionType:kind==='use'?'use':'enroll',itemId:meta.benefitId,benefitId:meta.benefitId,periodKey:period.key,
+      end:period.end,card,benefit,meta,title:benefit.name,amount:benefitAmount(meta,now),detail:benefit.value,
+      link:meta.link,externalLabel:needsEnrollment?'Enroll':'Open benefit',done:!!record,completedAt:record&&record.completedAt,
+      enrolled,group:daysLeft<=30?'soon':'later',daysLeft,markLabel:needsEnrollment?'Mark enrolled':'Mark used',
+      hidden:!!state.radarHidden[canonicalHiddenKey(meta.cardId,meta.benefitId)],skipped:!!state.radarSkips[key],
+      cardOrder:cardOrder.get(meta.cardId)||0};
+  }).filter(Boolean);
+}
+function compareRadarTasks(a,b,state=S){
+  return Number(a.done)-Number(b.done)||Number(!!b.nonRetroactive)-Number(!!a.nonRetroactive)||a.daysLeft-b.daysLeft||
+    state.myCards.indexOf(a.card.id)-state.myCards.indexOf(b.card.id)||a.title.localeCompare(b.title)||a.key.localeCompare(b.key);
+}
+function buildRadarTasks(now=new Date(),state=S){
+  const all=[...buildQuarterlyTasks(now,state),...buildBenefitTasks(now,state)].sort((a,b)=>compareRadarTasks(a,b,state));
+  const suppressed=all.filter(t=>t.hidden||t.skipped);
+  const active=all.filter(t=>!t.hidden&&!t.skipped&&taskRetentionVisible(t,now));
+  return {all,active,suppressed,unresolved:active.filter(t=>!t.done)};
+}
+function taskSummary(task){
+  if(!task) return '';
+  if(task.actionType==='activate') return `${task.title} need activation.${task.nonRetroactive?' Not retroactive.':''}`;
+  if(task.actionType==='select') return `${task.title} need selection.${task.nonRetroactive?' Not retroactive.':''}`;
+  if(task.actionType==='enroll') return `${task.card.name} ${task.title.toLowerCase()} needs enrollment.`;
+  return `Your ${task.amount} ${task.title.toLowerCase()} expires ${task.daysLeft===0?'today':`in ${task.daysLeft} days`}.`;
+}
+function completionRecordForTask(task){
+  return {actionType:task.actionType,cardId:task.card.id,itemId:task.itemId,periodKey:task.periodKey,completedAt:new Date().toISOString(),
+    labelSnapshot:task.title,cardNameSnapshot:task.card.name};
+}
+function setTaskChecked(task,checked,focusId){
+  const message=checked?(task.actionType==='activate'?'Marked activated':task.actionType==='select'?'Marked selected':task.actionType==='enroll'?'Marked enrolled':'Marked used'):'Marked incomplete';
+  mutateWithUndo(message,()=>{
+    if(task.actionType==='enroll'){
+      const key=canonicalEnrollmentKey(task.card.id,task.benefitId);
+      if(checked){ S.enrollments[key]={cardId:task.card.id,benefitId:task.benefitId,enrolledAt:new Date().toISOString(),labelSnapshot:task.title,cardNameSnapshot:task.card.name}; delete S.radarSkips[task.key]; }
+      else delete S.enrollments[key];
+    }else if(checked) S.completions[task.key]=completionRecordForTask(task);
+    else delete S.completions[task.key];
+  },focusId||task.key);
+}
+function setBenefitEnrollment(cardId,benefitId,checked,focusId){
+  const benefit=benefitById(cardId,benefitId), card=getCard(cardId), key=canonicalEnrollmentKey(cardId,benefitId);
+  mutateWithUndo(checked?'Marked enrolled':'Enrollment removed',()=>{
+    if(checked){
+      S.enrollments[key]={cardId,benefitId,enrolledAt:new Date().toISOString(),labelSnapshot:benefit.name,cardNameSnapshot:card.name};
+      const p=periodInfo(RADAR_BENEFIT_MAP[cardId+':'+benefitId].cadence,new Date());
+      delete S.radarSkips[canonicalTaskKey('enroll-task',cardId,benefitId,p.key)];
+    }else delete S.enrollments[key];
+  },focusId);
+}
+function skipTask(task){
+  mutateWithUndo('Skipped this period. Restore it under Not shown in Radar.',()=>{
+    S.radarSkips[task.key]={taskKind:task.kind,cardId:task.card.id,itemId:task.itemId,periodKey:task.periodKey,
+      skippedAt:new Date().toISOString(),expiresAt:task.end.toISOString()};
+  },'not-shown-toggle');
+}
+function unskipTask(task){ mutateWithUndo('Restored to Radar',()=>{delete S.radarSkips[task.key];},task.key); }
+function hideBenefitTask(task){
+  const key=canonicalHiddenKey(task.card.id,task.benefitId);
+  mutateWithUndo('Hidden from Radar. Restore it under Not shown in Radar.',()=>{
+    S.radarHidden[key]={cardId:task.card.id,benefitId:task.benefitId,hiddenAt:new Date().toISOString()};
+  },'not-shown-toggle');
+}
+function restoreBenefit(cardId,benefitId,focusId){
+  mutateWithUndo('Restored to Radar',()=>{delete S.radarHidden[canonicalHiddenKey(cardId,benefitId)];},focusId);
+}
+function completionHistory(now=new Date()){
+  const cutoff=minusCalendarMonths(localDay(now),24), events=[];
+  for(const r of Object.values(S.completions)){
+    const action=QUARTERLY_ACTIONS.find(a=>a.id===r.itemId), benefit=benefitById(r.cardId,r.itemId), card=getCard(r.cardId);
+    const verb=r.actionType==='activate'?'Activated':r.actionType==='select'?'Selected':'Used';
+    events.push({at:r.completedAt,sortAt:r.completedAt||periodEndFromKey(r.periodKey),label:`${verb}: ${action?action.name:benefit?benefit.name:r.labelSnapshot}`,
+      cardName:card?card.name:r.cardNameSnapshot,undated:!r.completedAt});
+  }
+  for(const r of Object.values(S.enrollments)){
+    const d=new Date(r.enrolledAt); if(localDay(d)<cutoff) continue;
+    const benefit=benefitById(r.cardId,r.benefitId), card=getCard(r.cardId);
+    events.push({at:r.enrolledAt,sortAt:d,label:`Enrolled: ${benefit?benefit.name:r.labelSnapshot}`,cardName:card?card.name:r.cardNameSnapshot});
+  }
+  return events.sort((a,b)=>new Date(b.sortAt)-new Date(a.sortAt)||a.label.localeCompare(b.label));
+}
+
+window.CardRouterRadar={normalizeState,periodInfo,periodEndFromKey,calendarDays,minusCalendarMonths,canonicalTaskKey,
+  buildRadarTasks:(state,now=new Date())=>buildRadarTasks(now,normalizeState(state,now))};
 
 /* Effective % return for card on category. Returns {eff, disp, note, viaRotating, needsActivation, cap} or null */
 function evaluate(card, catId){
@@ -502,7 +903,12 @@ function evaluate(card, catId){
       const rotRate = {v:5,u:'%',cap:'$1,500/qtr cap'};
       const base = r || rates.other;
       const effBase = base ? base.v * (base.u==='x'?cpp(card):1) : 0;
-      if(5 >= effBase){ r = rotRate; viaRotating = true; needsActivation = !(S.activations[currentQuarter()+':'+card.id]); rotLabel = ' (rotating 5% this quarter)'; }
+      if(5 >= effBase){
+        const action=quarterlyActionForCard(card.id), period=currentQuarter();
+        r = rotRate; viaRotating = true;
+        needsActivation = !action || !completionFor('activate',card.id,action.id,period);
+        rotLabel = ' (rotating 5% this quarter)';
+      }
     }
   }
   if(!r) r = rates.other;
@@ -515,22 +921,32 @@ function evaluate(card, catId){
 function rankFor(catId){
   const held = S.myCards.map(getCard).filter(Boolean);
   const rows = held.map((c,i)=>{ const e=evaluate(c,catId); return e?{card:c, ...e, prio:i}:null; }).filter(Boolean);
-  rows.sort((a,b)=> b.eff-a.eff || a.prio-b.prio);
+  rows.sort((a,b)=> b.eff-a.eff || Number(a.needsActivation)-Number(b.needsActivation) || a.prio-b.prio);
   return rows;
 }
 
 /* ---------- views ---------- */
 const mainEl = document.getElementById('main');
-let TAB='which', selectedCat=null;
+let TAB='which', selectedCat=null, PROMOS_VIEW='overview', radarHistoryOpen=false, notShownOpen=false, historyLimit=20;
 
 function render(){
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b.dataset.tab===TAB));
+  document.querySelectorAll('nav button').forEach(b=>{
+    const on=b.dataset.tab===TAB; b.classList.toggle('on',on);
+    if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
+  });
   const hdr = document.getElementById('hdr'), sub=document.getElementById('hdrsub');
   if(TAB==='which'){ hdr.textContent='Which card?'; sub.textContent = S.myCards.length? '' : 'set up your cards first'; renderWhich(); }
   if(TAB==='cards'){ hdr.textContent='My cards'; sub.textContent='priority order breaks ties'; renderCards(); }
   if(TAB==='benefits'){ hdr.textContent='Benefits'; sub.textContent='what your cards give you'; renderBenefits(); }
-  if(TAB==='promos'){ hdr.textContent='Promos & activations'; sub.textContent=currentQuarter().replace('-',' '); renderPromos(); }
+  if(TAB==='promos'){
+    if(PROMOS_VIEW==='radar'){ hdr.textContent='Radar'; sub.textContent='what needs your attention'; }
+    else if(PROMOS_VIEW==='quarterly'){ hdr.textContent='Quarterly activations'; sub.textContent=currentQuarter().replace('-',' '); }
+    else { hdr.textContent='Promos & activations'; sub.textContent=currentQuarter().replace('-',' '); }
+    renderPromos();
+  }
   if(TAB==='settings'){ hdr.textContent='Settings'; sub.textContent=''; renderSettings(); }
+  document.title=`ChooseMyCard · ${hdr.textContent}`;
+  updateStorageWarning();
 }
 
 function renderWhich(){
@@ -564,7 +980,7 @@ function renderWhich(){
           </div>
           <div class="rc-rate">${r.disp}<div class="tag" style="text-align:right">≈${r.eff.toFixed(1)}%</div></div>
         </div>`).join('');
-      html += `<p class="hint" style="margin:10px 4px">≈% converts points to value using your point valuations (Settings). Ties go to your priority order.</p>`;
+      html += `<p class="hint" style="margin:10px 4px">≈% converts points to value using your point valuations (Settings). Rate ties favor activated rotating categories, then priority order.</p>`;
     }
   } else {
     html += `<p class="hint" style="margin:6px 4px">Tap a category, or use location to guess it.</p>`;
@@ -686,7 +1102,7 @@ function heldBenefits(){
 }
 function renderBenefits(){
   if(!S.myCards.length){
-    mainEl.innerHTML = `<div class="panel empty">Add your cards first — then this tab shows every perk they carry, grouped by category.</div>`;
+    mainEl.innerHTML = `<div class="panel empty">Add your cards first. This tab will show every perk they carry, grouped by category.</div>`;
     return;
   }
   const all = heldBenefits();
@@ -702,90 +1118,249 @@ function renderBenefits(){
     const bc = BENEFIT_CATS.find(x=>x.id===selectedBenefitCat);
     const rows = all.filter(b=>b.cat===selectedBenefitCat);
     html += `<h2>${bc.em} ${bc.name}</h2><div class="panel">` +
-      rows.map(b=>`<div class="row"><div class="grow">
+      rows.map(b=>{
+        const meta=b.id&&RADAR_BENEFIT_MAP[b.card.id+':'+b.id];
+        if(!meta) return `<div class="row"><div class="grow">
           <div class="title">${esc(b.name)} ${b.enroll?'<span class="badge warn">enrollment required</span>':'<span class="badge good">automatic</span>'}</div>
           <div class="sub2">${esc(b.card.name)}${b.note?' · '+esc(b.note):''}</div>
-          ${(b.enroll&&(b.link||ENROLL_LINKS[b.card.id]))?`<div class="sub2"><a href="${b.link||ENROLL_LINKS[b.card.id]}" target="_blank" rel="noopener">Activate →</a></div>`:''}
-        </div>${b.value?`<div class="rc-rate" style="font-size:13.5px">${esc(b.value)}</div>`:''}</div>`).join('') +
+          ${(b.enroll&&(b.link||ENROLL_LINKS[b.card.id]))?`<div class="sub2"><a href="${b.link||ENROLL_LINKS[b.card.id]}" target="_blank" rel="noopener noreferrer" aria-label="Activate ${esc(b.name)} on issuer site, opens in a new tab">Activate <span aria-hidden="true">↗</span></a></div>`:''}
+        </div>${b.value?`<div class="rc-rate" style="font-size:13.5px">${esc(b.value)}</div>`:''}</div>`;
+        const enrolled=enrollmentFor(b.card.id,b.id), p=periodInfo(meta.cadence,new Date()), useKey=canonicalTaskKey('use',b.card.id,b.id,p.key), used=S.completions[useKey];
+        const hidden=!!S.radarHidden[canonicalHiddenKey(b.card.id,b.id)], linkLabel=meta.requiresEnrollment&&!enrolled?'Enroll':'Open benefit';
+        return `<div class="action-row"><div>
+          <div class="action-title">${esc(b.name)}</div>
+          <div class="action-meta">${esc(b.card.name)}${b.value?' · '+esc(b.value):''}${b.note?' · '+esc(b.note):''}</div>
+          <div class="action-links"><a href="${meta.link}" target="_blank" rel="noopener noreferrer" aria-label="${linkLabel} on issuer site, opens in a new tab">${linkLabel} <span aria-hidden="true">↗</span></a>
+          ${hidden?`<button data-show-radar="${b.card.id}:${b.id}" data-focus-id="show-${b.card.id}-${b.id}">Show in Radar</button>`:''}</div>
+        </div><div>
+          ${meta.requiresEnrollment?`<label class="task-check"><input type="checkbox" data-benefit-enroll="${b.card.id}:${b.id}" data-focus-id="enroll-${b.card.id}-${b.id}" ${enrolled?'checked':''}>${enrolled?'Enrolled '+displayDate(enrolled.enrolledAt):'Mark enrolled'}</label>`:''}
+          ${(!meta.requiresEnrollment||enrolled)?`<label class="task-check"><input type="checkbox" data-benefit-use="${b.card.id}:${b.id}" data-focus-id="use-${b.card.id}-${b.id}" ${used?'checked':''}>${used?'Used '+displayDate(used.completedAt):'Mark used'}</label>`:''}
+        </div></div>`;
+      }).join('') +
       `</div>
-      <p class="hint" style="margin:8px 4px">"Enrollment required" = it does nothing until you turn it on — usually in the issuer's app or website under card benefits. Worth doing today.</p>`;
+      <p class="hint" style="margin:8px 4px">Enrollment-required benefits do not start until you turn them on in the issuer's app or website.</p>`;
   } else {
-    html += `<p class="hint" style="margin:6px 4px">Tap a category to see which of your cards cover it — and which perks need enrolling before they work.</p>`;
+    html += `<p class="hint" style="margin:6px 4px">Tap a category to see which cards cover it and which perks need enrollment.</p>`;
   }
-  const missed = all.filter(b=>b.enroll).length;
-  html += `<div class="section-note" style="margin-top:10px">Benefits data verified July 2026 · ${missed} of your perks need enrollment to be active.</div>`;
+  html += `<div class="section-note" style="margin-top:10px">Benefits data checked August 2026. Radar controls appear on calendar-aligned credits.</div>`;
   mainEl.innerHTML = html;
   mainEl.querySelectorAll('[data-bcat]').forEach(b=>b.onclick=()=>{ selectedBenefitCat = (selectedBenefitCat===b.dataset.bcat)?null:b.dataset.bcat; render(); });
+  mainEl.querySelectorAll('[data-benefit-enroll]').forEach(cb=>cb.onchange=()=>{
+    const [cardId,benefitId]=cb.dataset.benefitEnroll.split(':'); setBenefitEnrollment(cardId,benefitId,cb.checked,cb.dataset.focusId);
+  });
+  mainEl.querySelectorAll('[data-benefit-use]').forEach(cb=>cb.onchange=()=>{
+    const [cardId,benefitId]=cb.dataset.benefitUse.split(':'), meta=RADAR_BENEFIT_MAP[cardId+':'+benefitId], p=periodInfo(meta.cadence,new Date());
+    const task=buildBenefitTasks(new Date()).find(t=>t.card.id===cardId&&t.benefitId===benefitId&&t.kind==='use')||{
+      key:canonicalTaskKey('use',cardId,benefitId,p.key),kind:'use',actionType:'use',itemId:benefitId,benefitId,periodKey:p.key,end:p.end,
+      card:getCard(cardId),title:benefitById(cardId,benefitId).name};
+    setTaskChecked(task,cb.checked,cb.dataset.focusId);
+  });
+  mainEl.querySelectorAll('[data-show-radar]').forEach(btn=>btn.onclick=()=>{
+    const [cardId,benefitId]=btn.dataset.showRadar.split(':'); restoreBenefit(cardId,benefitId,btn.dataset.focusId);
+  });
 }
 
+function taskStatusLine(task){
+  if(task.done) return completedLabel(task);
+  if(task.nonRetroactive) return 'Not retroactive';
+  if(task.actionType==='use'||task.actionType==='enroll') return task.daysLeft===0?'Expires today':`Expires in ${task.daysLeft} days`;
+  return '';
+}
+function renderTaskRow(task,{manage=false}={}){
+  const status=taskStatusLine(task), urgent=!task.done&&(task.nonRetroactive||((task.actionType==='use'||task.actionType==='enroll')&&task.daysLeft<=7));
+  const checkboxText=task.done?completedLabel(task):task.markLabel;
+  return `<div class="action-row ${task.done?'completed':''}"><div>
+    <div class="action-title">${esc(task.title)}</div>
+    <div class="action-meta">${esc(task.card.name)}${task.detail?' · '+esc(task.detail):''}</div>
+    ${task.enrolled&&task.actionType==='use'?`<div class="action-meta">Enrolled ${displayDate(task.enrolled.enrolledAt)}</div>`:''}
+    ${status?`<div class="action-meta ${urgent?'urgent':''}">${esc(status)}</div>`:''}
+    <div class="action-links"><a href="${task.link}" target="_blank" rel="noopener noreferrer" aria-label="${esc(task.externalLabel)} on issuer site, opens in a new tab">${esc(task.externalLabel)} <span aria-hidden="true">↗</span></a>
+      ${manage&&!task.done?`<button data-skip-task="${task.key}">Skip this period</button>`:''}
+      ${manage&&task.benefitId?`<button data-hide-task="${task.key}">Hide from Radar</button>`:''}
+    </div>
+  </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-focus-id="task-${task.key}" ${task.done?'checked':''}>${esc(checkboxText)}</label></div>`;
+}
+function radarOverviewState(radar){
+  if(!S.myCards.length) return {copy:'Add cards to start Radar',action:'cards'};
+  if(!radar.all.length) return {copy:'Radar does not track any actions for your cards yet'};
+  if(radar.all.every(t=>t.done)) return {copy:'Nothing needs your attention'};
+  if(!radar.unresolved.length&&radar.suppressed.some(t=>!t.done)) return {copy:'No active Radar items'};
+  return {copy:taskSummary(radar.unresolved[0])};
+}
+function renderPromosOverview(){
+  const now=new Date(), q=currentQuarter(now), days=quarterEndsInDays(now), radar=buildRadarTasks(now), preview=radar.unresolved.slice(0,2);
+  const state=radarOverviewState(radar), qTasks=buildQuarterlyTasks(now), qDone=qTasks.filter(t=>t.done).length;
+  const qRows=qTasks.filter(t=>!preview.some(p=>p.key===t.key)).slice(0,2);
+  const qSubtitle=preview.some(p=>['activate','select'].includes(p.actionType))?'Other rotating-category programs this quarter':
+    qRows.length?'All rotating-category programs this quarter':'All action-needed programs are in Radar above';
+  let html=`<div class="quarter-banner">${q.replace('-',' ')} · ${days} days left in the quarter</div>
+    <div class="section-head"><h2 id="radar-heading">Radar</h2><button class="section-link" id="radar-view-all">View all <span aria-hidden="true">›</span></button></div>
+    <p class="section-note">What needs your attention</p>
+    <p class="radar-summary"><strong>${esc(state.copy)}</strong></p>`;
+  if(state.action==='cards') html+=`<div class="action-list"><div class="quiet-state"><button class="pill" data-go-cards>Add cards</button></div></div>`;
+  else if(preview.length) html+=`<div class="action-list">${preview.map(t=>renderTaskRow(t)).join('')}</div>`;
+  else html+=`<div class="action-list"><div class="quiet-state">${esc(state.copy)}</div></div>`;
+  const more=Math.max(0,radar.unresolved.length-preview.length); if(more) html+=`<div class="section-note" style="text-align:right">${more} more in View all</div>`;
+  html+=`<div class="section-head"><h2>Quarterly activations</h2><button class="section-link" id="quarterly-view-all">View all <span aria-hidden="true">›</span></button></div>
+    <div class="progress-line"><span>${esc(qSubtitle)}</span><strong>${qDone} of ${qTasks.length} complete</strong></div>`;
+  if(qRows.length) html+=`<div class="action-list">${qRows.map(t=>renderTaskRow(t)).join('')}</div>`;
+  else html+=`<div class="action-list"><div class="quiet-state">${qTasks.length?'All action-needed programs are in Radar above.':'No quarterly programs for your cards.'}</div></div>`;
+  html+=`<div class="panel"><div class="reminder-row"><p class="hint">Add reminders for the first day of each quarter.</p>
+    <button class="pill" id="ics">📅 Download reminders (.ics)</button></div></div>`;
+  mainEl.innerHTML=html;
+}
+function renderNotShown(tasks){
+  if(!tasks.length) return '';
+  let html=`<div class="disclosure"><button id="not-shown-toggle" data-focus-id="not-shown-toggle" aria-expanded="${notShownOpen}" aria-controls="not-shown-content">
+    <span>Not shown in Radar (${tasks.length})</span><span aria-hidden="true">${notShownOpen?'⌃':'⌄'}</span></button>`;
+  if(notShownOpen) html+=`<div id="not-shown-content" class="not-shown-list">${tasks.map(t=>`<div class="history-row"><div><strong>${esc(t.title)}</strong>
+    <div class="action-meta">${esc(t.card.name)} · ${[t.hidden?'Hidden from Radar':'',t.skipped?'Skipped this period':''].filter(Boolean).join(' · ')}</div></div>
+    <div class="action-links">${t.skipped?`<button data-unskip-task="${t.key}">Unskip</button>`:''}${t.hidden?`<button data-restore-task="${t.key}">Restore</button>`:''}</div></div>`).join('')}</div>`;
+  return html+'</div>';
+}
+function renderHistory(){
+  const events=completionHistory(), shown=events.slice(0,historyLimit);
+  let html=`<div class="disclosure"><button id="history-toggle" aria-expanded="${radarHistoryOpen}" aria-controls="history-content"><span>View completion history</span><span aria-hidden="true">${radarHistoryOpen?'⌃':'⌄'}</span></button>`;
+  if(radarHistoryOpen){
+    let previous=''; html+='<div id="history-content">';
+    for(const event of shown){
+      const d=event.at?new Date(event.at):event.sortAt, month=d?d.toLocaleDateString(undefined,{month:'long',year:'numeric'}):'Earlier';
+      if(month!==previous){ html+=`<div class="history-month">${esc(month)}</div>`; previous=month; }
+      html+=`<div class="history-row"><div><strong>${esc(event.label)}</strong><div class="action-meta">${esc(event.cardName||'Card removed')}</div></div>
+        <span class="when">${event.undated?'Date unavailable':displayDate(event.at)}</span></div>`;
+    }
+    if(!events.length) html+='<div class="quiet-state">No completions yet.</div>';
+    if(events.length>historyLimit) html+='<button class="pill" id="history-more" style="margin:12px 4px">Load 20 older</button>';
+    html+='</div>';
+  }
+  return html+'</div>';
+}
+function renderFullRadar(){
+  const radar=buildRadarTasks(new Date()), state=radarOverviewState(radar), groups=[['act','Act now'],['soon','Use soon'],['later','Later']];
+  let html=`<button class="back-btn" id="promos-back"><span aria-hidden="true">‹</span> Promos</button>`;
+  if(!radar.active.length) html+=`<div class="action-list"><div class="quiet-state"><strong>${esc(state.copy)}</strong>${state.action==='cards'?'<div style="margin-top:10px"><button class="pill" data-go-cards>Add cards</button></div>':''}</div></div>`;
+  for(const [id,label] of groups){
+    const tasks=radar.active.filter(t=>t.group===id); if(!tasks.length) continue;
+    html+=`<h2>${label}</h2><div class="action-list">${tasks.map(t=>renderTaskRow(t,{manage:true})).join('')}</div>`;
+  }
+  html+=renderNotShown(radar.suppressed)+renderHistory();
+  mainEl.innerHTML=html;
+}
+function renderFullQuarterly(){
+  const tasks=buildQuarterlyTasks(new Date()), done=tasks.filter(t=>t.done).length;
+  let html=`<button class="back-btn" id="promos-back"><span aria-hidden="true">‹</span> Promos</button>
+    <div class="progress-line"><span>All rotating-category programs this quarter</span><strong>${done} of ${tasks.length} complete</strong></div>`;
+  html+=tasks.length?`<div class="action-list">${tasks.map(t=>renderTaskRow(t,{manage:true})).join('')}</div>`:
+    '<div class="action-list"><div class="quiet-state">No quarterly programs for your cards.</div></div>';
+  html+=`<div class="panel"><div class="reminder-row"><p class="hint">Add reminders for the first day of each quarter.</p>
+    <button class="pill" id="ics">📅 Download reminders (.ics)</button></div></div>`;
+  mainEl.innerHTML=html;
+}
+function findCurrentTask(key){ return buildRadarTasks(new Date()).all.find(t=>t.key===key); }
+function bindPromoActions(){
+  document.getElementById('radar-view-all')?.addEventListener('click',()=>openPromosSubview('radar'));
+  document.getElementById('quarterly-view-all')?.addEventListener('click',()=>openPromosSubview('quarterly'));
+  document.getElementById('promos-back')?.addEventListener('click',backFromPromos);
+  document.getElementById('ics')?.addEventListener('click',downloadICS);
+  mainEl.querySelectorAll('[data-go-cards]').forEach(b=>b.onclick=()=>{TAB='cards';PROMOS_VIEW='overview';render();});
+  mainEl.querySelectorAll('[data-task-check]').forEach(cb=>cb.onchange=()=>{const task=findCurrentTask(cb.dataset.taskCheck);if(task)setTaskChecked(task,cb.checked,cb.dataset.focusId);});
+  mainEl.querySelectorAll('[data-skip-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.skipTask);if(task)skipTask(task);});
+  mainEl.querySelectorAll('[data-hide-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.hideTask);if(task)hideBenefitTask(task);});
+  mainEl.querySelectorAll('[data-unskip-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.unskipTask);if(task)unskipTask(task);});
+  mainEl.querySelectorAll('[data-restore-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.restoreTask);if(task)restoreBenefit(task.card.id,task.benefitId,'not-shown-toggle');});
+  document.getElementById('not-shown-toggle')?.addEventListener('click',()=>{notShownOpen=!notShownOpen;render();restoreFocus('not-shown-toggle');});
+  document.getElementById('history-toggle')?.addEventListener('click',()=>{radarHistoryOpen=!radarHistoryOpen;render();restoreFocus('history-toggle');});
+  document.getElementById('history-more')?.addEventListener('click',()=>{historyLimit+=20;render();});
+}
 function renderPromos(){
-  const q = currentQuarter(); const days = quarterEndsInDays();
-  const rot = ROTATING[q];
-  let html = `<div class="quarter-banner">${q.replace('-',' ')} · ${days} days left in the quarter</div>`;
-  const heldRotating = S.myCards.map(getCard).filter(c=>c&&c.rotating);
-  if(heldRotating.length){
-    html += `<div class="panel">` + heldRotating.map(c=>{
-      const info = rot ? rot[c.id] : null; const key=q+':'+c.id; const done=!!S.activations[key];
-      return `<div class="row"><div class="grow">
-        <div class="title">${esc(c.name)} ${done?'<span class="badge good">activated ✓</span>':'<span class="badge warn">not activated</span>'}</div>
-        <div class="sub2">${info? '5%: '+esc(info.label) : 'Categories TBA — check issuer'}${c.id==='discover_it'?' · not retroactive!':''}</div>
-        ${ACTIVATION_LINKS[c.id]?`<div class="sub2"><a href="${ACTIVATION_LINKS[c.id]}" target="_blank" rel="noopener">Activate on ${esc(c.issuer)} →</a></div>`:''}
-      </div>
-      <label class="check"><input type="checkbox" data-act="${c.id}" ${done?'checked':''}>done</label>
-      </div>`;
-    }).join('') + `</div>`;
-  } else html += `<div class="panel empty">None of your cards have rotating categories.</div>`;
-
-  html += `<h2>Never miss a quarter</h2><div class="panel">
-    <p class="hint">Add recurring reminders to your calendar for the first day of each quarter — activate 5% categories, re-pick US Bank Cash+ choices, and check this app's rotating data.</p>
-    <div style="margin-top:8px"><button class="pill primary" id="ics">📅 Download reminders (.ics)</button></div></div>`;
-
-  html += `<h2>Worth knowing</h2><div class="panel"><p class="hint">
-    Registration-required promos (Amex Offers, Chase Offers, targeted spend bonuses) live behind issuer logins, so this app can't fetch them.
-    Check the Amex/Chase apps' "Offers" tab when you're already in them — or MaxRewards Gold automates activation if you want to pay for it.</p></div>`;
-  mainEl.innerHTML = html;
-  mainEl.querySelectorAll('[data-act]').forEach(cb=>cb.onchange=()=>{ S.activations[q+':'+cb.dataset.act]=cb.checked; saveState(S); render(); });
-  document.getElementById('ics').onclick = downloadICS;
+  if(PROMOS_VIEW==='radar') renderFullRadar(); else if(PROMOS_VIEW==='quarterly') renderFullQuarterly(); else renderPromosOverview();
+  bindPromoActions();
+}
+function openPromosSubview(view){
+  if(PROMOS_VIEW===view) return; PROMOS_VIEW=view; TAB='promos';
+  history.pushState({promosView:view},'',location.pathname+location.search); render(); window.scrollTo({top:0,behavior:'auto'});
+  requestAnimationFrame(()=>document.getElementById('hdr').focus?.());
+}
+function backFromPromos(){
+  if(PROMOS_VIEW==='overview') return; history.back();
+}
+function icsEscape(s){ return String(s).replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;'); }
+function nextOccurrence(month,now){ const today=localDay(now); let d=new Date(today.getFullYear(),month-1,1); if(d<today)d=new Date(today.getFullYear()+1,month-1,1); return d; }
+function icsDate(d){ return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; }
+function icsStamp(d){ return d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,''); }
+function buildICS(now=new Date()){
+  const summary='Check quarterly card categories', description='Review category activations and selections in ChooseMyCard.';
+  const mk=(month,index)=>['BEGIN:VEVENT',`UID:choosemycard-quarter-${index}@local`,`DTSTAMP:${icsStamp(now)}`,
+    `DTSTART;VALUE=DATE:${icsDate(nextOccurrence(month,now))}`,'RRULE:FREQ=YEARLY',`SUMMARY:${icsEscape(summary)}`,
+    `DESCRIPTION:${icsEscape(description)}`,'BEGIN:VALARM','TRIGGER:PT9H','ACTION:DISPLAY',`DESCRIPTION:${icsEscape(summary)}`,'END:VALARM','END:VEVENT'].join('\r\n');
+  return ['BEGIN:VCALENDAR','VERSION:2.0','CALSCALE:GREGORIAN','PRODID:-//ChooseMyCard//Quarterly reminders//EN',mk(1,'q1'),mk(4,'q2'),mk(7,'q3'),mk(10,'q4'),'END:VCALENDAR'].join('\r\n');
 }
 function downloadICS(){
-  const mk=(mo,uid)=>['BEGIN:VEVENT',`UID:cardrouter-${uid}@local`,`DTSTART;VALUE=DATE:20260${mo}01`,
-    'RRULE:FREQ=YEARLY','SUMMARY:💳 Activate quarterly 5% categories (Freedom Flex / Discover / Cash+)',
-    'DESCRIPTION:Activate rotating categories and update ChooseMyCard rules.','BEGIN:VALARM','TRIGGER:PT9H','ACTION:DISPLAY','DESCRIPTION:Activate 5% categories','END:VALARM','END:VEVENT'].join('\r\n');
-  const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//CardRouter//EN',mk(1,'q1'),mk(4,'q2'),mk(7,'q3'),'BEGIN:VEVENT','UID:cardrouter-q4@local','DTSTART;VALUE=DATE:20261001','RRULE:FREQ=YEARLY','SUMMARY:💳 Activate quarterly 5% categories','END:VEVENT','END:VCALENDAR'].join('\r\n');
-  const a=document.createElement('a'); a.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics); a.download='choosemycard-reminders.ics'; a.click();
+  const blob=new Blob([buildICS()],{type:'text/calendar;charset=utf-8'}), url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='choosemycard-quarterly-reminders.ics'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),0);
 }
+window.CardRouterRadar.buildICS=buildICS;
 
 function renderSettings(){
-  let html = `<h2>Point valuations</h2><p class="section-note">Cents per point — used to compare points cards against cash back fairly.</p><div class="panel"><div class="rate-grid">` +
+  let html = `<h2>Point valuations</h2><p class="section-note">Cents per point, used to compare points cards against cash back fairly.</p><div class="panel"><div class="rate-grid">` +
     Object.entries(PROGRAMS).filter(([k])=>k!=='cash').map(([k,p])=>{
       const v = S.cpp[k]!=null?S.cpp[k]:p.cpp;
       return `<div>${esc(p.name)}</div><input type="text" inputmode="decimal" data-cpp="${k}" value="${v}">`;
     }).join('') + `</div></div>
     <h2>Backup / transfer</h2><div class="panel">
-      <p class="hint">Copy a link that carries your whole setup — open it on another device (or after clearing Safari data) to restore.</p>
+      <p class="hint">Copy a link with your card lineup, settings, enrollments, hidden preferences, and current-period checkmarks. Anyone with the link can read and import that setup. Older activity history is not included.</p>
       <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap">
         <button class="pill primary" id="copycfg">🔗 Copy setup link</button>
         <button class="pill" id="reset">Reset app</button></div></div>
     <h2>About the rules data</h2><div class="panel"><p class="hint">
-      Earn rates verified July 2026 (incl. the Sapphire Reserve revamp, the Amex Gold refresh, and ${currentQuarter().replace('-',' ')} rotating categories).
-      Issuers change rules constantly — when they do, tap ✎ on a card to update it. Rotating categories for future quarters need a new app version (or edit rates manually).</p></div>`;
+      Earn rates were checked July 2026. Radar benefit terms were checked August 2026. Issuers change rules constantly. Tap ✎ to update a card's rates when they change. Future rotating categories require an app update.</p></div>`;
   mainEl.innerHTML = html;
   mainEl.querySelectorAll('[data-cpp]').forEach(inp=>inp.onchange=()=>{
     const v=parseFloat(inp.value); if(!isNaN(v)&&v>0){ S.cpp[inp.dataset.cpp]=v; saveState(S); toast('Saved'); } });
-  document.getElementById('copycfg').onclick=async()=>{
-    const url = location.origin+location.pathname+'#'+btoa(encodeURIComponent(JSON.stringify(S)));
-    try{ await navigator.clipboard.writeText(url); toast('Setup link copied'); }
-    catch(e){ prompt('Copy this link:', url); }
+  document.getElementById('copycfg').onclick=()=>copySetupLink();
+  document.getElementById('reset').onclick=()=>{
+    if(confirm('Erase cards, settings, checkmarks, enrollments, hidden and skipped preferences, and completion history?')){
+      S=structuredClone(DEFAULT_STATE); saveState(S); render(); toast('App reset');
+    }
   };
-  document.getElementById('reset').onclick=()=>{ if(confirm('Erase your cards and settings?')){ S=structuredClone(DEFAULT_STATE); saveState(S); render(); } };
+}
+
+function currentPeriodForRecord(record,now){
+  if(record.actionType==='activate'||record.actionType==='select') return record.periodKey===currentQuarter(now);
+  const meta=RADAR_BENEFIT_MAP[record.cardId+':'+record.itemId]; return !!meta&&record.periodKey===periodInfo(meta.cadence,now).key;
+}
+function exportSetupState(now=new Date()){
+  const stripSnapshots=r=>{const {labelSnapshot,cardNameSnapshot,...rest}=r;return rest;};
+  return {schemaVersion:2,catalogVersion:RADAR_CATALOG_VERSION,myCards:[...S.myCards],overrides:structuredClone(S.overrides),cpp:structuredClone(S.cpp),
+    custom:structuredClone(S.custom),coachDone:!!S.coachDone,enrollments:Object.values(S.enrollments).map(stripSnapshots),
+    completions:Object.values(S.completions).filter(r=>currentPeriodForRecord(r,now)).map(stripSnapshots),
+    radarHidden:Object.values(S.radarHidden).map(r=>({...r})),radarSkips:Object.values(S.radarSkips).filter(r=>new Date(r.expiresAt)>now).map(r=>({...r}))};
+}
+function setupUrl(){ return location.href.split('#')[0]+'#'+btoa(encodeURIComponent(JSON.stringify(exportSetupState()))); }
+async function copySetupLink(skipConfirmation=false){
+  if(!skipConfirmation&&!confirm('Create a setup link containing your card lineup, settings, enrollments, and current checkmarks? Anyone with the link can read and import them.')) return;
+  const url=setupUrl();
+  try{ await navigator.clipboard.writeText(url); toast('Setup link copied'); }
+  catch(e){ prompt('Copy this setup link:',url); }
 }
 
 /* ---------- modal & nav ---------- */
 function openModal(){ document.getElementById('modal').classList.add('open'); }
 function closeModal(){ document.getElementById('modal').classList.remove('open'); }
 document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal(); });
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ TAB=b.dataset.tab; render(); });
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+history.replaceState({promosView:'overview'},'',location.pathname+location.search);
+window.addEventListener('popstate',e=>{
+  PROMOS_VIEW=e.state&&['radar','quarterly'].includes(e.state.promosView)?e.state.promosView:'overview';
+  TAB='promos'; render(); window.scrollTo({top:0,behavior:'auto'}); requestAnimationFrame(()=>document.getElementById('hdr').focus());
+});
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  TAB=b.dataset.tab; PROMOS_VIEW='overview'; history.replaceState({promosView:'overview'},'',location.pathname+location.search);
+  render(); window.scrollTo({top:0,behavior:'auto'});
+});
+document.getElementById('storageBackup').onclick=()=>copySetupLink();
 render();
+if(startupNotice) setTimeout(()=>toast(startupNotice,3600),0);
 </script>
 </body>
 </html>
