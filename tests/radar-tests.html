@@ -6,7 +6,8 @@
 <title>Credit Radar tests</title>
 <style>
   body{font:15px/1.5 system-ui,sans-serif;max-width:760px;margin:32px auto;padding:0 18px;color:#172033;background:#f7f8fb}
-  h1{font-size:24px}.pass{color:#08704f}.fail{color:#b42318}li{margin:5px 0}iframe{display:none}
+  h1{font-size:24px}.pass{color:#08704f}.fail{color:#b42318}li{margin:5px 0}
+  iframe{position:absolute;width:1px;height:1px;border:0;opacity:0;pointer-events:none}
 </style>
 </head>
 <body>
@@ -21,8 +22,21 @@ function test(name,fn){tests.push({name,fn});}
 function assert(value,message){if(!value)throw new Error(message||'Assertion failed');}
 function equal(actual,expected,message){if(actual!==expected)throw new Error(message||`Expected ${expected}, received ${actual}`);}
 
-document.getElementById('app').addEventListener('load',()=>{
+document.getElementById('app').addEventListener('load',async()=>{
   const app=document.getElementById('app').contentWindow, R=app.CardRouterRadar;
+  let frameCounter=0;
+  const afterRender=win=>new Promise(resolve=>win.requestAnimationFrame(()=>win.requestAnimationFrame(resolve)));
+  async function withAppState(state,fn){
+    const previous=app.localStorage.getItem('cardrouter'), frame=document.createElement('iframe');
+    app.localStorage.setItem('cardrouter',JSON.stringify(state));
+    frame.src=`../index.html?domtest=${++frameCounter}`; document.body.appendChild(frame);
+    await new Promise(resolve=>frame.addEventListener('load',resolve,{once:true}));
+    try{return await fn(frame.contentWindow,frame.contentDocument,frame);}
+    finally{
+      frame.remove();
+      if(previous===null) app.localStorage.removeItem('cardrouter'); else app.localStorage.setItem('cardrouter',previous);
+    }
+  }
   test('calendar periods use local month, quarter, and half-year keys',()=>{
     equal(R.periodInfo('month',new Date(2026,7,26)).key,'2026-08');
     equal(R.periodInfo('quarter',new Date(2026,7,26)).key,'2026-Q3');
@@ -142,6 +156,23 @@ document.getElementById('app').addEventListener('load',()=>{
       assert(threw,'Unknown setup fields should be rejected atomically');
     }
   });
+  test('setup validation rejects malformed records and typed values atomically',()=>{
+    const malformed=[
+      {schemaVersion:2,completions:[null]},
+      {schemaVersion:2,completions:[{actionType:'use',cardId:'amex_gold'}]},
+      {schemaVersion:2,activations:{'2026-Q3:freedom_flex':'yes'}},
+      {schemaVersion:2,custom:[{id:'cust_test',name:'Test',program:'cash',rates:{other:{v:'1',u:'%'}}}]}
+    ];
+    for(const raw of malformed){
+      let threw=false; try{R.validateImportPayload(raw,200,200);}catch(error){threw=true;}
+      assert(threw,'Malformed setup data should reject the whole import');
+    }
+  });
+  test('late quarterly completion records an attested deadline separately',()=>{
+    const now=new Date(2026,8,16,12), task=R.buildRadarTasks({myCards:['freedom_flex']},now).all[0];
+    const record=R.completionRecordForTask(task,now), completed=R.buildRadarTasks({myCards:['freedom_flex'],completions:[record]},now).all[0];
+    equal(record.attestedBy,'2026-09-14'); equal(record.completedAt,now.toISOString()); equal(completed.attestedBy,'2026-09-14');
+  });
   test('compact setup encoding round-trips Unicode data',()=>{
     const raw={schemaVersion:2,custom:[{name:'Café 東京'}]}, encoded=R.encodeSetupPayload(raw), decoded=JSON.parse(R.decodeSetupPayload(encoded));
     assert(encoded.startsWith('v2.'),'Expected versioned base64url encoding'); equal(decoded.custom[0].name,'Café 東京');
@@ -159,11 +190,50 @@ document.getElementById('app').addEventListener('load',()=>{
     assert(ics.includes('\r\n'),'Expected CRLF line endings');
     assert(!/Freedom|Discover|Cash\+|Amex/i.test(ics),'Calendar must not reveal held-card data');
   });
+  test('Radar subview survives a real page reload',async()=>{
+    await withAppState({schemaVersion:2,myCards:['amex_gold']},async(win,doc,frame)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click();
+      equal(doc.title,'ChooseMyCard · Radar');
+      const loaded=new Promise(resolve=>frame.addEventListener('load',resolve,{once:true})); win.location.reload(); await loaded;
+      equal(frame.contentDocument.title,'ChooseMyCard · Radar');
+    });
+  });
+  test('stale Benefits enrollment refreshes without writing old-period state',async()=>{
+    await withAppState({schemaVersion:2,myCards:['amex_gold']},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="benefits"]').click(); doc.querySelector('[data-bcat="diningcr"]').click();
+      const checkbox=doc.querySelector('[data-benefit-enroll="amex_gold:dining_credit"]');
+      checkbox.dataset.periodKey='2000-01'; checkbox.checked=true; checkbox.dispatchEvent(new win.Event('change',{bubbles:true})); await afterRender(win);
+      const saved=JSON.parse(win.localStorage.getItem('cardrouter'));
+      equal(Object.keys(saved.enrollments).length,0); assert(!doc.querySelector('[data-benefit-enroll="amex_gold:dining_credit"]').checked,'Refreshed checkbox should be unchecked');
+      assert(doc.getElementById('toastmsg').textContent.includes('new benefit period'),'The refresh should explain why the action was not saved');
+    });
+  });
+  test('stale Radar checkbox refreshes instead of retaining a false checkmark',async()=>{
+    const enrolledAt=new Date().toISOString();
+    await withAppState({schemaVersion:2,myCards:['amex_gold'],enrollments:[{cardId:'amex_gold',benefitId:'dining_credit',enrolledAt}]},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click();
+      const checkbox=[...doc.querySelectorAll('[data-task-check]')].find(cb=>cb.dataset.taskCheck.includes(':dining_credit:'));
+      assert(checkbox,'Expected a dining credit task'); checkbox.dataset.taskCheck='use:amex_gold:dining_credit:2000-01'; checkbox.checked=true;
+      checkbox.dispatchEvent(new win.Event('change',{bubbles:true})); await afterRender(win);
+      const saved=JSON.parse(win.localStorage.getItem('cardrouter')), current=[...doc.querySelectorAll('[data-task-check]')].find(cb=>cb.dataset.taskCheck.includes(':dining_credit:'));
+      equal(Object.keys(saved.completions).length,0); assert(current&&!current.checked,'Refreshed Radar checkbox should be unchecked');
+      assert(doc.getElementById('toastmsg').textContent.includes('new benefit period'),'The refresh should explain why the action was not saved');
+    });
+  });
+  test('restoring a skipped item returns focus to its Radar row',async()=>{
+    const now=new Date(), task=R.buildRadarTasks({myCards:['csr']},now).all.find(item=>item.itemId==='peloton_credit');
+    const skip={taskKind:task.kind,cardId:task.card.id,itemId:task.itemId,periodKey:task.periodKey,skippedAt:now.toISOString(),expiresAt:task.end.toISOString()};
+    await withAppState({schemaVersion:2,myCards:['csr'],radarSkips:[skip]},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); doc.getElementById('not-shown-toggle').click();
+      doc.querySelector('[data-unskip-task]').click(); await afterRender(win);
+      equal(doc.activeElement.dataset.focusId,`task-${task.key}`);
+    });
+  });
 
   let passed=0; const list=document.getElementById('results');
   for(const t of tests){
     const li=document.createElement('li');
-    try{t.fn();passed++;li.className='pass';li.textContent='PASS: '+t.name;}
+    try{await t.fn();passed++;li.className='pass';li.textContent='PASS: '+t.name;}
     catch(error){li.className='fail';li.textContent='FAIL: '+t.name+' ('+error.message+')';}
     list.appendChild(li);
   }

@@ -12,12 +12,12 @@
 <style>
   :root{
     --bg:#f4f5f7; --card:#ffffff; --ink:#1a1d21; --muted:#596270; --line:#e5e7eb;
-    --accent:#2563eb; --accent-ink:#ffffff; --gold:#b45309; --good:#047857; --warn:#b91c1c;
+    --accent:#2563eb; --primary-bg:#2563eb; --accent-ink:#ffffff; --gold:#b45309; --good:#047857; --warn:#b91c1c;
     --chip:#eef2ff; --chip-ink:#3730a3; --radius:16px;
   }
   @media (prefers-color-scheme: dark){
     :root{ --bg:#0f1115; --card:#191c22; --ink:#f3f4f6; --muted:#aeb6c2; --line:#2a2f38;
-      --accent:#3b82f6; --gold:#f59e0b; --good:#34d399; --warn:#f87171; --chip:#1e2a4a; --chip-ink:#a5b4fc; }
+      --accent:#3b82f6; --primary-bg:#1d4ed8; --gold:#f59e0b; --good:#34d399; --warn:#f87171; --chip:#1e2a4a; --chip-ink:#a5b4fc; }
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   body{margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -31,6 +31,7 @@
   .brand .btag{font-size:12px; color:var(--muted); margin-top:1px}
   header{padding:6px 18px 8px; display:flex; align-items:baseline; gap:8px}
   header h1{font-size:22px; margin:0; letter-spacing:-.02em}
+  header h1:focus{outline:none}
   header .sub{color:var(--muted); font-size:13px}
   main{padding:0 14px; max-width:560px; margin:0 auto}
   .panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:14px; margin:10px 0}
@@ -79,7 +80,7 @@
   .iconbtn:disabled{opacity:.3}
   .pill{border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:99px;
     padding:8px 14px; min-height:44px; font-size:13.5px; cursor:pointer; font-weight:500}
-  .pill.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+  .pill.primary{background:var(--primary-bg); color:var(--accent-ink); border-color:var(--primary-bg)}
   h2{font-size:16px; margin:14px 4px 6px}
   h3{font-size:14px; margin:0 0 6px}
   .section-note{font-size:12px; color:var(--muted); margin:2px 4px 8px}
@@ -690,11 +691,13 @@ function normalizeState(raw,now=new Date(),options={}){
   for(const r of recordsOf(raw.completions).slice(0,500)){
     if(!plainObject(r)||!['activate','select','use'].includes(r.actionType)) continue;
     const cardId=cleanId(r.cardId), itemId=cleanId(r.itemId||r.benefitId||r.quarterlyActionId), periodKey=typeof r.periodKey==='string'&&PERIOD_RE.test(r.periodKey)?r.periodKey:'';
-    const legacyAction=QUARTERLY_ACTIONS.find(a=>a.actionType==='activate'&&a.cardId===cardId&&a.id===itemId);
+    const quarterlyAction=QUARTERLY_ACTIONS.find(a=>a.actionType===r.actionType&&a.cardId===cardId&&a.id===itemId), legacyAction=quarterlyAction&&r.actionType==='activate';
     const legacyUndated=r.completedAt===null&&!!legacyAction, completedAt=legacyUndated?null:(validEventIso(r.completedAt,now)?r.completedAt:'');
     if(!cardId||!itemId||!periodKey||completedAt===''||!validCompletionIdentity(r.actionType,cardId,itemId,periodKey,{...options,labelSnapshot:r.labelSnapshot,cardNameSnapshot:r.cardNameSnapshot})) continue;
     if(options.fromImport&&periodKey!==currentPeriodForTask(r.actionType,cardId,itemId,now)) continue;
+    const periodEnd=periodEndFromKey(periodKey), expectedAttestedBy=quarterlyAction&&periodEnd?localIsoDate(periodLastDate(actionEndFor(quarterlyAction,{key:periodKey,end:periodEnd}))):'';
     const rec={actionType:r.actionType,cardId,itemId,periodKey,completedAt,legacyUndated:legacyUndated||undefined,
+      attestedBy:r.attestedBy===expectedAttestedBy?expectedAttestedBy:undefined,
       labelSnapshot:options.fromImport?'':cleanText(r.labelSnapshot,120),cardNameSnapshot:options.fromImport?'':cleanText(r.cardNameSnapshot,120)};
     if(recordWithinHistory(rec,now)) out.completions[canonicalTaskKey(r.actionType,cardId,itemId,periodKey)]=rec;
   }
@@ -734,33 +737,54 @@ function inspectImportValue(v,depth,counter){
     inspectImportValue(val,depth+1,counter);
   }
 }
+function invalidSetupData(){ throw new SetupLinkError('This setup link contains data this app does not recognize.'); }
 function assertAllowedKeys(value,allowed){
-  if(!plainObject(value)) return;
-  for(const key of Object.keys(value)) if(!allowed.includes(key)) throw new SetupLinkError('This setup link contains data this app does not recognize.');
+  if(!plainObject(value)) invalidSetupData();
+  for(const key of Object.keys(value)) if(!allowed.includes(key)) invalidSetupData();
 }
+function validSetupId(value){ return typeof value==='string'&&!!value&&cleanId(value)===value; }
+function validOptionalText(value){ return value==null||typeof value==='string'; }
 function validateRateMap(value){
-  if(!plainObject(value)) throw new SetupLinkError('This setup link contains data this app does not recognize.');
+  if(!plainObject(value)) invalidSetupData();
   for(const [category,rate] of Object.entries(value)){
-    if(!CAT[category]&&category!=='other') throw new SetupLinkError('This setup link contains data this app does not recognize.');
-    if(!plainObject(rate)) throw new SetupLinkError('This setup link contains data this app does not recognize.');
+    if(!CAT[category]&&category!=='other') invalidSetupData();
     assertAllowedKeys(rate,['v','u','note','cap']);
+    if(typeof rate.v!=='number'||!Number.isFinite(rate.v)||!['x','%'].includes(rate.u)||!validOptionalText(rate.note)||!validOptionalText(rate.cap)) invalidSetupData();
   }
 }
 function validateImportShape(raw){
   assertAllowedKeys(raw,['schemaVersion','catalogVersion','myCards','overrides','cpp','custom','coachDone','activations','enrollments','completions','radarHidden','radarSkips']);
-  if(raw.catalogVersion!=null&&typeof raw.catalogVersion!=='string') throw new SetupLinkError('This setup link contains data this app does not recognize.');
-  if(raw.coachDone!=null&&typeof raw.coachDone!=='boolean') throw new SetupLinkError('This setup link contains data this app does not recognize.');
-  if(raw.myCards!=null&&!Array.isArray(raw.myCards)) throw new SetupLinkError('This setup link contains data this app does not recognize.');
-  if(raw.custom!=null&&!Array.isArray(raw.custom)) throw new SetupLinkError('This setup link contains data this app does not recognize.');
-  for(const key of ['overrides','cpp','activations']) if(raw[key]!=null&&!plainObject(raw[key])) throw new SetupLinkError('This setup link contains data this app does not recognize.');
-  for(const key of ['enrollments','completions','radarHidden','radarSkips']) if(raw[key]!=null&&!Array.isArray(raw[key])&&!plainObject(raw[key])) throw new SetupLinkError('This setup link contains data this app does not recognize.');
-  if(Array.isArray(raw.custom)) for(const card of raw.custom){ assertAllowedKeys(card,['id','name','issuer','program','rates','notes']); if(plainObject(card)) validateRateMap(card.rates); }
+  if(raw.catalogVersion!=null&&typeof raw.catalogVersion!=='string') invalidSetupData();
+  if(raw.coachDone!=null&&typeof raw.coachDone!=='boolean') invalidSetupData();
+  if(raw.myCards!=null&&(!Array.isArray(raw.myCards)||raw.myCards.some(id=>!validSetupId(id)))) invalidSetupData();
+  if(raw.custom!=null&&!Array.isArray(raw.custom)) invalidSetupData();
+  for(const key of ['overrides','cpp','activations']) if(raw[key]!=null&&!plainObject(raw[key])) invalidSetupData();
+  for(const key of ['enrollments','completions','radarHidden','radarSkips']) if(raw[key]!=null&&!Array.isArray(raw[key])&&!plainObject(raw[key])) invalidSetupData();
+  if(Array.isArray(raw.custom)) for(const card of raw.custom){
+    assertAllowedKeys(card,['id','name','issuer','program','rates','notes']);
+    if(!validSetupId(card.id)||typeof card.name!=='string'||!card.name.trim()||!validSetupId(card.program)||!PROGRAMS[card.program]||!validOptionalText(card.issuer)||!validOptionalText(card.notes)) invalidSetupData();
+    validateRateMap(card.rates);
+  }
   if(plainObject(raw.overrides)) for(const rates of Object.values(raw.overrides)) validateRateMap(rates);
-  if(plainObject(raw.cpp)) for(const key of Object.keys(raw.cpp)) if(!PROGRAMS[key]) throw new SetupLinkError('This setup link contains data this app does not recognize.');
-  for(const record of recordsOf(raw.enrollments)) assertAllowedKeys(record,['cardId','benefitId','enrolledAt','labelSnapshot','cardNameSnapshot']);
-  for(const record of recordsOf(raw.completions)) assertAllowedKeys(record,['actionType','cardId','itemId','benefitId','quarterlyActionId','periodKey','completedAt','legacyUndated','labelSnapshot','cardNameSnapshot']);
-  for(const record of recordsOf(raw.radarHidden)) assertAllowedKeys(record,['cardId','benefitId','hiddenAt']);
-  for(const record of recordsOf(raw.radarSkips)) assertAllowedKeys(record,['taskKind','cardId','itemId','periodKey','skippedAt','expiresAt']);
+  if(plainObject(raw.cpp)) for(const [key,value] of Object.entries(raw.cpp)) if(!PROGRAMS[key]||typeof value!=='number'||!Number.isFinite(value)||value<=0) invalidSetupData();
+  if(plainObject(raw.activations)) for(const value of Object.values(raw.activations)) if(typeof value!=='boolean') invalidSetupData();
+  for(const record of recordsOf(raw.enrollments)){
+    assertAllowedKeys(record,['cardId','benefitId','enrolledAt','labelSnapshot','cardNameSnapshot']);
+    if(!validSetupId(record.cardId)||!validSetupId(record.benefitId)||typeof record.enrolledAt!=='string'||!validIso(record.enrolledAt)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
+  }
+  for(const record of recordsOf(raw.completions)){
+    assertAllowedKeys(record,['actionType','cardId','itemId','benefitId','quarterlyActionId','periodKey','completedAt','legacyUndated','attestedBy','labelSnapshot','cardNameSnapshot']);
+    const itemId=record.itemId||record.benefitId||record.quarterlyActionId;
+    if(!['activate','select','use'].includes(record.actionType)||!validSetupId(record.cardId)||!validSetupId(itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||(record.completedAt!==null&&(typeof record.completedAt!=='string'||!validIso(record.completedAt)))||(record.legacyUndated!=null&&typeof record.legacyUndated!=='boolean')||(record.attestedBy!=null&&!localDateFromIsoDate(record.attestedBy))||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
+  }
+  for(const record of recordsOf(raw.radarHidden)){
+    assertAllowedKeys(record,['cardId','benefitId','hiddenAt']);
+    if(!validSetupId(record.cardId)||!validSetupId(record.benefitId)||typeof record.hiddenAt!=='string'||!validIso(record.hiddenAt)) invalidSetupData();
+  }
+  for(const record of recordsOf(raw.radarSkips)){
+    assertAllowedKeys(record,['taskKind','cardId','itemId','periodKey','skippedAt','expiresAt']);
+    if(!['activate','select','use','enroll-task'].includes(record.taskKind)||!validSetupId(record.cardId)||!validSetupId(record.itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||typeof record.skippedAt!=='string'||!validIso(record.skippedAt)||typeof record.expiresAt!=='string'||!validIso(record.expiresAt)) invalidSetupData();
+  }
 }
 function validateImportPayload(raw,encodedLength,decodedBytes){
   if(encodedLength>SETUP_MAX_ENCODED||decodedBytes>SETUP_MAX_DECODED) throw new SetupLinkError('Setup link is too large');
@@ -904,6 +928,7 @@ function localDateFromIsoDate(value){
   const m=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})$/); if(!m) return null;
   const d=new Date(+m[1],+m[2]-1,+m[3]); return d.getFullYear()===+m[1]&&d.getMonth()===+m[2]-1&&d.getDate()===+m[3]?d:null;
 }
+function localIsoDate(date){ return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; }
 function periodLastDate(end){ const d=new Date(end); d.setDate(d.getDate()-1); return d; }
 function displayDate(value){
   if(!value) return ''; const d=value instanceof Date?value:new Date(value); if(isNaN(d)) return '';
@@ -918,6 +943,7 @@ function benefitDetail(meta,benefit,now){
 }
 function completedLabel(task){
   const verb=task.actionType==='activate'?'Activated':task.actionType==='select'?'Selected':'Used';
+  if(task.attestedBy) return `${verb} by ${displayDate(localDateFromIsoDate(task.attestedBy))}`;
   return task.completedAt?`${verb} ${displayDate(task.completedAt)}`:verb;
 }
 function taskRetentionVisible(task,now){
@@ -938,7 +964,7 @@ function buildQuarterlyTasks(now=new Date(),state=S){
     return {key,kind:a.actionType,actionType:a.actionType,itemId:a.id,periodKey:period.key,end:period.end,actionEnd,closed,card,title:a.name,
       detail,unavailable,link:a.link,externalLabel:(record||closed)?(a.reviewLabel||'Review benefit'):a.externalLabel,reviewLabel:a.reviewLabel,
       nonRetroactive:a.nonRetroactive,affectsRanking:a.affectsRanking,skipped:!!state.radarSkips[key],
-      done:!!record,completedAt:record&&record.completedAt,group:'act',daysLeft:Math.max(0,calendarDays(localDay(now),actionEnd)-1),
+      done:!!record,completedAt:record&&record.completedAt,attestedBy:record&&record.attestedBy,group:'act',daysLeft:Math.max(0,calendarDays(localDay(now),actionEnd)-1),
       markLabel:a.actionType==='select'?'Mark selected':'Mark activated'};
   });
 }
@@ -979,12 +1005,27 @@ function taskSummary(task){
   if(task.actionType==='enroll') return task.prerequisiteLabel==='Add card to Uber'?`Add ${task.card.name} to Uber to use ${task.title}.`:`Enroll in ${task.title} for ${task.card.name}.`;
   return `${task.title} (${task.amount}) expires ${task.daysLeft===0?'today':`in ${task.daysLeft} days`}.`;
 }
-function completionRecordForTask(task){
-  return {actionType:task.actionType,cardId:task.card.id,itemId:task.itemId,periodKey:task.periodKey,completedAt:new Date().toISOString(),
+function completionRecordForTask(task,recordedAt=new Date()){
+  const record={actionType:task.actionType,cardId:task.card.id,itemId:task.itemId,periodKey:task.periodKey,completedAt:recordedAt.toISOString(),
     labelSnapshot:task.title,cardNameSnapshot:task.card.name};
+  if(task.closed&&task.actionEnd) record.attestedBy=localIsoDate(periodLastDate(task.actionEnd));
+  return record;
+}
+function currentFocusForTask(task){
+  const kind=task.kind||task.actionType, periodKey=currentPeriodForTask(kind,task.card.id,task.itemId,new Date());
+  return periodKey?`task-${canonicalTaskKey(kind,task.card.id,task.itemId,periodKey)}`:'';
+}
+function refreshForPeriodChange(focusId){
+  render(); restoreFocus(focusId); toast('A new benefit period started. Review the refreshed items.',5000);
+}
+function taskPeriodIsCurrent(task){
+  const kind=task.kind||task.actionType;
+  return task.periodKey===currentPeriodForTask(kind,task.card.id,task.itemId,new Date());
 }
 function setTaskChecked(task,checked,focusId){
-  const message=checked?(task.actionType==='activate'?'Marked activated':task.actionType==='select'?'Marked selected':task.actionType==='enroll'?task.prerequisiteToast:'Marked used'):'Marked incomplete';
+  if(!taskPeriodIsCurrent(task)){ refreshForPeriodChange(currentFocusForTask(task)||focusId); return; }
+  const beforeDeadline=task.closed&&task.actionEnd?`Recorded as ${task.actionType==='select'?'selected':'activated'} by ${displayDate(periodLastDate(task.actionEnd))}`:'';
+  const message=checked?(beforeDeadline||(task.actionType==='activate'?'Marked activated':task.actionType==='select'?'Marked selected':task.actionType==='enroll'?task.prerequisiteToast:'Marked used')):'Marked incomplete';
   const nextFocus=checked&&task.actionType==='enroll'?`task-${canonicalTaskKey('use',task.card.id,task.benefitId,task.periodKey)}`:(focusId||task.key);
   mutateWithUndo(message,()=>{
     if(task.actionType==='enroll'){
@@ -995,13 +1036,14 @@ function setTaskChecked(task,checked,focusId){
     else delete S.completions[task.key];
   },nextFocus,focusId||task.key);
 }
-function setBenefitEnrollment(cardId,benefitId,checked,focusId){
+function setBenefitEnrollment(cardId,benefitId,checked,focusId,periodKey){
   const benefit=benefitById(cardId,benefitId), card=getCard(cardId), key=canonicalEnrollmentKey(cardId,benefitId), meta=RADAR_BENEFIT_MAP[cardId+':'+benefitId];
+  const currentPeriod=meta&&periodInfo(meta.cadence,new Date()).key;
+  if(!currentPeriod||periodKey!==currentPeriod){ refreshForPeriodChange(focusId); return; }
   mutateWithUndo(checked?(meta.prerequisiteToast||'Marked enrolled'):'Setup status removed',()=>{
     if(checked){
       S.enrollments[key]={cardId,benefitId,enrolledAt:new Date().toISOString(),labelSnapshot:benefit.name,cardNameSnapshot:card.name};
-      const p=periodInfo(meta.cadence,new Date());
-      delete S.radarSkips[canonicalTaskKey('enroll-task',cardId,benefitId,p.key)];
+      delete S.radarSkips[canonicalTaskKey('enroll-task',cardId,benefitId,periodKey)];
     }else delete S.enrollments[key];
   },focusId);
 }
@@ -1030,10 +1072,12 @@ function showTaskInRadar(task){
 function completionHistory(now=new Date()){
   const cutoff=minusCalendarMonths(localDay(now),24), events=[];
   for(const r of Object.values(S.completions)){
+    if(!recordWithinHistory(r,now)) continue;
     const action=QUARTERLY_ACTIONS.find(a=>a.id===r.itemId), benefit=benefitById(r.cardId,r.itemId), card=getCard(r.cardId);
     const verb=r.actionType==='activate'?'Activated':r.actionType==='select'?'Selected':'Used';
-    events.push({at:r.completedAt,sortAt:r.completedAt||periodEndFromKey(r.periodKey),label:`${verb}: ${action?action.name:benefit?benefit.name:r.labelSnapshot}`,
-      cardName:card?card.name:r.cardNameSnapshot,undated:!r.completedAt});
+    const attested=r.attestedBy?`${verb} by ${displayDate(localDateFromIsoDate(r.attestedBy))}`:verb;
+    events.push({at:r.completedAt,sortAt:r.completedAt||periodEndFromKey(r.periodKey),label:`${attested}: ${action?action.name:benefit?benefit.name:r.labelSnapshot}`,
+      cardName:card?card.name:r.cardNameSnapshot,undated:!r.completedAt,recorded:!!r.attestedBy});
   }
   for(const r of Object.values(S.enrollments)){
     const d=new Date(r.enrolledAt); if(localDay(d)<cutoff) continue;
@@ -1092,8 +1136,10 @@ function rankFor(catId){
 const mainEl = document.getElementById('main');
 const initialPromosView=history.state&&['radar','quarterly'].includes(history.state.promosView)?history.state.promosView:'overview';
 let TAB=initialPromosView==='overview'?'which':'promos', selectedCat=null, PROMOS_VIEW=initialPromosView, radarHistoryOpen=false, notShownOpen=false, historyLimit=20;
+let renderedMonthKey=periodInfo('month',new Date()).key;
 
 function render(){
+  renderedMonthKey=periodInfo('month',new Date()).key;
   document.querySelectorAll('nav button').forEach(b=>{
     const on=b.dataset.tab===TAB; b.classList.toggle('on',on);
     if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
@@ -1103,7 +1149,7 @@ function render(){
   if(TAB==='cards'){ hdr.textContent='My cards'; sub.textContent='priority order breaks ties'; renderCards(); }
   if(TAB==='benefits'){ hdr.textContent='Benefits'; sub.textContent='what your cards give you'; renderBenefits(); }
   if(TAB==='promos'){
-    if(PROMOS_VIEW==='radar'){ hdr.textContent='Radar'; sub.textContent='what needs your attention'; }
+    if(PROMOS_VIEW==='radar'){ hdr.textContent='Radar'; sub.textContent='actions across your cards'; }
     else if(PROMOS_VIEW==='quarterly'){ hdr.textContent='Quarterly actions'; sub.textContent=currentQuarter().replace('-',' '); }
     else { hdr.textContent='Promos & activations'; sub.textContent=currentQuarter().replace('-',' '); }
     renderPromos();
@@ -1305,7 +1351,7 @@ function renderBenefits(){
           <div class="action-links"><a class="issuer-action" href="${meta.link}" target="_blank" rel="noopener noreferrer" aria-label="${linkLabel} for ${esc(b.name)}, ${esc(b.card.name)}, on issuer site, opens in a new tab">${linkLabel} <span aria-hidden="true">↗</span></a>
           ${hidden?`<button class="manage-action" data-show-radar="${b.card.id}:${b.id}" data-restore-focus="${restoreFocusId}" data-focus-id="show-${b.card.id}-${b.id}" aria-label="Track ${esc(b.name)} in Radar, ${esc(b.card.name)}">Track in Radar</button>`:''}</div>
         </div><div>
-          ${meta.requiresEnrollment?`<label class="task-check"><input type="checkbox" data-benefit-enroll="${b.card.id}:${b.id}" data-focus-id="enroll-${b.card.id}-${b.id}" aria-label="${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark} for ${esc(b.name)}, ${esc(b.card.name)}" ${enrolled?'checked':''}>${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark}</label>`:''}
+          ${meta.requiresEnrollment?`<label class="task-check"><input type="checkbox" data-benefit-enroll="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="enroll-${b.card.id}-${b.id}" aria-label="${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark} for ${esc(b.name)}, ${esc(b.card.name)}" ${enrolled?'checked':''}>${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark}</label>`:''}
           ${(!meta.requiresEnrollment||enrolled)?`<label class="task-check"><input type="checkbox" data-benefit-use="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="use-${b.card.id}-${b.id}" aria-label="${used?'Used '+displayDate(used.completedAt):'Mark used'} for ${esc(b.name)}, ${esc(b.card.name)}" ${used?'checked':''}>${used?'Used '+displayDate(used.completedAt):'Mark used'}</label>`:''}
         </div></div>`;
       }).join('') +
@@ -1318,7 +1364,7 @@ function renderBenefits(){
   mainEl.innerHTML = html;
   mainEl.querySelectorAll('[data-bcat]').forEach(b=>b.onclick=()=>{ selectedBenefitCat = (selectedBenefitCat===b.dataset.bcat)?null:b.dataset.bcat; render(); });
   mainEl.querySelectorAll('[data-benefit-enroll]').forEach(cb=>cb.onchange=()=>{
-    const [cardId,benefitId]=cb.dataset.benefitEnroll.split(':'); setBenefitEnrollment(cardId,benefitId,cb.checked,cb.dataset.focusId);
+    const [cardId,benefitId]=cb.dataset.benefitEnroll.split(':'); setBenefitEnrollment(cardId,benefitId,cb.checked,cb.dataset.focusId,cb.dataset.periodKey);
   });
   mainEl.querySelectorAll('[data-benefit-use]').forEach(cb=>cb.onchange=()=>{
     const [cardId,benefitId]=cb.dataset.benefitUse.split(':'), periodKey=cb.dataset.periodKey, end=periodEndFromKey(periodKey);
@@ -1409,7 +1455,7 @@ function renderHistory(){
       const d=event.at?new Date(event.at):event.sortAt, month=d?d.toLocaleDateString(undefined,{month:'long',year:'numeric'}):'Earlier';
       if(month!==previous){ html+=`<div class="history-month">${esc(month)}</div>`; previous=month; }
       html+=`<div class="history-row"><div><strong>${esc(event.label)}</strong><div class="action-meta">${esc(event.cardName||'Card no longer in My cards')}</div></div>
-        <span class="when">${event.undated?'Date unavailable':displayDate(event.at)}</span></div>`;
+        <span class="when">${event.undated?'Date unavailable':event.recorded?`Recorded ${displayDate(event.at)}`:displayDate(event.at)}</span></div>`;
     }
     if(!events.length) html+='<div class="quiet-state">No completions yet.</div>';
     if(events.length>historyLimit) html+='<button class="pill" id="history-more" data-focus-id="history-more" style="margin:12px 4px">Load 20 older items</button>';
@@ -1418,7 +1464,7 @@ function renderHistory(){
   return html+'</div>';
 }
 function renderFullRadar(){
-  const radar=buildRadarTasks(new Date()), state=radarOverviewState(radar), groups=[['act','Act now'],['soon','Due soon'],['later','Later']];
+  const radar=buildRadarTasks(new Date()), state=radarOverviewState(radar), groups=[['act','Current actions'],['soon','Due soon'],['later','Later']];
   let html=`<button class="back-btn" id="promos-back"><span aria-hidden="true">‹</span> Promos</button>`;
   if(!radar.active.length) html+=`<div class="action-list"><div class="quiet-state"><strong>${esc(state.copy)}</strong>${state.action==='cards'?'<div style="margin-top:10px"><button class="pill" data-go-cards>Add cards</button></div>':''}</div></div>`;
   else if(!radar.unresolved.length) html+=`<div class="action-list"><div class="quiet-state"><strong>Nothing needs your attention</strong></div></div>`;
@@ -1440,18 +1486,27 @@ function renderFullQuarterly(){
   mainEl.innerHTML=html;
 }
 function findCurrentTask(key){ return buildRadarTasks(new Date()).all.find(t=>t.key===key); }
+function currentFocusForTaskKey(key){
+  const parts=String(key).split(':'); if(parts.length!==4) return '';
+  const [kind,cardId,itemId]=parts, periodKey=currentPeriodForTask(kind,cardId,itemId,new Date());
+  return periodKey?`task-${canonicalTaskKey(kind,cardId,itemId,periodKey)}`:'';
+}
+function findCurrentTaskOrRefresh(key){
+  const task=findCurrentTask(key); if(task) return task;
+  refreshForPeriodChange(currentFocusForTaskKey(key)); return null;
+}
 function bindPromoActions(){
   document.getElementById('radar-view-all')?.addEventListener('click',()=>openPromosSubview('radar'));
   document.getElementById('quarterly-view-all')?.addEventListener('click',()=>openPromosSubview('quarterly'));
   document.getElementById('promos-back')?.addEventListener('click',backFromPromos);
   document.getElementById('ics')?.addEventListener('click',downloadICS);
   mainEl.querySelectorAll('[data-go-cards]').forEach(b=>b.onclick=()=>{TAB='cards';PROMOS_VIEW='overview';render();});
-  mainEl.querySelectorAll('[data-task-check]').forEach(cb=>cb.onchange=()=>{const task=findCurrentTask(cb.dataset.taskCheck);if(task)setTaskChecked(task,cb.checked,cb.dataset.focusId);});
-  mainEl.querySelectorAll('[data-skip-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.skipTask);if(task)skipTask(task);});
-  mainEl.querySelectorAll('[data-hide-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.hideTask);if(task)hideBenefitTask(task);});
-  mainEl.querySelectorAll('[data-unskip-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.unskipTask);if(task)unskipTask(task);});
-  mainEl.querySelectorAll('[data-restore-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.restoreTask);if(task)restoreBenefit(task.card.id,task.benefitId,`task-${task.key}`,'not-shown-toggle');});
-  mainEl.querySelectorAll('[data-show-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.showTask);if(task)showTaskInRadar(task);});
+  mainEl.querySelectorAll('[data-task-check]').forEach(cb=>cb.onchange=()=>{const task=findCurrentTaskOrRefresh(cb.dataset.taskCheck);if(task)setTaskChecked(task,cb.checked,cb.dataset.focusId);});
+  mainEl.querySelectorAll('[data-skip-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTaskOrRefresh(b.dataset.skipTask);if(task)skipTask(task);});
+  mainEl.querySelectorAll('[data-hide-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTaskOrRefresh(b.dataset.hideTask);if(task)hideBenefitTask(task);});
+  mainEl.querySelectorAll('[data-unskip-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTaskOrRefresh(b.dataset.unskipTask);if(task)unskipTask(task);});
+  mainEl.querySelectorAll('[data-restore-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTaskOrRefresh(b.dataset.restoreTask);if(task)restoreBenefit(task.card.id,task.benefitId,`task-${task.key}`,'not-shown-toggle');});
+  mainEl.querySelectorAll('[data-show-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTaskOrRefresh(b.dataset.showTask);if(task)showTaskInRadar(task);});
   document.getElementById('not-shown-toggle')?.addEventListener('click',()=>{notShownOpen=!notShownOpen;render();restoreFocus('not-shown-toggle');});
   document.getElementById('history-toggle')?.addEventListener('click',()=>{radarHistoryOpen=!radarHistoryOpen;render();restoreFocus('history-toggle');});
   document.getElementById('history-more')?.addEventListener('click',()=>{historyLimit+=20;render();restoreFocus(document.getElementById('history-more')?'history-more':'history-toggle');});
@@ -1528,7 +1583,7 @@ async function copySetupLink(skipConfirmation=false){
   try{ await navigator.clipboard.writeText(url); toast('Setup link copied'); }
   catch(e){ prompt('Copy this setup link:',url); }
 }
-Object.assign(window.CardRouterRadar,{validateImportPayload,encodeSetupPayload,encodeSetupState,decodeSetupPayload,validEventIso,periodMatchesCadence,taskStatusLines});
+Object.assign(window.CardRouterRadar,{validateImportPayload,encodeSetupPayload,encodeSetupState,decodeSetupPayload,validEventIso,periodMatchesCadence,taskStatusLines,completionRecordForTask});
 
 /* ---------- modal & nav ---------- */
 function openModal(){ document.getElementById('modal').classList.add('open'); }
@@ -1540,6 +1595,13 @@ window.addEventListener('popstate',e=>{
   PROMOS_VIEW=e.state&&['radar','quarterly'].includes(e.state.promosView)?e.state.promosView:'overview';
   TAB='promos'; render(); window.scrollTo({top:0,behavior:'auto'}); requestAnimationFrame(()=>document.getElementById('hdr').focus());
 });
+function refreshIfCalendarChanged(){
+  const currentMonthKey=periodInfo('month',new Date()).key;
+  if(currentMonthKey===renderedMonthKey) return;
+  render(); toast('A new benefit period started. Review the refreshed items.',5000);
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshIfCalendarChanged();});
+window.addEventListener('pageshow',refreshIfCalendarChanged);
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   TAB=b.dataset.tab; PROMOS_VIEW='overview'; history.replaceState({promosView:'overview'},'',location.pathname+location.search);
   render(); window.scrollTo({top:0,behavior:'auto'});
