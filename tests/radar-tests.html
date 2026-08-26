@@ -177,13 +177,16 @@ document.getElementById('app').addEventListener('load',async()=>{
     equal(state.custom.length,1); equal(state.myCards[0],state.custom[0].id); assert(state.overrides[state.custom[0].id],'Legacy override should follow the remapped card ID');
   });
   test('setup validation rejects unknown identities and false attestations atomically',()=>{
-    const completedAt=new Date().toISOString(), invalid=[
+    const now=new Date(), completedAt=now.toISOString(), currentMonth=R.periodInfo('month',now).key, currentQuarter=R.periodInfo('quarter',now).key, invalid=[
       {schemaVersion:2,myCards:['not_a_real_card']},
       {schemaVersion:2,completions:[{actionType:'use',cardId:'amex_gold',itemId:'not_a_benefit',periodKey:'2026-08',completedAt}]},
-      {schemaVersion:2,completions:[{actionType:'activate',cardId:'freedom_flex',itemId:'freedom_flex_5x',periodKey:'2026-Q3',completedAt,attestedBy:'2026-09-13'}]}
+      {schemaVersion:2,completions:[{actionType:'activate',cardId:'freedom_flex',itemId:'freedom_flex_5x',periodKey:'2026-Q3',completedAt,attestedBy:'2026-09-13'}]},
+      {schemaVersion:2,enrollments:[{cardId:'amex_gold',benefitId:'dining_credit',enrolledAt:'9999-12-31T00:00:00.000Z'}]},
+      {schemaVersion:2,completions:[{actionType:'use',cardId:'amex_gold',itemId:'dining_credit',periodKey:currentMonth,completedAt:'9999-12-31T00:00:00.000Z'}]},
+      {schemaVersion:2,radarSkips:[{taskKind:'activate',cardId:'freedom_flex',itemId:'freedom_flex_5x',periodKey:currentQuarter,skippedAt:completedAt,expiresAt:'9999-12-31T00:00:00.000Z'}]}
     ];
     for(const raw of invalid){
-      let threw=false; try{R.validateImportPayload(raw,300,300);}catch(error){threw=true;}
+      let threw=false; try{R.validateImportPayload(raw,300,300,now);}catch(error){threw=true;}
       assert(threw,'Unsupported setup identity should reject the whole import');
     }
   });
@@ -245,7 +248,7 @@ document.getElementById('app').addEventListener('load',async()=>{
       const checkbox=doc.querySelector('[data-task-check]'), actualState=checkbox.dataset.taskState;
       checkbox.dataset.taskState=actualState==='closed'?'open':'closed'; checkbox.checked=true; checkbox.dispatchEvent(new win.Event('change',{bubbles:true})); await afterRender(win);
       const saved=JSON.parse(win.localStorage.getItem('cardrouter'));
-      equal(Object.keys(saved.completions).length,0); assert(doc.getElementById('toastmsg').textContent.includes('deadline changed'),'Stale deadline change should be rejected visibly');
+      equal(Object.keys(saved.completions).length,0); assert(doc.getElementById('toastmsg').textContent.includes('deadline has passed'),'Stale deadline change should be rejected visibly');
     });
   });
   test('retained checked rows appear under Recently completed, not urgency headings',async()=>{

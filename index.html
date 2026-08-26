@@ -783,7 +783,7 @@ function validateRateMap(value){
     if(typeof rate.v!=='number'||!Number.isFinite(rate.v)||!['x','%'].includes(rate.u)||!validOptionalText(rate.note)||!validOptionalText(rate.cap)) invalidSetupData();
   }
 }
-function validateImportShape(raw){
+function validateImportShape(raw,now=new Date()){
   assertAllowedKeys(raw,['schemaVersion','catalogVersion','myCards','overrides','cpp','custom','coachDone','activations','enrollments','completions','radarHidden','radarSkips']);
   if(raw.catalogVersion!=null&&typeof raw.catalogVersion!=='string') invalidSetupData();
   if(raw.coachDone!=null&&typeof raw.coachDone!=='boolean') invalidSetupData();
@@ -806,30 +806,32 @@ function validateImportShape(raw){
   if(plainObject(raw.activations)) for(const [key,value] of Object.entries(raw.activations)) if(!/^\d{4}-Q[1-4]:(?:freedom_flex|discover_it)$/.test(key)||typeof value!=='boolean') invalidSetupData();
   for(const record of recordsOf(raw.enrollments)){
     assertAllowedKeys(record,['cardId','benefitId','enrolledAt','labelSnapshot','cardNameSnapshot']);
-    if(!validSetupId(record.cardId)||!validSetupId(record.benefitId)||!RADAR_BENEFIT_MAP[record.cardId+':'+record.benefitId]||typeof record.enrolledAt!=='string'||!validIso(record.enrolledAt)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
+    if(!validSetupId(record.cardId)||!validSetupId(record.benefitId)||!RADAR_BENEFIT_MAP[record.cardId+':'+record.benefitId]||typeof record.enrolledAt!=='string'||!validEventIso(record.enrolledAt,now)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
   }
   for(const record of recordsOf(raw.completions)){
     assertAllowedKeys(record,['actionType','cardId','itemId','benefitId','quarterlyActionId','periodKey','completedAt','legacyUndated','attestedBy','labelSnapshot','cardNameSnapshot']);
     const itemId=record.itemId||record.benefitId||record.quarterlyActionId, action=QUARTERLY_ACTIONS.find(item=>item.actionType===record.actionType&&item.cardId===record.cardId&&item.id===itemId);
     const periodEnd=periodEndFromKey(record.periodKey), expectedAttestedBy=action&&periodEnd?localIsoDate(periodLastDate(actionEndFor(action,{key:record.periodKey,end:periodEnd}))):'';
-    if(!['activate','select','use'].includes(record.actionType)||!validSetupId(record.cardId)||!validSetupId(itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validCompletionIdentity(record.actionType,record.cardId,itemId,record.periodKey,{fromImport:true})||(record.completedAt!==null&&(typeof record.completedAt!=='string'||!validIso(record.completedAt)))||(record.completedAt===null&&!(action&&record.actionType==='activate'))||(record.legacyUndated!=null&&typeof record.legacyUndated!=='boolean')||(record.attestedBy!=null&&record.attestedBy!==expectedAttestedBy)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
+    const completionTimeValid=record.completedAt===null||(typeof record.completedAt==='string'&&validEventIso(record.completedAt,now));
+    if(!['activate','select','use'].includes(record.actionType)||!validSetupId(record.cardId)||!validSetupId(itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validCompletionIdentity(record.actionType,record.cardId,itemId,record.periodKey,{fromImport:true})||!completionTimeValid||(record.completedAt===null&&!(action&&record.actionType==='activate'))||(record.completedAt!==null&&!recordWithinHistory({completedAt:record.completedAt,periodKey:record.periodKey},now))||(record.legacyUndated!=null&&typeof record.legacyUndated!=='boolean')||(record.attestedBy!=null&&record.attestedBy!==expectedAttestedBy)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
   }
   for(const record of recordsOf(raw.radarHidden)){
     assertAllowedKeys(record,['cardId','benefitId','hiddenAt']);
-    if(!validSetupId(record.cardId)||!validSetupId(record.benefitId)||!RADAR_BENEFIT_MAP[record.cardId+':'+record.benefitId]||typeof record.hiddenAt!=='string'||!validIso(record.hiddenAt)) invalidSetupData();
+    if(!validSetupId(record.cardId)||!validSetupId(record.benefitId)||!RADAR_BENEFIT_MAP[record.cardId+':'+record.benefitId]||typeof record.hiddenAt!=='string'||!validEventIso(record.hiddenAt,now)) invalidSetupData();
   }
   for(const record of recordsOf(raw.radarSkips)){
     assertAllowedKeys(record,['taskKind','cardId','itemId','periodKey','skippedAt','expiresAt']);
-    if(!['activate','select','use','enroll-task'].includes(record.taskKind)||!validSetupId(record.cardId)||!validSetupId(record.itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validTaskIdentity(record.taskKind,record.cardId,record.itemId,record.periodKey)||typeof record.skippedAt!=='string'||!validIso(record.skippedAt)||typeof record.expiresAt!=='string'||!validIso(record.expiresAt)) invalidSetupData();
+    const expiry=new Date(record.expiresAt), maxExpiry=new Date(now.getFullYear()+2,now.getMonth(),now.getDate());
+    if(!['activate','select','use','enroll-task'].includes(record.taskKind)||!validSetupId(record.cardId)||!validSetupId(record.itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validTaskIdentity(record.taskKind,record.cardId,record.itemId,record.periodKey)||typeof record.skippedAt!=='string'||!validEventIso(record.skippedAt,now)||typeof record.expiresAt!=='string'||!validIso(record.expiresAt)||expiry<=now||expiry>maxExpiry) invalidSetupData();
   }
 }
-function validateImportPayload(raw,encodedLength,decodedBytes){
+function validateImportPayload(raw,encodedLength,decodedBytes,now=new Date()){
   if(encodedLength>SETUP_MAX_ENCODED||decodedBytes>SETUP_MAX_DECODED) throw new SetupLinkError('Setup link is too large');
   const version=raw&&raw.schemaVersion==null?1:raw&&raw.schemaVersion;
   if(!plainObject(raw)||!Number.isInteger(version)||![1,2].includes(version)) throw new SetupLinkError('Setup link version is not supported');
   const candidate=version===1?migrateLegacyCustomIds(raw):raw;
   inspectImportValue(candidate,0,{n:0});
-  validateImportShape(candidate);
+  validateImportShape(candidate,now);
   if((candidate.myCards||[]).length>50||(candidate.custom||[]).length>25) throw new SetupLinkError('Setup link contains too many cards');
   if(plainObject(candidate.overrides)&&Object.keys(candidate.overrides).length>50) throw new SetupLinkError('This setup link contains too many custom rate overrides.');
   if(plainObject(candidate.cpp)&&Object.keys(candidate.cpp).length>25) throw new SetupLinkError('This setup link contains too many point valuations.');
@@ -880,9 +882,9 @@ function loadState(){
     const encoded=location.hash.slice(1); stripSetupHash();
     try{
       if(encoded.length>SETUP_MAX_ENCODED) throw new SetupLinkError('Setup link is too large');
-      const decoded=decodeSetupPayload(encoded), bytes=new TextEncoder().encode(decoded).length, raw=JSON.parse(decoded);
-      const validated=validateImportPayload(raw,encoded.length,bytes);
-      const imported=normalizeState(validated,new Date(),{fromImport:true});
+      const decoded=decodeSetupPayload(encoded), bytes=new TextEncoder().encode(decoded).length, raw=JSON.parse(decoded), importNow=new Date();
+      const validated=validateImportPayload(raw,encoded.length,bytes,importNow);
+      const imported=normalizeState(validated,importNow,{fromImport:true});
       if(stateHasData(local)&&!confirm('Replace this device\'s cards, settings, benefit enrollments, hidden Radar items, skipped periods, and current checkmarks with this setup link?')){
         startupNotice='Setup import canceled'; return local;
       }
@@ -949,6 +951,28 @@ function restoreFocus(focusId){
     const exact=focusId&&document.querySelector(`[data-focus-id="${focusId}"]`);
     const fallback=document.getElementById('radar-view-all')||document.querySelector('main button, main a');
     (exact||fallback)?.focus({preventScroll:true});
+  });
+}
+function captureRefreshFocus(now){
+  const active=document.activeElement; if(!active||!mainEl.contains(active)) return null;
+  if(active.dataset.taskCheck) return {type:'focusId',value:currentFocusForTaskKey(active.dataset.taskCheck,now)};
+  if(active.dataset.focusId) return {type:'focusId',value:active.dataset.focusId};
+  for(const attribute of ['data-skip-task','data-hide-task','data-unskip-task','data-restore-task','data-show-task','data-show-radar','data-benefit-enroll','data-benefit-use','data-bcat']){
+    if(active.hasAttribute(attribute)) return {type:'attribute',attribute,value:active.getAttribute(attribute)};
+  }
+  if(active.id) return {type:'id',value:active.id};
+  if(active.getAttribute('aria-label')) return {type:'aria',value:active.getAttribute('aria-label')};
+  return null;
+}
+function restoreRefreshFocus(target){
+  if(!target) return;
+  requestAnimationFrame(()=>{
+    let element=null;
+    if(target.type==='focusId') element=[...document.querySelectorAll('[data-focus-id]')].find(item=>item.dataset.focusId===target.value);
+    else if(target.type==='attribute') element=[...document.querySelectorAll(`[${target.attribute}]`)].find(item=>item.getAttribute(target.attribute)===target.value);
+    else if(target.type==='id') element=document.getElementById(target.value);
+    else if(target.type==='aria') element=[...document.querySelectorAll('[aria-label]')].find(item=>item.getAttribute('aria-label')===target.value);
+    element?.focus({preventScroll:true});
   });
 }
 /* One-time coach mark: after the first card is added, point at the "Which card?" tab. */
@@ -1057,7 +1081,7 @@ function refreshForPeriodChange(focusId){
   render(); restoreFocus(focusId); toast('The tracking period changed, so your change was not saved. Review the refreshed items.',5000);
 }
 function refreshForDeadlineChange(focusId){
-  render(); restoreFocus(focusId); toast('The deadline changed, so your change was not saved. Review the refreshed item.',5000);
+  render(); restoreFocus(focusId); toast('The deadline has passed, so your change was not saved. Review the refreshed item.',5000);
 }
 function taskPeriodIsCurrent(task,now=new Date()){
   const kind=task.kind||task.actionType;
@@ -1649,7 +1673,7 @@ window.addEventListener('popstate',e=>{
 function refreshIfCalendarChanged(){
   const now=new Date(), currentDayKey=localIsoDate(localDay(now)), currentMonthKey=periodInfo('month',now).key, previousMonthKey=renderedMonthKey;
   if(currentDayKey===renderedDayKey) return;
-  render();
+  const focusTarget=captureRefreshFocus(now); render(); restoreRefreshFocus(focusTarget);
   if(currentMonthKey!==previousMonthKey) toast('A new tracking period started. Review the refreshed items.',5000);
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshIfCalendarChanged();});
