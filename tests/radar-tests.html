@@ -168,6 +168,25 @@ document.getElementById('app').addEventListener('load',async()=>{
       assert(threw,'Malformed setup data should reject the whole import');
     }
   });
+  test('legacy long custom-card IDs migrate without losing lineup or overrides',()=>{
+    const legacyId='cust_'+('long_card_name_'.repeat(6)), raw={myCards:[legacyId],custom:[{
+      id:legacyId,name:'A deliberately long legacy custom card name that still belongs to the user',issuer:'Custom',program:'cash',rates:{other:{v:2,u:'%'}},notes:''
+    }],overrides:{[legacyId]:{gas:{v:3,u:'%'}}}};
+    const validated=R.validateImportPayload(raw,800,600), state=R.normalizeState(raw,new Date());
+    assert(validated.custom[0].id.length<=64,'Imported legacy ID should be remapped before validation');
+    equal(state.custom.length,1); equal(state.myCards[0],state.custom[0].id); assert(state.overrides[state.custom[0].id],'Legacy override should follow the remapped card ID');
+  });
+  test('setup validation rejects unknown identities and false attestations atomically',()=>{
+    const completedAt=new Date().toISOString(), invalid=[
+      {schemaVersion:2,myCards:['not_a_real_card']},
+      {schemaVersion:2,completions:[{actionType:'use',cardId:'amex_gold',itemId:'not_a_benefit',periodKey:'2026-08',completedAt}]},
+      {schemaVersion:2,completions:[{actionType:'activate',cardId:'freedom_flex',itemId:'freedom_flex_5x',periodKey:'2026-Q3',completedAt,attestedBy:'2026-09-13'}]}
+    ];
+    for(const raw of invalid){
+      let threw=false; try{R.validateImportPayload(raw,300,300);}catch(error){threw=true;}
+      assert(threw,'Unsupported setup identity should reject the whole import');
+    }
+  });
   test('late quarterly completion records an attested deadline separately',()=>{
     const now=new Date(2026,8,16,12), task=R.buildRadarTasks({myCards:['freedom_flex']},now).all[0];
     const record=R.completionRecordForTask(task,now), completed=R.buildRadarTasks({myCards:['freedom_flex'],completions:[record]},now).all[0];
@@ -205,7 +224,7 @@ document.getElementById('app').addEventListener('load',async()=>{
       checkbox.dataset.periodKey='2000-01'; checkbox.checked=true; checkbox.dispatchEvent(new win.Event('change',{bubbles:true})); await afterRender(win);
       const saved=JSON.parse(win.localStorage.getItem('cardrouter'));
       equal(Object.keys(saved.enrollments).length,0); assert(!doc.querySelector('[data-benefit-enroll="amex_gold:dining_credit"]').checked,'Refreshed checkbox should be unchecked');
-      assert(doc.getElementById('toastmsg').textContent.includes('new benefit period'),'The refresh should explain why the action was not saved');
+      assert(doc.getElementById('toastmsg').textContent.includes('change was not saved'),'The refresh should explain why the action was not saved');
     });
   });
   test('stale Radar checkbox refreshes instead of retaining a false checkmark',async()=>{
@@ -217,7 +236,26 @@ document.getElementById('app').addEventListener('load',async()=>{
       checkbox.dispatchEvent(new win.Event('change',{bubbles:true})); await afterRender(win);
       const saved=JSON.parse(win.localStorage.getItem('cardrouter')), current=[...doc.querySelectorAll('[data-task-check]')].find(cb=>cb.dataset.taskCheck.includes(':dining_credit:'));
       equal(Object.keys(saved.completions).length,0); assert(current&&!current.checked,'Refreshed Radar checkbox should be unchecked');
-      assert(doc.getElementById('toastmsg').textContent.includes('new benefit period'),'The refresh should explain why the action was not saved');
+      assert(doc.getElementById('toastmsg').textContent.includes('change was not saved'),'The refresh should explain why the action was not saved');
+    });
+  });
+  test('stale pre-deadline checkbox requires the refreshed attestation before saving',async()=>{
+    await withAppState({schemaVersion:2,myCards:['usb_cashplus']},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('quarterly-view-all').click();
+      const checkbox=doc.querySelector('[data-task-check]'), actualState=checkbox.dataset.taskState;
+      checkbox.dataset.taskState=actualState==='closed'?'open':'closed'; checkbox.checked=true; checkbox.dispatchEvent(new win.Event('change',{bubbles:true})); await afterRender(win);
+      const saved=JSON.parse(win.localStorage.getItem('cardrouter'));
+      equal(Object.keys(saved.completions).length,0); assert(doc.getElementById('toastmsg').textContent.includes('deadline changed'),'Stale deadline change should be rejected visibly');
+    });
+  });
+  test('retained checked rows appear under Recently completed, not urgency headings',async()=>{
+    const now=new Date(), enrolledAt=now.toISOString(), base={myCards:['amex_gold'],enrollments:[{cardId:'amex_gold',benefitId:'dining_credit',enrolledAt}]};
+    const task=R.buildRadarTasks(base,now).all.find(item=>item.itemId==='dining_credit'), completion=R.completionRecordForTask(task,now);
+    await withAppState({schemaVersion:2,...base,completions:[completion]},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click();
+      const completedHeading=[...doc.querySelectorAll('main h2')].find(heading=>heading.textContent==='Recently completed');
+      assert(completedHeading,'Expected a Recently completed group');
+      assert(completedHeading.nextElementSibling.textContent.includes('Dining credit'),'Completed dining credit should be grouped beneath Recently completed');
     });
   });
   test('restoring a skipped item returns focus to its Radar row',async()=>{

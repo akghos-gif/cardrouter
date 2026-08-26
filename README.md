@@ -52,9 +52,9 @@ Opening a setup link asks before replacing a setup already on that device. The l
 
 **Caps.** Cards with spending caps (Amex Gold's $25k supermarket cap, Custom Cash's $500/cycle, rotating cards' $1,500/quarter) show a ⚠ note. The app doesn't track your spend against caps — it trusts you to know when you've blown through one.
 
-**Radar completion.** Issuers do not report completion back to this app. Use the labeled checkboxes after you activate, enroll, select, or use a benefit. Uncheck any status to correct it. If you record a quarterly activation or selection after its cutoff, the checkbox asks you to confirm that you completed it before the deadline; Radar shows both the deadline you confirmed and the date you recorded it. A completion remains in the main Radar list until the period ends or for up to 30 days, whichever comes first. It then remains in completion history for up to 24 months.
+**Radar completion.** Issuers do not report completion back to this app. Use the labeled checkboxes after you activate, enroll, select, or use a benefit. Uncheck any status to correct it. If you check a quarterly action after its cutoff, you are confirming that you completed it by the displayed deadline. Radar records both that deadline and the date you checked it. A completion remains in the main Radar list until the period ends or for up to 30 days, whichever comes first. It then remains in completion history for up to 24 months.
 
-**Radar coverage.** Radar intentionally tracks only benefits with issuer-verified terms, a clear calendar reset, and a working issuer page for the action. Other perks remain available in Benefits without becoming recurring tasks. Benefit terms were checked in August 2026 and can still change.
+**Radar coverage.** Radar intentionally tracks only benefits with issuer-verified terms, a clear calendar reset, and a working issuer or partner page for the action. Other perks remain available in Benefits without becoming recurring tasks. Benefit terms were checked in August 2026 and can still change.
 
 **Quarterly upkeep (5 minutes, 4× a year).** At each quarter's start: activate rotating categories (Promos tab links), re-check the new categories are reflected (see below), and re-pick US Bank Cash+ choices if you hold it.
 

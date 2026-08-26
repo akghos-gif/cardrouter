@@ -663,8 +663,39 @@ function currentPeriodForTask(kind,cardId,itemId,now){
   const meta=RADAR_BENEFIT_MAP[cardId+':'+itemId];
   return meta&&['use','enroll-task'].includes(kind)?periodInfo(meta.cadence,now).key:'';
 }
+function legacyIdToken(value){
+  let hash=2166136261;
+  for(let i=0;i<value.length;i++) hash=Math.imul(hash^value.charCodeAt(i),16777619);
+  return (hash>>>0).toString(36);
+}
+function migrateLegacyCustomIds(raw){
+  if(!plainObject(raw)||!Array.isArray(raw.custom)) return raw;
+  const migrated=structuredClone(raw), remap=new Map(), used=new Set(CARD_DB.map(card=>card.id));
+  for(const card of migrated.custom) if(plainObject(card)&&cleanId(card.id)) used.add(card.id);
+  for(const card of migrated.custom){
+    if(!plainObject(card)||typeof card.id!=='string'||cleanId(card.id)||!card.id.startsWith('cust_')) continue;
+    let nextId=remap.get(card.id);
+    if(!nextId){
+      const slug=card.id.slice(5).replace(/[^a-z0-9_]+/g,'_').replace(/^_+|_+$/g,'').slice(0,40)||'card', stem=`cust_${slug}_${legacyIdToken(card.id)}`;
+      nextId=stem; let suffix=2; while(used.has(nextId)) nextId=`${stem}_${suffix++}`;
+      used.add(nextId); remap.set(card.id,nextId);
+    }
+    card.id=nextId;
+  }
+  if(!remap.size) return migrated;
+  const mapId=id=>remap.get(id)||id;
+  if(Array.isArray(migrated.myCards)) migrated.myCards=migrated.myCards.map(mapId);
+  if(plainObject(migrated.overrides)) migrated.overrides=Object.fromEntries(Object.entries(migrated.overrides).map(([id,rates])=>[mapId(id),rates]));
+  for(const key of ['enrollments','completions','radarHidden','radarSkips']){
+    const records=migrated[key];
+    if(Array.isArray(records)) migrated[key]=records.map(record=>plainObject(record)?{...record,cardId:mapId(record.cardId)}:record);
+    else if(plainObject(records)) migrated[key]=Object.fromEntries(Object.entries(records).map(([recordKey,record])=>[recordKey,plainObject(record)?{...record,cardId:mapId(record.cardId)}:record]));
+  }
+  return migrated;
+}
 function normalizeState(raw,now=new Date(),options={}){
   raw=plainObject(raw)?raw:{};
+  if(raw.schemaVersion==null||raw.schemaVersion===1) raw=migrateLegacyCustomIds(raw);
   const out=structuredClone(DEFAULT_STATE);
   out.coachDone=!!raw.coachDone;
   out.myCards=Array.isArray(raw.myCards)?raw.myCards.slice(0,50).map(cleanId).filter(Boolean):[];
@@ -765,38 +796,46 @@ function validateImportShape(raw){
     if(!validSetupId(card.id)||typeof card.name!=='string'||!card.name.trim()||!validSetupId(card.program)||!PROGRAMS[card.program]||!validOptionalText(card.issuer)||!validOptionalText(card.notes)) invalidSetupData();
     validateRateMap(card.rates);
   }
-  if(plainObject(raw.overrides)) for(const rates of Object.values(raw.overrides)) validateRateMap(rates);
+  const customIds=(raw.custom||[]).map(card=>card.id), knownCardIds=new Set([...CARD_DB.map(card=>card.id),...customIds]);
+  if(new Set(customIds).size!==customIds.length||customIds.some(id=>CARD_DB.some(card=>card.id===id))) invalidSetupData();
+  if((raw.myCards||[]).some(id=>!knownCardIds.has(id))) invalidSetupData();
+  if(plainObject(raw.overrides)) for(const [cardId,rates] of Object.entries(raw.overrides)){
+    if(!validSetupId(cardId)||!knownCardIds.has(cardId)) invalidSetupData(); validateRateMap(rates);
+  }
   if(plainObject(raw.cpp)) for(const [key,value] of Object.entries(raw.cpp)) if(!PROGRAMS[key]||typeof value!=='number'||!Number.isFinite(value)||value<=0) invalidSetupData();
-  if(plainObject(raw.activations)) for(const value of Object.values(raw.activations)) if(typeof value!=='boolean') invalidSetupData();
+  if(plainObject(raw.activations)) for(const [key,value] of Object.entries(raw.activations)) if(!/^\d{4}-Q[1-4]:(?:freedom_flex|discover_it)$/.test(key)||typeof value!=='boolean') invalidSetupData();
   for(const record of recordsOf(raw.enrollments)){
     assertAllowedKeys(record,['cardId','benefitId','enrolledAt','labelSnapshot','cardNameSnapshot']);
-    if(!validSetupId(record.cardId)||!validSetupId(record.benefitId)||typeof record.enrolledAt!=='string'||!validIso(record.enrolledAt)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
+    if(!validSetupId(record.cardId)||!validSetupId(record.benefitId)||!RADAR_BENEFIT_MAP[record.cardId+':'+record.benefitId]||typeof record.enrolledAt!=='string'||!validIso(record.enrolledAt)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
   }
   for(const record of recordsOf(raw.completions)){
     assertAllowedKeys(record,['actionType','cardId','itemId','benefitId','quarterlyActionId','periodKey','completedAt','legacyUndated','attestedBy','labelSnapshot','cardNameSnapshot']);
-    const itemId=record.itemId||record.benefitId||record.quarterlyActionId;
-    if(!['activate','select','use'].includes(record.actionType)||!validSetupId(record.cardId)||!validSetupId(itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||(record.completedAt!==null&&(typeof record.completedAt!=='string'||!validIso(record.completedAt)))||(record.legacyUndated!=null&&typeof record.legacyUndated!=='boolean')||(record.attestedBy!=null&&!localDateFromIsoDate(record.attestedBy))||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
+    const itemId=record.itemId||record.benefitId||record.quarterlyActionId, action=QUARTERLY_ACTIONS.find(item=>item.actionType===record.actionType&&item.cardId===record.cardId&&item.id===itemId);
+    const periodEnd=periodEndFromKey(record.periodKey), expectedAttestedBy=action&&periodEnd?localIsoDate(periodLastDate(actionEndFor(action,{key:record.periodKey,end:periodEnd}))):'';
+    if(!['activate','select','use'].includes(record.actionType)||!validSetupId(record.cardId)||!validSetupId(itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validCompletionIdentity(record.actionType,record.cardId,itemId,record.periodKey,{fromImport:true})||(record.completedAt!==null&&(typeof record.completedAt!=='string'||!validIso(record.completedAt)))||(record.completedAt===null&&!(action&&record.actionType==='activate'))||(record.legacyUndated!=null&&typeof record.legacyUndated!=='boolean')||(record.attestedBy!=null&&record.attestedBy!==expectedAttestedBy)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
   }
   for(const record of recordsOf(raw.radarHidden)){
     assertAllowedKeys(record,['cardId','benefitId','hiddenAt']);
-    if(!validSetupId(record.cardId)||!validSetupId(record.benefitId)||typeof record.hiddenAt!=='string'||!validIso(record.hiddenAt)) invalidSetupData();
+    if(!validSetupId(record.cardId)||!validSetupId(record.benefitId)||!RADAR_BENEFIT_MAP[record.cardId+':'+record.benefitId]||typeof record.hiddenAt!=='string'||!validIso(record.hiddenAt)) invalidSetupData();
   }
   for(const record of recordsOf(raw.radarSkips)){
     assertAllowedKeys(record,['taskKind','cardId','itemId','periodKey','skippedAt','expiresAt']);
-    if(!['activate','select','use','enroll-task'].includes(record.taskKind)||!validSetupId(record.cardId)||!validSetupId(record.itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||typeof record.skippedAt!=='string'||!validIso(record.skippedAt)||typeof record.expiresAt!=='string'||!validIso(record.expiresAt)) invalidSetupData();
+    if(!['activate','select','use','enroll-task'].includes(record.taskKind)||!validSetupId(record.cardId)||!validSetupId(record.itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validTaskIdentity(record.taskKind,record.cardId,record.itemId,record.periodKey)||typeof record.skippedAt!=='string'||!validIso(record.skippedAt)||typeof record.expiresAt!=='string'||!validIso(record.expiresAt)) invalidSetupData();
   }
 }
 function validateImportPayload(raw,encodedLength,decodedBytes){
   if(encodedLength>SETUP_MAX_ENCODED||decodedBytes>SETUP_MAX_DECODED) throw new SetupLinkError('Setup link is too large');
   const version=raw&&raw.schemaVersion==null?1:raw&&raw.schemaVersion;
   if(!plainObject(raw)||!Number.isInteger(version)||![1,2].includes(version)) throw new SetupLinkError('Setup link version is not supported');
-  inspectImportValue(raw,0,{n:0});
-  validateImportShape(raw);
-  if((raw.myCards||[]).length>50||(raw.custom||[]).length>25) throw new SetupLinkError('Setup link contains too many cards');
-  if(plainObject(raw.overrides)&&Object.keys(raw.overrides).length>50) throw new SetupLinkError('This setup link contains too many custom rate overrides.');
-  if(plainObject(raw.cpp)&&Object.keys(raw.cpp).length>25) throw new SetupLinkError('This setup link contains too many point valuations.');
-  const recordCount=['enrollments','completions','radarHidden','radarSkips'].reduce((n,k)=>n+recordsOf(raw[k]).length,0);
+  const candidate=version===1?migrateLegacyCustomIds(raw):raw;
+  inspectImportValue(candidate,0,{n:0});
+  validateImportShape(candidate);
+  if((candidate.myCards||[]).length>50||(candidate.custom||[]).length>25) throw new SetupLinkError('Setup link contains too many cards');
+  if(plainObject(candidate.overrides)&&Object.keys(candidate.overrides).length>50) throw new SetupLinkError('This setup link contains too many custom rate overrides.');
+  if(plainObject(candidate.cpp)&&Object.keys(candidate.cpp).length>25) throw new SetupLinkError('This setup link contains too many point valuations.');
+  const recordCount=['enrollments','completions','radarHidden','radarSkips'].reduce((n,k)=>n+recordsOf(candidate[k]).length,0);
   if(recordCount>500) throw new SetupLinkError('This setup link contains too much saved Radar activity.');
+  return candidate;
 }
 function encodeSetupPayload(raw){
   const bytes=new TextEncoder().encode(JSON.stringify(raw)); let binary='';
@@ -842,8 +881,8 @@ function loadState(){
     try{
       if(encoded.length>SETUP_MAX_ENCODED) throw new SetupLinkError('Setup link is too large');
       const decoded=decodeSetupPayload(encoded), bytes=new TextEncoder().encode(decoded).length, raw=JSON.parse(decoded);
-      validateImportPayload(raw,encoded.length,bytes);
-      const imported=normalizeState(raw,new Date(),{fromImport:true});
+      const validated=validateImportPayload(raw,encoded.length,bytes);
+      const imported=normalizeState(validated,new Date(),{fromImport:true});
       if(stateHasData(local)&&!confirm('Replace this device\'s cards, settings, benefit enrollments, hidden Radar items, skipped periods, and current checkmarks with this setup link?')){
         startupNotice='Setup import canceled'; return local;
       }
@@ -857,8 +896,8 @@ function updateStorageWarning(){
   if(text) text.textContent=storageWarningReason==='newer'?'This app version cannot read the newer data already saved in this browser. That data was left unchanged, and changes made here will not be saved.':'Changes will last only until you close this tab because browser storage is unavailable.';
   el.hidden=storagePersistent;
 }
-function saveState(s){
-  const normalized=normalizeState(s); S=normalized; mem=normalized;
+function saveState(s,now=new Date()){
+  const normalized=normalizeState(s,now); S=normalized; mem=normalized;
   if(preserveStoredState){
     try{sessionStorage.setItem('cardrouter-session',JSON.stringify(normalized));}catch(ignore){}
     storagePersistent=false; storageWarningReason='newer'; updateStorageWarning(); return normalized;
@@ -901,8 +940,8 @@ function toast(msg,ms,undoFn){
   undo.onclick=()=>{ if(!pendingUndo) return; const fn=pendingUndo; pendingUndo=null; undo.hidden=true; fn(); };
   t._h=setTimeout(()=>{pendingUndo=null; undo.hidden=true; t.classList.remove('show');},ms||2600);
 }
-function mutateWithUndo(message,mutator,focusId,undoFocusId=focusId){
-  const before=structuredClone(S); mutator(); saveState(S); render(); restoreFocus(focusId);
+function mutateWithUndo(message,mutator,focusId,undoFocusId=focusId,mutationNow=new Date()){
+  const before=structuredClone(S); mutator(); saveState(S,mutationNow); render(); restoreFocus(focusId);
   toast(message,5000,()=>{ S=before; saveState(S); render(); restoreFocus(undoFocusId); toast('Change undone'); });
 }
 function restoreFocus(focusId){
@@ -958,8 +997,7 @@ function buildQuarterlyTasks(now=new Date(),state=S){
     const card=getCardFor(a.cardId,state), key=canonicalTaskKey(a.actionType,a.cardId,a.id,period.key), record=state.completions[key]||null;
     const actionEnd=actionEndFor(a,period);
     const info=rot&&rot[a.cardId], unavailable=a.cardId!=='usb_cashplus'&&!info;
-    const detail=a.cardId==='usb_cashplus'?'Choose two 5% categories and one 2% category':
-      info?`5%: ${info.label}`:'Current-quarter categories unavailable. Check the issuer.';
+    const detail=a.cardId==='usb_cashplus'?'Choose two 5% categories and one 2% category':info?`5%: ${info.label}`:'';
     const closed=!record&&localDay(now)>=actionEnd;
     return {key,kind:a.actionType,actionType:a.actionType,itemId:a.id,periodKey:period.key,end:period.end,actionEnd,closed,card,title:a.name,
       detail,unavailable,link:a.link,externalLabel:(record||closed)?(a.reviewLabel||'Review benefit'):a.externalLabel,reviewLabel:a.reviewLabel,
@@ -1011,47 +1049,51 @@ function completionRecordForTask(task,recordedAt=new Date()){
   if(task.closed&&task.actionEnd) record.attestedBy=localIsoDate(periodLastDate(task.actionEnd));
   return record;
 }
-function currentFocusForTask(task){
-  const kind=task.kind||task.actionType, periodKey=currentPeriodForTask(kind,task.card.id,task.itemId,new Date());
+function currentFocusForTask(task,now=new Date()){
+  const kind=task.kind||task.actionType, periodKey=currentPeriodForTask(kind,task.card.id,task.itemId,now);
   return periodKey?`task-${canonicalTaskKey(kind,task.card.id,task.itemId,periodKey)}`:'';
 }
 function refreshForPeriodChange(focusId){
-  render(); restoreFocus(focusId); toast('A new benefit period started. Review the refreshed items.',5000);
+  render(); restoreFocus(focusId); toast('The tracking period changed, so your change was not saved. Review the refreshed items.',5000);
 }
-function taskPeriodIsCurrent(task){
+function refreshForDeadlineChange(focusId){
+  render(); restoreFocus(focusId); toast('The deadline changed, so your change was not saved. Review the refreshed item.',5000);
+}
+function taskPeriodIsCurrent(task,now=new Date()){
   const kind=task.kind||task.actionType;
-  return task.periodKey===currentPeriodForTask(kind,task.card.id,task.itemId,new Date());
+  return task.periodKey===currentPeriodForTask(kind,task.card.id,task.itemId,now);
 }
-function setTaskChecked(task,checked,focusId){
-  if(!taskPeriodIsCurrent(task)){ refreshForPeriodChange(currentFocusForTask(task)||focusId); return; }
+function setTaskChecked(task,checked,focusId,mutationNow=new Date()){
+  if(!taskPeriodIsCurrent(task,mutationNow)){ refreshForPeriodChange(currentFocusForTask(task,mutationNow)||focusId); return; }
   const beforeDeadline=task.closed&&task.actionEnd?`Recorded as ${task.actionType==='select'?'selected':'activated'} by ${displayDate(periodLastDate(task.actionEnd))}`:'';
   const message=checked?(beforeDeadline||(task.actionType==='activate'?'Marked activated':task.actionType==='select'?'Marked selected':task.actionType==='enroll'?task.prerequisiteToast:'Marked used')):'Marked incomplete';
   const nextFocus=checked&&task.actionType==='enroll'?`task-${canonicalTaskKey('use',task.card.id,task.benefitId,task.periodKey)}`:(focusId||task.key);
   mutateWithUndo(message,()=>{
     if(task.actionType==='enroll'){
       const key=canonicalEnrollmentKey(task.card.id,task.benefitId);
-      if(checked){ S.enrollments[key]={cardId:task.card.id,benefitId:task.benefitId,enrolledAt:new Date().toISOString(),labelSnapshot:task.title,cardNameSnapshot:task.card.name}; delete S.radarSkips[task.key]; }
+      if(checked){ S.enrollments[key]={cardId:task.card.id,benefitId:task.benefitId,enrolledAt:mutationNow.toISOString(),labelSnapshot:task.title,cardNameSnapshot:task.card.name}; delete S.radarSkips[task.key]; }
       else delete S.enrollments[key];
-    }else if(checked) S.completions[task.key]=completionRecordForTask(task);
+    }else if(checked) S.completions[task.key]=completionRecordForTask(task,mutationNow);
     else delete S.completions[task.key];
-  },nextFocus,focusId||task.key);
+  },nextFocus,focusId||task.key,mutationNow);
 }
-function setBenefitEnrollment(cardId,benefitId,checked,focusId,periodKey){
+function setBenefitEnrollment(cardId,benefitId,checked,focusId,periodKey,mutationNow=new Date()){
   const benefit=benefitById(cardId,benefitId), card=getCard(cardId), key=canonicalEnrollmentKey(cardId,benefitId), meta=RADAR_BENEFIT_MAP[cardId+':'+benefitId];
-  const currentPeriod=meta&&periodInfo(meta.cadence,new Date()).key;
+  const currentPeriod=meta&&periodInfo(meta.cadence,mutationNow).key;
   if(!currentPeriod||periodKey!==currentPeriod){ refreshForPeriodChange(focusId); return; }
   mutateWithUndo(checked?(meta.prerequisiteToast||'Marked enrolled'):'Setup status removed',()=>{
     if(checked){
-      S.enrollments[key]={cardId,benefitId,enrolledAt:new Date().toISOString(),labelSnapshot:benefit.name,cardNameSnapshot:card.name};
+      S.enrollments[key]={cardId,benefitId,enrolledAt:mutationNow.toISOString(),labelSnapshot:benefit.name,cardNameSnapshot:card.name};
       delete S.radarSkips[canonicalTaskKey('enroll-task',cardId,benefitId,periodKey)];
     }else delete S.enrollments[key];
-  },focusId);
+  },focusId,focusId,mutationNow);
 }
-function skipTask(task){
+function skipTask(task,mutationNow=new Date()){
+  if(!taskPeriodIsCurrent(task,mutationNow)){ refreshForPeriodChange(currentFocusForTask(task,mutationNow)); return; }
   mutateWithUndo('Skipped for this period',()=>{
     S.radarSkips[task.key]={taskKind:task.kind,cardId:task.card.id,itemId:task.itemId,periodKey:task.periodKey,
-      skippedAt:new Date().toISOString(),expiresAt:(task.actionEnd||task.end).toISOString()};
-  },'not-shown-toggle',`task-${task.key}`);
+      skippedAt:mutationNow.toISOString(),expiresAt:(task.actionEnd||task.end).toISOString()};
+  },'not-shown-toggle',`task-${task.key}`,mutationNow);
 }
 function unskipTask(task){ mutateWithUndo('Shown for this period',()=>{delete S.radarSkips[task.key];},`task-${task.key}`,'not-shown-toggle'); }
 function hideBenefitTask(task){
@@ -1136,9 +1178,10 @@ function rankFor(catId){
 const mainEl = document.getElementById('main');
 const initialPromosView=history.state&&['radar','quarterly'].includes(history.state.promosView)?history.state.promosView:'overview';
 let TAB=initialPromosView==='overview'?'which':'promos', selectedCat=null, PROMOS_VIEW=initialPromosView, radarHistoryOpen=false, notShownOpen=false, historyLimit=20;
-let renderedMonthKey=periodInfo('month',new Date()).key;
+let renderedDayKey=localIsoDate(localDay(new Date())), renderedMonthKey=periodInfo('month',new Date()).key;
 
 function render(){
+  renderedDayKey=localIsoDate(localDay(new Date()));
   renderedMonthKey=periodInfo('month',new Date()).key;
   document.querySelectorAll('nav button').forEach(b=>{
     const on=b.dataset.tab===TAB; b.classList.toggle('on',on);
@@ -1339,7 +1382,7 @@ function renderBenefits(){
         if(!meta) return `<div class="row"><div class="grow">
           <div class="title">${esc(b.name)} ${b.enroll?'<span class="badge warn">enrollment required</span>':'<span class="badge good">automatic</span>'}</div>
           <div class="sub2">${esc(b.card.name)}${b.note?' · '+esc(b.note):''}</div>
-          ${(b.enroll&&(b.link||ENROLL_LINKS[b.card.id]))?`<div class="sub2"><a href="${b.link||ENROLL_LINKS[b.card.id]}" target="_blank" rel="noopener noreferrer" aria-label="Activate ${esc(b.name)} on issuer site, opens in a new tab">Activate <span aria-hidden="true">↗</span></a></div>`:''}
+          ${(b.enroll&&(b.link||ENROLL_LINKS[b.card.id]))?`<div class="sub2"><a href="${b.link||ENROLL_LINKS[b.card.id]}" target="_blank" rel="noopener noreferrer" aria-label="Activate ${esc(b.name)} on issuer or partner site, opens in a new tab">Activate <span aria-hidden="true">↗</span></a></div>`:''}
         </div>${b.value?`<div class="rc-rate" style="font-size:13.5px">${esc(b.value)}</div>`:''}</div>`;
         const enrolled=enrollmentFor(b.card.id,b.id), p=periodInfo(meta.cadence,renderNow), useKey=canonicalTaskKey('use',b.card.id,b.id,p.key), used=S.completions[useKey];
         const hidden=!!S.radarHidden[canonicalHiddenKey(b.card.id,b.id)], linkLabel='Open benefit';
@@ -1348,7 +1391,7 @@ function renderBenefits(){
         return `<div class="action-row"><div>
           <div class="action-title">${esc(b.name)}</div>
           <div class="action-meta">${esc(b.card.name)}${b.value?' · '+esc(b.value):''}${b.note?' · '+esc(b.note):''}</div>
-          <div class="action-links"><a class="issuer-action" href="${meta.link}" target="_blank" rel="noopener noreferrer" aria-label="${linkLabel} for ${esc(b.name)}, ${esc(b.card.name)}, on issuer site, opens in a new tab">${linkLabel} <span aria-hidden="true">↗</span></a>
+          <div class="action-links"><a class="issuer-action" href="${meta.link}" target="_blank" rel="noopener noreferrer" aria-label="${linkLabel} for ${esc(b.name)}, ${esc(b.card.name)}, on issuer or partner site, opens in a new tab">${linkLabel} <span aria-hidden="true">↗</span></a>
           ${hidden?`<button class="manage-action" data-show-radar="${b.card.id}:${b.id}" data-restore-focus="${restoreFocusId}" data-focus-id="show-${b.card.id}-${b.id}" aria-label="Track ${esc(b.name)} in Radar, ${esc(b.card.name)}">Track in Radar</button>`:''}</div>
         </div><div>
           ${meta.requiresEnrollment?`<label class="task-check"><input type="checkbox" data-benefit-enroll="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="enroll-${b.card.id}-${b.id}" aria-label="${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark} for ${esc(b.name)}, ${esc(b.card.name)}" ${enrolled?'checked':''}>${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark}</label>`:''}
@@ -1364,13 +1407,13 @@ function renderBenefits(){
   mainEl.innerHTML = html;
   mainEl.querySelectorAll('[data-bcat]').forEach(b=>b.onclick=()=>{ selectedBenefitCat = (selectedBenefitCat===b.dataset.bcat)?null:b.dataset.bcat; render(); });
   mainEl.querySelectorAll('[data-benefit-enroll]').forEach(cb=>cb.onchange=()=>{
-    const [cardId,benefitId]=cb.dataset.benefitEnroll.split(':'); setBenefitEnrollment(cardId,benefitId,cb.checked,cb.dataset.focusId,cb.dataset.periodKey);
+    const mutationNow=new Date(), [cardId,benefitId]=cb.dataset.benefitEnroll.split(':'); setBenefitEnrollment(cardId,benefitId,cb.checked,cb.dataset.focusId,cb.dataset.periodKey,mutationNow);
   });
   mainEl.querySelectorAll('[data-benefit-use]').forEach(cb=>cb.onchange=()=>{
-    const [cardId,benefitId]=cb.dataset.benefitUse.split(':'), periodKey=cb.dataset.periodKey, end=periodEndFromKey(periodKey);
+    const mutationNow=new Date(), [cardId,benefitId]=cb.dataset.benefitUse.split(':'), periodKey=cb.dataset.periodKey, end=periodEndFromKey(periodKey);
     const task={key:canonicalTaskKey('use',cardId,benefitId,periodKey),kind:'use',actionType:'use',itemId:benefitId,benefitId,periodKey,end,
       card:getCard(cardId),title:benefitById(cardId,benefitId).name};
-    setTaskChecked(task,cb.checked,cb.dataset.focusId);
+    setTaskChecked(task,cb.checked,cb.dataset.focusId,mutationNow);
   });
   mainEl.querySelectorAll('[data-show-radar]').forEach(btn=>btn.onclick=()=>{
     const [cardId,benefitId]=btn.dataset.showRadar.split(':'); restoreBenefit(cardId,benefitId,btn.dataset.restoreFocus,btn.dataset.focusId);
@@ -1381,8 +1424,8 @@ function taskStatusLines(task){
   if(task.done) return [];
   const lines=[];
   if(task.nonRetroactive) lines.push({text:'Not retroactive',urgent:true});
-  if(task.closed) lines.push({text:`Closed ${displayDate(periodLastDate(task.actionEnd))}`,urgent:true});
-  else if(task.unavailable) lines.push({text:'Current categories unavailable',urgent:true});
+  if(task.closed) lines.push({text:`Deadline passed: ${displayDate(periodLastDate(task.actionEnd))}`,urgent:true});
+  else if(task.unavailable) lines.push({text:'Current categories unavailable. Check the issuer before activating.',urgent:true});
   else if((task.actionType==='activate'||task.actionType==='select')&&task.actionEnd<task.end){
     const verb=task.actionType==='select'?'Choose':'Activate', date=displayDate(periodLastDate(task.actionEnd));
     const due=task.daysLeft===0?`Due today: ${verb.toLowerCase()} by ${date}`:`Due in ${task.daysLeft} day${task.daysLeft===1?'':'s'}: ${verb.toLowerCase()} by ${date}`;
@@ -1394,7 +1437,8 @@ function taskStatusLines(task){
 }
 function renderTaskRow(task,{manage=false}={}){
   const statuses=taskStatusLines(task), disabled=task.unavailable;
-  const closedMark=task.actionType==='select'?'Mark selected before deadline':'Mark activated before deadline';
+  const closedDate=task.actionEnd&&displayDate(periodLastDate(task.actionEnd));
+  const closedMark=task.actionType==='select'?`I selected by ${closedDate}`:`I activated by ${closedDate}`;
   const checkboxText=task.done?completedLabel(task):task.unavailable?'Unavailable':task.closed?closedMark:task.markLabel;
   const checkboxAria=checkboxText;
   const setupDone=task.meta&&task.meta.prerequisiteDoneLabel||'Enrolled';
@@ -1403,11 +1447,11 @@ function renderTaskRow(task,{manage=false}={}){
     <div class="action-meta">${esc(task.card.name)}${task.detail?' · '+esc(task.detail):''}</div>
     ${task.enrolled&&task.actionType==='use'?`<div class="action-meta">${esc(setupDone)} ${displayDate(task.enrolled.enrolledAt)}</div>`:''}
     ${statuses.map(status=>`<div class="action-meta ${status.urgent?'urgent':''}">${esc(status.text)}</div>`).join('')}
-    <div class="action-links"><a class="issuer-action" href="${task.link}" target="_blank" rel="noopener noreferrer" aria-label="${esc(task.externalLabel)} for ${esc(task.title)}, ${esc(task.card.name)}, on issuer site, opens in a new tab">${esc(task.externalLabel)} <span aria-hidden="true">↗</span></a>
+    <div class="action-links"><a class="issuer-action" href="${task.link}" target="_blank" rel="noopener noreferrer" aria-label="${esc(task.externalLabel)} for ${esc(task.title)}, ${esc(task.card.name)}, on issuer or partner site, opens in a new tab">${esc(task.externalLabel)} <span aria-hidden="true">↗</span></a>
       ${manage&&!task.done&&!task.closed&&!disabled?`<button class="manage-action" data-skip-task="${task.key}" aria-label="Skip ${esc(task.title)} for this period, ${esc(task.card.name)}">Skip this period</button>`:''}
       ${manage&&task.benefitId?`<button class="manage-action" data-hide-task="${task.key}" aria-label="Hide ${esc(task.title)} from Radar, ${esc(task.card.name)}">Hide this benefit</button>`:''}
     </div>
-  </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div>`;
+  </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-task-state="${task.closed?'closed':task.unavailable?'unavailable':'open'}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div>`;
 }
 function radarOverviewState(radar){
   if(!S.myCards.length) return {copy:'Add cards to start Radar',action:'cards'};
@@ -1469,9 +1513,11 @@ function renderFullRadar(){
   if(!radar.active.length) html+=`<div class="action-list"><div class="quiet-state"><strong>${esc(state.copy)}</strong>${state.action==='cards'?'<div style="margin-top:10px"><button class="pill" data-go-cards>Add cards</button></div>':''}</div></div>`;
   else if(!radar.unresolved.length) html+=`<div class="action-list"><div class="quiet-state"><strong>Nothing needs your attention</strong></div></div>`;
   for(const [id,label] of groups){
-    const tasks=radar.active.filter(t=>t.group===id); if(!tasks.length) continue;
+    const tasks=radar.active.filter(t=>!t.done&&t.group===id); if(!tasks.length) continue;
     html+=`<h2>${label}</h2><div class="action-list">${tasks.map(t=>renderTaskRow(t,{manage:true})).join('')}</div>`;
   }
+  const completed=radar.active.filter(t=>t.done);
+  if(completed.length) html+=`<h2>Recently completed</h2><div class="action-list">${completed.map(t=>renderTaskRow(t,{manage:true})).join('')}</div>`;
   html+=renderNotShown(radar.suppressed)+renderHistory();
   mainEl.innerHTML=html;
 }
@@ -1485,15 +1531,15 @@ function renderFullQuarterly(){
     <button class="pill" id="ics">📅 Download calendar reminders</button></div></div>`;
   mainEl.innerHTML=html;
 }
-function findCurrentTask(key){ return buildRadarTasks(new Date()).all.find(t=>t.key===key); }
-function currentFocusForTaskKey(key){
+function findCurrentTask(key,now=new Date()){ return buildRadarTasks(now).all.find(t=>t.key===key); }
+function currentFocusForTaskKey(key,now=new Date()){
   const parts=String(key).split(':'); if(parts.length!==4) return '';
-  const [kind,cardId,itemId]=parts, periodKey=currentPeriodForTask(kind,cardId,itemId,new Date());
+  const [kind,cardId,itemId]=parts, periodKey=currentPeriodForTask(kind,cardId,itemId,now);
   return periodKey?`task-${canonicalTaskKey(kind,cardId,itemId,periodKey)}`:'';
 }
-function findCurrentTaskOrRefresh(key){
-  const task=findCurrentTask(key); if(task) return task;
-  refreshForPeriodChange(currentFocusForTaskKey(key)); return null;
+function findCurrentTaskOrRefresh(key,now=new Date()){
+  const task=findCurrentTask(key,now); if(task) return task;
+  refreshForPeriodChange(currentFocusForTaskKey(key,now)); return null;
 }
 function bindPromoActions(){
   document.getElementById('radar-view-all')?.addEventListener('click',()=>openPromosSubview('radar'));
@@ -1501,12 +1547,17 @@ function bindPromoActions(){
   document.getElementById('promos-back')?.addEventListener('click',backFromPromos);
   document.getElementById('ics')?.addEventListener('click',downloadICS);
   mainEl.querySelectorAll('[data-go-cards]').forEach(b=>b.onclick=()=>{TAB='cards';PROMOS_VIEW='overview';render();});
-  mainEl.querySelectorAll('[data-task-check]').forEach(cb=>cb.onchange=()=>{const task=findCurrentTaskOrRefresh(cb.dataset.taskCheck);if(task)setTaskChecked(task,cb.checked,cb.dataset.focusId);});
-  mainEl.querySelectorAll('[data-skip-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTaskOrRefresh(b.dataset.skipTask);if(task)skipTask(task);});
-  mainEl.querySelectorAll('[data-hide-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTaskOrRefresh(b.dataset.hideTask);if(task)hideBenefitTask(task);});
-  mainEl.querySelectorAll('[data-unskip-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTaskOrRefresh(b.dataset.unskipTask);if(task)unskipTask(task);});
-  mainEl.querySelectorAll('[data-restore-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTaskOrRefresh(b.dataset.restoreTask);if(task)restoreBenefit(task.card.id,task.benefitId,`task-${task.key}`,'not-shown-toggle');});
-  mainEl.querySelectorAll('[data-show-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTaskOrRefresh(b.dataset.showTask);if(task)showTaskInRadar(task);});
+  mainEl.querySelectorAll('[data-task-check]').forEach(cb=>cb.onchange=()=>{
+    const mutationNow=new Date(), task=findCurrentTaskOrRefresh(cb.dataset.taskCheck,mutationNow); if(!task) return;
+    const currentState=task.closed?'closed':task.unavailable?'unavailable':'open';
+    if(cb.dataset.taskState!==currentState){ refreshForDeadlineChange(`task-${task.key}`); return; }
+    setTaskChecked(task,cb.checked,cb.dataset.focusId,mutationNow);
+  });
+  mainEl.querySelectorAll('[data-skip-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.skipTask,mutationNow);if(task)skipTask(task,mutationNow);});
+  mainEl.querySelectorAll('[data-hide-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.hideTask,mutationNow);if(task)hideBenefitTask(task);});
+  mainEl.querySelectorAll('[data-unskip-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.unskipTask,mutationNow);if(task)unskipTask(task);});
+  mainEl.querySelectorAll('[data-restore-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.restoreTask,mutationNow);if(task)restoreBenefit(task.card.id,task.benefitId,`task-${task.key}`,'not-shown-toggle');});
+  mainEl.querySelectorAll('[data-show-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.showTask,mutationNow);if(task)showTaskInRadar(task);});
   document.getElementById('not-shown-toggle')?.addEventListener('click',()=>{notShownOpen=!notShownOpen;render();restoreFocus('not-shown-toggle');});
   document.getElementById('history-toggle')?.addEventListener('click',()=>{radarHistoryOpen=!radarHistoryOpen;render();restoreFocus('history-toggle');});
   document.getElementById('history-more')?.addEventListener('click',()=>{historyLimit+=20;render();restoreFocus(document.getElementById('history-more')?'history-more':'history-toggle');});
@@ -1596,9 +1647,10 @@ window.addEventListener('popstate',e=>{
   TAB='promos'; render(); window.scrollTo({top:0,behavior:'auto'}); requestAnimationFrame(()=>document.getElementById('hdr').focus());
 });
 function refreshIfCalendarChanged(){
-  const currentMonthKey=periodInfo('month',new Date()).key;
-  if(currentMonthKey===renderedMonthKey) return;
-  render(); toast('A new benefit period started. Review the refreshed items.',5000);
+  const now=new Date(), currentDayKey=localIsoDate(localDay(now)), currentMonthKey=periodInfo('month',now).key, previousMonthKey=renderedMonthKey;
+  if(currentDayKey===renderedDayKey) return;
+  render();
+  if(currentMonthKey!==previousMonthKey) toast('A new tracking period started. Review the refreshed items.',5000);
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshIfCalendarChanged();});
 window.addEventListener('pageshow',refreshIfCalendarChanged);
