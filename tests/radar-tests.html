@@ -40,6 +40,12 @@ document.getElementById('app').addEventListener('load',()=>{
     const d=R.minusCalendarMonths(new Date(2028,1,29),24);
     equal(d.getFullYear(),2026); equal(d.getMonth(),1); equal(d.getDate(),28);
   });
+  test('annual cadence uses a true calendar year and rejects unknown cadence',()=>{
+    const p=R.periodInfo('year',new Date(2026,7,26));
+    equal(p.key,'2026-Y'); equal(p.end.getFullYear(),2027); equal(p.end.getMonth(),0);
+    let threw=false; try{R.periodInfo('weekly',new Date(2026,7,26));}catch(error){threw=true;}
+    assert(threw,'Unknown cadence must throw');
+  });
   test('legacy truthy activation records migrate once to canonical completion keys',()=>{
     const now=new Date(2026,7,26,12), raw={myCards:['freedom_flex'],activations:{'2026-Q3:freedom_flex':true,'2026-Q3:discover_it':false}};
     const once=R.normalizeState(raw,now), twice=R.normalizeState(once,now);
@@ -51,6 +57,32 @@ document.getElementById('app').addEventListener('load',()=>{
     const now=new Date(2026,7,26,12), state=R.normalizeState({myCards:['amex_gold','discover_it']},now), radar=R.buildRadarTasks(state,now);
     equal(radar.all.length,5); equal(radar.all[0].itemId,'discover_5pct');
     assert(radar.all.slice(1).every(t=>t.kind==='enroll-task'),'Gold credits should begin with enrollment');
+  });
+  test('quarterly skips suppress Radar without removing quarterly inventory',()=>{
+    const now=new Date(2026,7,26,12), period='2026-Q3', key='activate:freedom_flex:freedom_flex_5x:'+period;
+    const state=R.normalizeState({myCards:['freedom_flex'],radarSkips:{[key]:{
+      taskKind:'activate',cardId:'freedom_flex',itemId:'freedom_flex_5x',periodKey:period,
+      skippedAt:'2026-08-26T12:00:00.000Z',expiresAt:'2026-10-01T00:00:00.000Z'
+    }}},now), radar=R.buildRadarTasks(state,now);
+    equal(radar.all.length,1); equal(radar.active.length,0); equal(radar.suppressed.length,1);
+  });
+  test('verified action deadlines close independently of the quarter period',()=>{
+    const state={myCards:['freedom_flex']}, before=R.buildRadarTasks(state,new Date(2026,8,10,12)).all[0];
+    equal(before.daysLeft,4); assert(!before.closed,'Action should still be open September 10');
+    const closed=R.buildRadarTasks(state,new Date(2026,8,15,12));
+    assert(closed.all[0].closed,'Action should close September 15'); equal(closed.active.length,0);
+  });
+  test('issuer action data includes the verified Discover link and Uber setup wording',()=>{
+    const now=new Date(2026,7,26,12), radar=R.buildRadarTasks({myCards:['discover_it','amex_gold']},now);
+    const discover=radar.all.find(t=>t.itemId==='discover_5pct'), uber=radar.all.find(t=>t.itemId==='uber_cash');
+    equal(discover.link,'https://www.discover.com/credit-cards/cash-back/cashback-calendar.html');
+    equal(uber.markLabel,'Mark card added'); equal(uber.prerequisiteLabel,'Add card to Uber');
+  });
+  test('time-bounded Business Gold copy changes after FedEx eligibility ends',()=>{
+    const before=R.buildRadarTasks({myCards:['biz_gold']},new Date(2026,8,30,12)).all.find(t=>t.itemId==='flexible_business_credit');
+    const after=R.buildRadarTasks({myCards:['biz_gold']},new Date(2026,9,2,12)).all.find(t=>t.itemId==='flexible_business_credit');
+    assert(before.detail.includes('FedEx'),'FedEx should appear through October 1');
+    assert(!after.detail.includes('FedEx'),'FedEx should disappear beginning October 2');
   });
   test('enrollment changes one recurring row into its usage phase',()=>{
     const now=new Date(2026,7,26,12), state=R.normalizeState({myCards:['amex_gold'],enrollments:[{
@@ -64,6 +96,32 @@ document.getElementById('app').addEventListener('load',()=>{
     },old:{actionType:'activate',cardId:'discover_it',itemId:'discover_5pct',periodKey:'2023-Q1',completedAt:'2023-01-01T12:00:00.000Z'}}},now);
     equal(Object.keys(state.completions).length,1);
     equal(Object.keys(state.completions)[0],'activate:discover_it:discover_5pct:2026-Q3');
+  });
+  test('normalization rejects impossible periods, arbitrary undated records, and far-future events',()=>{
+    const now=new Date(2026,7,26,12), state=R.normalizeState({myCards:['amex_gold'],completions:{bad:{
+      actionType:'use',cardId:'amex_gold',itemId:'dining_credit',periodKey:'2026-99',completedAt:null
+    }},enrollments:[{cardId:'amex_gold',benefitId:'dining_credit',enrolledAt:'9999-12-31T00:00:00.000Z'}]},now);
+    equal(Object.keys(state.completions).length,0); equal(Object.keys(state.enrollments).length,0);
+  });
+  test('only marked known legacy activations may remain undated',()=>{
+    const now=new Date(2026,7,26,12), base={actionType:'activate',cardId:'discover_it',itemId:'discover_5pct',periodKey:'2026-Q3',completedAt:null};
+    equal(Object.keys(R.normalizeState({completions:[base]},now).completions).length,0);
+    equal(Object.keys(R.normalizeState({completions:[{...base,legacyUndated:true}]},now).completions).length,1);
+  });
+  test('setup schema versions must be supported integers',()=>{
+    let threw=false; try{R.validateImportPayload({schemaVersion:'banana'},20,20);}catch(error){threw=true;}
+    assert(threw,'Invalid schema version should be rejected');
+    R.validateImportPayload({schemaVersion:2,myCards:[]},20,20);
+  });
+  test('compact setup encoding round-trips Unicode data',()=>{
+    const raw={schemaVersion:2,custom:[{name:'Café 東京'}]}, encoded=R.encodeSetupPayload(raw), decoded=JSON.parse(R.decodeSetupPayload(encoded));
+    assert(encoded.startsWith('v2.'),'Expected versioned base64url encoding'); equal(decoded.custom[0].name,'Café 東京');
+  });
+  test('setup validation rejects oversized payload metadata',()=>{
+    let threw=false; try{R.validateImportPayload({schemaVersion:2},40000,10);}catch(error){threw=true;}
+    assert(threw,'Oversized setup should be rejected before import');
+    threw=false; try{R.encodeSetupState({schemaVersion:2,custom:[{name:'x'.repeat(40000)}]});}catch(error){threw=true;}
+    assert(threw,'Oversized setup should be rejected before creating an outbound link');
   });
   test('calendar download contains four consistent private recurring events',()=>{
     const ics=R.buildICS(new Date(2026,7,26,12));

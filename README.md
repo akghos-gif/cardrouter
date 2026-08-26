@@ -10,14 +10,14 @@ Tap a purchase category — dining, groceries, gas, flights, hotels, and more �
 
 - **Which card?** — tap a category and get a ranked answer. Points cards are compared against cash-back cards using cents-per-point valuations, so "3x Ultimate Rewards" and "5% cash back" compete on equal footing (shown as an effective ≈% for every card).
 - **Built-in rules database** — earn rates for ~19 popular US rewards cards, verified July 2026, including the Chase Sapphire Reserve revamp, the Amex Gold refresh, the Prime Visa, and the Citi Custom Cash closure to new applicants.
-- **Rotating 5% categories** — the current quarter's Chase Freedom Flex and Discover it categories are built in. Cards that need activation show an "activate first!" warning until you check them off in the Promos tab, which links straight to each issuer's activation page. When rates tie, activated rotating categories rank ahead of unactivated ones.
+- **Rotating 5% categories:** the current quarter's Chase Freedom Flex and Discover it categories are built in. Cards that need activation show an "activation required" warning until you check them off in Promos. When rates tie, activated rotating categories rank ahead of unactivated ones.
 - **Credit Radar:** the Promos tab prioritizes quarterly activations, Cash+ category selection, and verified calendar-based card credits before they expire. Open Radar for the full list, mark actions complete, skip a period, hide benefits you do not use, and restore anything from the inline "Not shown" section.
-- **Shared completion status:** activation, enrollment, and benefit-use checkboxes stay synchronized across Radar, Quarterly Activations, Benefits, and card recommendations. Recent completions remain visible in Radar temporarily and activity history stays on the device for 24 months.
+- **Shared completion status:** activation, enrollment, and benefit-use checkboxes stay synchronized across Radar, Quarterly Actions, Benefits, and card recommendations. A completion remains in the main Radar list until the period ends or for up to 30 days, whichever comes first. It then remains in completion history for up to 24 months.
 - **Priority tie-break** — when two cards earn the same, your hand-set card order decides (drag your true favorite to the top).
 - **Location guessing** — optionally let the app read your location and guess the category from the nearest merchant (via OpenStreetMap; no API key, no tracking).
 - **Everything is editable** — issuers change rules constantly. Tap ✎ on any card to override its rates, add custom cards, or adjust point valuations in Settings.
 - **Quarterly reminders:** download a generic `.ics` calendar file with four recurring reminders and no card or activity data.
-- **Per-device setups & setup links:** each person's card selection lives in their own browser. A "setup link" (Settings → Copy setup link) carries the card setup, permanent enrollments, hidden preferences, and current-period checkmarks, but omits older activity history.
+- **Per-device setups and setup links:** each person's setup lives in their own browser. A setup link carries cards, settings, benefit enrollments, hidden Radar items, skipped periods, and current checkmarks. Completion history is omitted.
 
 ## Install on iPhone
 
@@ -40,7 +40,7 @@ Two flavors of link exist:
 | Link | What it does |
 |---|---|
 | Plain URL (`.../cardrouter/`) | Fresh start for a new person; remembers each device's own setup |
-| Setup link (`.../cardrouter/#eyJt...`) | Preloads a specific card lineup, then hands off to normal per-device storage |
+| Setup link (`.../cardrouter/#v2...`) | Imports a specific setup, removes the setup data from the address bar, and uses normal per-device storage |
 
 Opening a setup link asks before replacing a setup already on that device. The link contains readable card and current-status data, so share the plain URL with other people and keep setup links private for your own backups.
 
@@ -52,7 +52,7 @@ Opening a setup link asks before replacing a setup already on that device. The l
 
 **Caps.** Cards with spending caps (Amex Gold's $25k supermarket cap, Custom Cash's $500/cycle, rotating cards' $1,500/quarter) show a ⚠ note. The app doesn't track your spend against caps — it trusts you to know when you've blown through one.
 
-**Radar completion.** Issuers do not report completion back to this app. Use the labeled checkboxes after you activate, enroll, select, or use a benefit. Uncheck any status to correct it. Radar retains a completion briefly in the main list so it does not appear to vanish, then keeps it in the inline history for up to 24 months.
+**Radar completion.** Issuers do not report completion back to this app. Use the labeled checkboxes after you activate, enroll, select, or use a benefit. Uncheck any status to correct it. A completion remains in the main Radar list until the period ends or for up to 30 days, whichever comes first. It then remains in completion history for up to 24 months.
 
 **Radar coverage.** Radar intentionally tracks only benefits with issuer-verified terms, a clear calendar reset, and an effective action page. Other perks remain available in Benefits without becoming recurring tasks. Benefit terms were checked in August 2026 and can still change.
 
@@ -68,14 +68,14 @@ Card rules drift. Two maintenance points:
 ```js
 const ROTATING = {
   '2026-Q3': {
-    freedom_flex: {cats:['gas','transit','entertain'], label:'Gas & EV, public transit, live entertainment'},
+    freedom_flex: {cats:['gas','transit','entertain','united_way'], label:'Gas & EV, public transit, live entertainment, United Way donations'},
     discover_it:  {cats:['gas','flights','transit','drugstores'], label:'Gas & EV, airlines & transit, drugstores'},
   },
   '2026-Q4': null, // ← fill in when announced (usually mid-quarter before)
 };
 ```
 
-Valid category ids: `dining, groceries, gas, flights, hotels, transit, streaming, drugstores, online, entertain, rent, other`.
+Valid category ids: `dining, groceries, gas, flights, hotels, transit, streaming, drugstores, online, entertain, phone, shipping, united_way, rent, other`.
 
 ## Privacy
 
@@ -95,7 +95,7 @@ Valid category ids: `dining, groceries, gas, flights, hotels, transit, streaming
 
 ## Tech notes
 
-Single self-contained production `index.html` (no dependencies, no build step): vanilla JS, CSS custom properties with automatic dark mode, versioned `localStorage` persistence with verified in-memory fallback, allowlisted config export via base64 URL hash, private `.ics` Blob generation, browser-history Promos subviews, geolocation + [Nominatim](https://nominatim.org/) reverse geocoding. Works from any static host.
+Single self-contained production `index.html` (no dependencies, no build step): vanilla JS, CSS custom properties with automatic dark mode, versioned `localStorage` persistence with verified session fallback, allowlisted config export via a compact base64url hash, generic `.ics` reminders with no card or activity data, browser-history Promos subviews, geolocation + [Nominatim](https://nominatim.org/) reverse geocoding. Works from any static host.
 
 Pure Radar date, migration, task-building, and calendar helpers are exposed through the internal `CardRouterRadar` namespace. Serve the repository locally and open `tests/radar-tests.html` to run the dependency-free test harness.
 
