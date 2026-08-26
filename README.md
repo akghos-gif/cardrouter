@@ -11,13 +11,13 @@ Tap a purchase category — dining, groceries, gas, flights, hotels, and more �
 - **Which card?** — tap a category and get a ranked answer. Points cards are compared against cash-back cards using cents-per-point valuations, so "3x Ultimate Rewards" and "5% cash back" compete on equal footing (shown as an effective ≈% for every card).
 - **Built-in rules database** — earn rates for ~19 popular US rewards cards, verified July 2026, including the Chase Sapphire Reserve revamp, the Amex Gold refresh, the Prime Visa, and the Citi Custom Cash closure to new applicants.
 - **Rotating 5% categories:** the current quarter's Chase Freedom Flex and Discover it categories are built in. Cards that need activation show an "activation required" warning until you check them off in Promos. When rates tie, activated rotating categories rank ahead of unactivated ones.
-- **Credit Radar:** the Promos tab prioritizes quarterly category actions, including Cash+ selection, and verified calendar-based card credits before they expire. Open Radar for the full list, mark actions complete, skip a period, hide benefits you do not use, and show hidden or skipped items again from the inline "Not shown in Radar" section.
-- **Shared completion status:** activation, enrollment, and benefit-use checkboxes stay synchronized across Radar, Quarterly Actions, Benefits, and card recommendations. A completion remains in the main Radar list until the period ends or for up to 30 days, whichever comes first. It then remains in completion history for up to 24 months.
+- **My Radar:** the Promos tab prioritizes quarterly category actions, including Cash+ selection, and verified calendar-based card credits before they expire. Open My Radar for the full list, mark actions complete, skip a period, hide benefits you do not use, and show hidden or skipped items again from the inline "Hidden" section.
+- **Shared completion status:** activation, enrollment, and benefit-use checkboxes stay synchronized across My Radar, Quarterly Actions, Benefits, and card recommendations. A completion remains in the main My Radar list until the period ends or for up to 30 days, whichever comes first. It then remains in completion history for up to 24 months.
 - **Priority tie-break** — when two cards earn the same, your hand-set card order decides (drag your true favorite to the top).
 - **Location guessing** — optionally let the app read your location and guess the category from the nearest merchant (via OpenStreetMap; no API key, no tracking).
 - **Everything is editable** — issuers change rules constantly. Tap ✎ on any card to override its rates, add custom cards, or adjust point valuations in Settings.
 - **Quarterly reminders:** download a generic `.ics` calendar file with four recurring reminders and no card or activity data.
-- **Per-device setups and setup links:** each person's setup lives in their own browser. A setup link carries cards, settings, benefit enrollments, hidden Radar items, skipped periods, and current checkmarks. Completion history is omitted.
+- **Per-device setups and setup links:** each person's setup lives in their own browser. A setup link carries cards, settings, benefit enrollments, items hidden from My Radar, skipped periods, and current checkmarks. Completion history is omitted.
 
 ## Install on iPhone
 
@@ -52,9 +52,9 @@ Opening a setup link asks before replacing a setup already on that device. The l
 
 **Caps.** Cards with spending caps (Amex Gold's $25k supermarket cap, Custom Cash's $500/cycle, rotating cards' $1,500/quarter) show a ⚠ note. The app doesn't track your spend against caps — it trusts you to know when you've blown through one.
 
-**Radar completion.** Issuers do not report completion back to this app. Use the labeled checkboxes after you activate, enroll, select, or use a benefit. Uncheck any status to correct it. If you check a quarterly action after its cutoff, you are confirming that you completed it by the displayed deadline. Radar records both that deadline and the date you checked it. A completion remains in the main Radar list until the period ends or for up to 30 days, whichever comes first. It then remains in completion history for up to 24 months.
+**My Radar completion.** Issuers do not report completion back to this app. Use the labeled checkboxes after you activate, enroll, select, or use a benefit. Uncheck any status to correct it. If you check a quarterly action after its cutoff, you are confirming that you completed it by the displayed deadline. My Radar records both that deadline and the date you checked it. A completion remains in the main My Radar list until the period ends or for up to 30 days, whichever comes first. It then remains in completion history for up to 24 months.
 
-**Radar coverage.** Radar intentionally tracks only benefits with issuer-verified terms, a clear calendar reset, and a working issuer or partner page for the action. Other perks remain available in Benefits without becoming recurring tasks. Benefit terms were checked in August 2026 and can still change.
+**My Radar coverage.** My Radar intentionally tracks only benefits with issuer-verified terms, a clear calendar reset, and a working issuer or partner page for the action. Other perks remain available in Benefits without becoming recurring tasks. Benefit terms were checked in August 2026 and can still change.
 
 **Quarterly upkeep (5 minutes, 4× a year).** At each quarter's start: activate rotating categories (Promos tab links), re-check the new categories are reflected (see below), and re-pick US Bank Cash+ choices if you hold it.
 
@@ -90,7 +90,7 @@ Valid category ids: `dining, groceries, gas, flights, hotels, transit, streaming
 
 - It recommends; it doesn't route. You still tap the card yourself.
 - No logged-in promo scraping (Amex Offers, Chase Offers) — those live behind issuer logins, and automating them is fragile and against issuer terms. The Promos tab reminds you where to look; MaxRewards Gold automates it commercially if you want that.
-- Radar completion is manual. It cannot verify issuer activation, enrollment, selection, or statement-credit usage.
+- My Radar completion is manual. It cannot verify issuer activation, enrollment, selection, or statement-credit usage.
 - No spend-cap tracking.
 - Location guessing is a guess — OpenStreetMap data quality varies by area.
 - Clearing Safari website data wipes your setup — keep a setup link as backup.

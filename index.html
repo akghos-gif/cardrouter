@@ -30,7 +30,7 @@
   .brand .bname{font-size:20px; font-weight:800; letter-spacing:-.02em; line-height:1.1}
   .brand .btag{font-size:12px; color:var(--muted); margin-top:1px}
   header{padding:6px 18px 8px; display:flex; align-items:baseline; gap:8px}
-  header h1{font-size:22px; margin:0; letter-spacing:-.02em}
+  header h1{font-size:22px; margin:0; letter-spacing:-.02em; white-space:nowrap}
   header h1:focus{outline:none}
   header .sub{color:var(--muted); font-size:13px}
   main{padding:0 14px; max-width:560px; margin:0 auto}
@@ -111,6 +111,7 @@
   .storage-warning button{border:0; background:none; color:var(--accent); font:inherit; font-weight:700; min-height:44px; padding:7px 4px; cursor:pointer}
   .section-head{display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin:16px 4px 6px}
   .section-head h2{margin:0}
+  .title-icon{display:inline-block; margin-right:6px; font-size:.9em; line-height:1; vertical-align:-.04em}
   .section-head .section-link{border:0; background:none; color:var(--accent); font:inherit; font-size:13px; font-weight:700;
     padding:9px 2px; min-height:44px; cursor:pointer; white-space:nowrap}
   .radar-summary{font-size:14px; line-height:1.4; margin:0 4px 9px}
@@ -836,7 +837,7 @@ function validateImportPayload(raw,encodedLength,decodedBytes,now=new Date()){
   if(plainObject(candidate.overrides)&&Object.keys(candidate.overrides).length>50) throw new SetupLinkError('This setup link contains too many custom rate overrides.');
   if(plainObject(candidate.cpp)&&Object.keys(candidate.cpp).length>25) throw new SetupLinkError('This setup link contains too many point valuations.');
   const recordCount=['enrollments','completions','radarHidden','radarSkips'].reduce((n,k)=>n+recordsOf(candidate[k]).length,0);
-  if(recordCount>500) throw new SetupLinkError('This setup link contains too much saved Radar activity.');
+  if(recordCount>500) throw new SetupLinkError('This setup link contains too much saved activity.');
   return candidate;
 }
 function encodeSetupPayload(raw){
@@ -885,7 +886,7 @@ function loadState(){
       const decoded=decodeSetupPayload(encoded), bytes=new TextEncoder().encode(decoded).length, raw=JSON.parse(decoded), importNow=new Date();
       const validated=validateImportPayload(raw,encoded.length,bytes,importNow);
       const imported=normalizeState(validated,importNow,{fromImport:true});
-      if(stateHasData(local)&&!confirm('Replace this device\'s cards, settings, benefit enrollments, hidden Radar items, skipped periods, and current checkmarks with this setup link?')){
+      if(stateHasData(local)&&!confirm('Replace this device\'s cards, settings, benefit enrollments, items hidden from My Radar, skipped periods, and current checkmarks with this setup link?')){
         startupNotice='Setup import canceled'; return local;
       }
       startupNotice='Setup imported'; return imported;
@@ -1137,15 +1138,15 @@ function skipTask(task,mutationNow=new Date()){
 function unskipTask(task){ mutateWithUndo('Shown for this period',()=>{delete S.radarSkips[task.key];},`task-${task.key}`,'not-shown-toggle'); }
 function hideBenefitTask(task){
   const key=canonicalHiddenKey(task.card.id,task.benefitId);
-  mutateWithUndo('Hidden from Radar',()=>{
+  mutateWithUndo('Hidden from My Radar',()=>{
     S.radarHidden[key]={cardId:task.card.id,benefitId:task.benefitId,hiddenAt:new Date().toISOString()};
   },'not-shown-toggle',`task-${task.key}`);
 }
 function restoreBenefit(cardId,benefitId,focusId,undoFocusId=focusId){
-  mutateWithUndo('Shown in Radar',()=>{delete S.radarHidden[canonicalHiddenKey(cardId,benefitId)];},focusId,undoFocusId);
+  mutateWithUndo('Shown in My Radar',()=>{delete S.radarHidden[canonicalHiddenKey(cardId,benefitId)];},focusId,undoFocusId);
 }
 function showTaskInRadar(task){
-  mutateWithUndo('Shown in Radar',()=>{
+  mutateWithUndo('Shown in My Radar',()=>{
     delete S.radarSkips[task.key];
     if(task.benefitId) delete S.radarHidden[canonicalHiddenKey(task.card.id,task.benefitId)];
   },`task-${task.key}`,'not-shown-toggle');
@@ -1231,13 +1232,14 @@ function render(){
   if(TAB==='cards'){ hdr.textContent='My cards'; sub.textContent='priority order breaks ties'; renderCards(); }
   if(TAB==='benefits'){ hdr.textContent='Benefits'; sub.textContent='what your cards give you'; renderBenefits(); }
   if(TAB==='promos'){
-    if(PROMOS_VIEW==='radar'){ hdr.textContent='Radar'; sub.textContent='actions across your cards'; }
-    else if(PROMOS_VIEW==='quarterly'){ hdr.textContent='Quarterly actions'; sub.textContent=currentQuarter().replace('-',' '); }
+    if(PROMOS_VIEW==='radar'){ hdr.innerHTML='<span class="title-icon" aria-hidden="true">📡</span>My Radar'; sub.textContent='actions across your cards'; }
+    else if(PROMOS_VIEW==='quarterly'){ hdr.innerHTML='<span class="title-icon" aria-hidden="true">📅</span>Quarterly actions'; sub.textContent=currentQuarter().replace('-',' '); }
     else { hdr.textContent='Promos & activations'; sub.textContent=currentQuarter().replace('-',' '); }
     renderPromos();
   }
   if(TAB==='settings'){ hdr.textContent='Settings'; sub.textContent=''; renderSettings(); }
-  document.title=`ChooseMyCard · ${hdr.textContent}`;
+  const titleIcon=hdr.querySelector('.title-icon'), pageTitle=titleIcon?hdr.textContent.slice(titleIcon.textContent.length).trim():hdr.textContent;
+  document.title=`ChooseMyCard · ${pageTitle}`;
   updateStorageWarning();
 }
 
@@ -1431,7 +1433,7 @@ function renderBenefits(){
           <div class="action-title">${esc(b.name)}</div>
           <div class="action-meta">${esc(b.card.name)}${b.value?' · '+esc(b.value):''}${b.note?' · '+esc(b.note):''}</div>
           <div class="action-links"><a class="issuer-action" href="${meta.link}" target="_blank" rel="noopener noreferrer" aria-label="${linkLabel} for ${esc(b.name)}, ${esc(b.card.name)}, on issuer or partner site, opens in a new tab">${linkLabel} <span aria-hidden="true">↗</span></a>
-          ${hidden?`<button class="manage-action" data-show-radar="${b.card.id}:${b.id}" data-restore-focus="${restoreFocusId}" data-focus-id="show-${b.card.id}-${b.id}" aria-label="Track ${esc(b.name)} in Radar, ${esc(b.card.name)}">Track in Radar</button>`:''}</div>
+          ${hidden?`<button class="manage-action" data-show-radar="${b.card.id}:${b.id}" data-restore-focus="${restoreFocusId}" data-focus-id="show-${b.card.id}-${b.id}" aria-label="Track ${esc(b.name)} in My Radar, ${esc(b.card.name)}">Track in My Radar</button>`:''}</div>
         </div><div>
           ${meta.requiresEnrollment?`<label class="task-check"><input type="checkbox" data-benefit-enroll="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="enroll-${b.card.id}-${b.id}" aria-label="${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark} for ${esc(b.name)}, ${esc(b.card.name)}" ${enrolled?'checked':''}>${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark}</label>`:''}
           ${(!meta.requiresEnrollment||enrolled)?`<label class="task-check"><input type="checkbox" data-benefit-use="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="use-${b.card.id}-${b.id}" aria-label="${used?'Used '+displayDate(used.completedAt):'Mark used'} for ${esc(b.name)}, ${esc(b.card.name)}" ${used?'checked':''}>${used?'Used '+displayDate(used.completedAt):'Mark used'}</label>`:''}
@@ -1442,7 +1444,7 @@ function renderBenefits(){
   } else {
     html += `<p class="hint" style="margin:6px 4px">Tap a category to see which cards cover it and which perks need setup.</p>`;
   }
-  html += `<div class="section-note" style="margin-top:10px">Benefits data checked August 2026. You can track monthly, quarterly, and semiannual credits in Radar.</div>`;
+  html += `<div class="section-note" style="margin-top:10px">Benefits data checked August 2026. You can track monthly, quarterly, and semiannual credits in My Radar.</div>`;
   mainEl.innerHTML = html;
   mainEl.querySelectorAll('[data-bcat]').forEach(b=>b.onclick=()=>{ selectedBenefitCat = (selectedBenefitCat===b.dataset.bcat)?null:b.dataset.bcat; render(); });
   mainEl.querySelectorAll('[data-benefit-enroll]').forEach(cb=>cb.onchange=()=>{
@@ -1488,13 +1490,13 @@ function renderTaskRow(task,{manage=false}={}){
     ${statuses.map(status=>`<div class="action-meta ${status.urgent?'urgent':''}">${esc(status.text)}</div>`).join('')}
     <div class="action-links"><a class="issuer-action" href="${task.link}" target="_blank" rel="noopener noreferrer" aria-label="${esc(task.externalLabel)} for ${esc(task.title)}, ${esc(task.card.name)}, on issuer or partner site, opens in a new tab">${esc(task.externalLabel)} <span aria-hidden="true">↗</span></a>
       ${manage&&!task.done&&!task.closed&&!disabled?`<button class="manage-action" data-skip-task="${task.key}" aria-label="Skip ${esc(task.title)} for this period, ${esc(task.card.name)}">Skip this period</button>`:''}
-      ${manage&&task.benefitId?`<button class="manage-action" data-hide-task="${task.key}" aria-label="Hide ${esc(task.title)} from Radar, ${esc(task.card.name)}">Hide this benefit</button>`:''}
+      ${manage&&task.benefitId?`<button class="manage-action" data-hide-task="${task.key}" aria-label="Hide ${esc(task.title)} from My Radar, ${esc(task.card.name)}">Hide this benefit</button>`:''}
     </div>
   </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-task-state="${task.closed?'closed':task.unavailable?'unavailable':'open'}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div>`;
 }
 function radarOverviewState(radar){
-  if(!S.myCards.length) return {copy:'Add cards to start Radar',action:'cards'};
-  if(!radar.all.length) return {copy:'Radar does not currently track actions for your cards.'};
+  if(!S.myCards.length) return {copy:'Add cards to start My Radar',action:'cards'};
+  if(!radar.all.length) return {copy:'My Radar does not currently track actions for your cards.'};
   if(!radar.unresolved.length&&radar.suppressed.some(t=>!t.done)) return {copy:'All unfinished items are hidden or skipped.'};
   if(!radar.unresolved.length) return {copy:'Nothing needs your attention'};
   return {copy:taskSummary(radar.unresolved[0])};
@@ -1505,16 +1507,16 @@ function renderPromosOverview(){
   const qRows=qTasks.filter(t=>!preview.some(p=>p.key===t.key)).slice(0,2);
   const qSubtitle=`${q.replace('-',' ')} category checklist`;
   let html=`<div class="quarter-banner">${q.replace('-',' ')} · ${days} days left in the quarter</div>
-    <div class="section-head"><h2 id="radar-heading">Radar</h2><button class="section-link" id="radar-view-all" aria-label="View all Radar items">View all <span aria-hidden="true">›</span></button></div>
+    <div class="section-head"><h2 id="radar-heading"><span class="title-icon" aria-hidden="true">📡</span>My Radar</h2><button class="section-link" id="radar-view-all" aria-label="View all My Radar items">View all <span aria-hidden="true">›</span></button></div>
     <p class="section-note">Priority actions across your cards</p>
     <p class="radar-summary"><strong>${esc(state.copy)}</strong></p>`;
   if(state.action==='cards') html+=`<div class="action-list"><div class="quiet-state"><button class="pill" data-go-cards>Add cards</button></div></div>`;
   else if(preview.length) html+=`<div class="action-list">${preview.map(t=>renderTaskRow(t)).join('')}</div>`;
-  const more=Math.max(0,radar.unresolved.length-preview.length); if(more) html+=`<div class="section-note" style="text-align:right">${more} more Radar item${more===1?'':'s'}</div>`;
-  html+=`<div class="section-head"><h2>Quarterly actions</h2><button class="section-link" id="quarterly-view-all" aria-label="View all quarterly actions">View all <span aria-hidden="true">›</span></button></div>
+  const more=Math.max(0,radar.unresolved.length-preview.length); if(more) html+=`<div class="section-note" style="text-align:right">${more} more item${more===1?'':'s'}</div>`;
+  html+=`<div class="section-head"><h2><span class="title-icon" aria-hidden="true">📅</span>Quarterly actions</h2><button class="section-link" id="quarterly-view-all" aria-label="View all quarterly actions">View all <span aria-hidden="true">›</span></button></div>
     <div class="progress-line"><span>${esc(qSubtitle)}</span>${qTasks.length?`<strong>${qDone} of ${qTasks.length} complete</strong>`:''}</div>`;
   if(qRows.length) html+=`<div class="action-list">${qRows.map(t=>renderTaskRow(t)).join('')}</div>`;
-  else html+=`<div class="action-list"><div class="quiet-state">${qTasks.length?'Your unfinished quarterly actions are shown in Radar above.':'No quarterly actions for your cards.'}</div></div>`;
+  else html+=`<div class="action-list"><div class="quiet-state">${qTasks.length?'Your unfinished quarterly actions are shown in My Radar above.':'No quarterly actions for your cards.'}</div></div>`;
   html+=`<div class="panel"><div class="reminder-row"><p class="hint">Add reminders for the first day of each quarter.</p>
     <button class="pill" id="ics">📅 Download calendar reminders</button></div></div>`;
   mainEl.innerHTML=html;
@@ -1522,11 +1524,11 @@ function renderPromosOverview(){
 function renderNotShown(tasks){
   if(!tasks.length) return '';
   let html=`<div class="disclosure"><button id="not-shown-toggle" data-focus-id="not-shown-toggle" aria-expanded="${notShownOpen}" aria-controls="not-shown-content">
-    <span>Not shown in Radar (${tasks.length})</span><span aria-hidden="true">${notShownOpen?'⌃':'⌄'}</span></button>`;
+    <span>Hidden (${tasks.length})</span><span aria-hidden="true">${notShownOpen?'⌃':'⌄'}</span></button>`;
   if(notShownOpen) html+=`<div id="not-shown-content" class="not-shown-list">${tasks.map(t=>`<div class="history-row"><div><strong>${esc(t.title)}</strong>
-    <div class="action-meta">${esc(t.card.name)} · ${[t.hidden?'Hidden from Radar':'',t.skipped?'Skipped this period':''].filter(Boolean).join(' · ')}</div></div>
-    <div class="action-links">${t.skipped&&t.hidden?`<button class="manage-action" data-show-task="${t.key}" aria-label="Show ${esc(t.title)} in Radar, ${esc(t.card.name)}">Show in Radar</button>`:
-      `${t.skipped?`<button class="manage-action" data-unskip-task="${t.key}" aria-label="Show ${esc(t.title)} this period, ${esc(t.card.name)}">Show this period</button>`:''}${t.hidden?`<button class="manage-action" data-restore-task="${t.key}" aria-label="Show ${esc(t.title)} in Radar, ${esc(t.card.name)}">Show in Radar</button>`:''}`}</div></div>`).join('')}</div>`;
+    <div class="action-meta">${esc(t.card.name)} · ${[t.hidden?'Hidden':'',t.skipped?'Skipped this period':''].filter(Boolean).join(' · ')}</div></div>
+    <div class="action-links">${t.skipped&&t.hidden?`<button class="manage-action" data-show-task="${t.key}" aria-label="Show ${esc(t.title)} in My Radar, ${esc(t.card.name)}">Show in My Radar</button>`:
+      `${t.skipped?`<button class="manage-action" data-unskip-task="${t.key}" aria-label="Show ${esc(t.title)} this period, ${esc(t.card.name)}">Show this period</button>`:''}${t.hidden?`<button class="manage-action" data-restore-task="${t.key}" aria-label="Show ${esc(t.title)} in My Radar, ${esc(t.card.name)}">Show in My Radar</button>`:''}`}</div></div>`).join('')}</div>`;
   return html+'</div>';
 }
 function renderHistory(){
@@ -1637,18 +1639,18 @@ function renderSettings(){
       return `<div>${esc(p.name)}</div><input type="text" inputmode="decimal" data-cpp="${k}" value="${v}">`;
     }).join('') + `</div></div>
     <h2>Backup / transfer</h2><div class="panel">
-      <p class="hint">Copy a setup link containing your cards, settings, benefit enrollments, hidden Radar items, skipped periods, and current checkmarks. Anyone with the link can read and import this information. Completion history is not included.</p>
+      <p class="hint">Copy a setup link containing your cards, settings, benefit enrollments, items hidden from My Radar, skipped periods, and current checkmarks. Anyone with the link can read and import this information. Completion history is not included.</p>
       <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap">
         <button class="pill primary" id="copycfg">🔗 Copy setup link</button>
         <button class="pill" id="reset">Reset app</button></div></div>
     <h2>About the rules data</h2><div class="panel"><p class="hint">
-      Earn rates were checked July 2026. Radar benefit terms were checked August 2026. Issuers change rules constantly. Tap ✎ to update a card's rates when they change. Future rotating categories require an app update.</p></div>`;
+      Earn rates were checked July 2026. Tracked benefit terms were checked August 2026. Issuers change rules constantly. Tap ✎ to update a card's rates when they change. Future rotating categories require an app update.</p></div>`;
   mainEl.innerHTML = html;
   mainEl.querySelectorAll('[data-cpp]').forEach(inp=>inp.onchange=()=>{
     const v=parseFloat(inp.value); if(!isNaN(v)&&v>0){ S.cpp[inp.dataset.cpp]=v; saveState(S); toast('Point valuation saved'); } });
   document.getElementById('copycfg').onclick=()=>copySetupLink();
   document.getElementById('reset').onclick=()=>{
-    if(confirm('Erase all cards, settings, benefit enrollments, checkmarks, hidden or skipped Radar items, and completion history from this device?')){
+    if(confirm('Erase all cards, settings, benefit enrollments, checkmarks, items hidden or skipped in My Radar, and completion history from this device?')){
       S=structuredClone(DEFAULT_STATE); saveState(S); render(); toast('App reset');
     }
   };
@@ -1668,7 +1670,7 @@ function setupUrl(){
   return location.href.split('#')[0]+'#'+encodeSetupState(exportSetupState());
 }
 async function copySetupLink(skipConfirmation=false){
-  if(!skipConfirmation&&!confirm('Create a setup link containing your cards, settings, benefit enrollments, hidden Radar items, skipped periods, and current checkmarks? Anyone with the link can read and import this information.')) return;
+  if(!skipConfirmation&&!confirm('Create a setup link containing your cards, settings, benefit enrollments, items hidden from My Radar, skipped periods, and current checkmarks? Anyone with the link can read and import this information.')) return;
   let url; try{url=setupUrl();}catch(e){toast(e instanceof SetupLinkError?e.message:'This setup link could not be created.',5000);return;}
   try{ await navigator.clipboard.writeText(url); toast('Setup link copied'); }
   catch(e){ prompt('Copy this setup link:',url); }

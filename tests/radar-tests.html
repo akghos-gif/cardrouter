@@ -224,9 +224,9 @@ document.getElementById('app').addEventListener('load',async()=>{
   test('Radar subview survives a real page reload',async()=>{
     await withAppState({schemaVersion:2,myCards:['amex_gold']},async(win,doc,frame)=>{
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click();
-      equal(doc.title,'ChooseMyCard · Radar');
+      equal(doc.title,'ChooseMyCard · My Radar');
       const loaded=new Promise(resolve=>frame.addEventListener('load',resolve,{once:true})); win.location.reload(); await loaded;
-      equal(frame.contentDocument.title,'ChooseMyCard · Radar');
+      equal(frame.contentDocument.title,'ChooseMyCard · My Radar');
     });
   });
   test('stale Benefits enrollment refreshes without writing old-period state',async()=>{
