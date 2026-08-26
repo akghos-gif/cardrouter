@@ -519,12 +519,12 @@ const RADAR_CATALOG_VERSION = '2026-08-26';
 const QUARTERLY_ACTIONS = [
   {cardId:'freedom_flex', id:'freedom_flex_5x', actionType:'activate', name:'Freedom Flex categories',
     link:ACTIVATION_LINKS.freedom_flex, externalLabel:'Activate on Chase', reviewLabel:'Review on Chase', nonRetroactive:false, affectsRanking:true,
-    actionEnds:{'2026-Q3':'2026-09-15'}},
+    deadlinePolicy:{type:'final-month-day',exclusiveDay:15}, actionEnds:{'2026-Q3':'2026-09-15'}},
   {cardId:'discover_it', id:'discover_5pct', actionType:'activate', name:'Discover categories',
     link:ACTIVATION_LINKS.discover_it, externalLabel:'Activate on Discover', reviewLabel:'Review on Discover', nonRetroactive:true, affectsRanking:true},
   {cardId:'usb_cashplus', id:'usb_cashplus_categories', actionType:'select', name:'Cash+ categories',
     link:'https://cashplus.usbank.com/?redirect=cashplus', externalLabel:'Choose categories', reviewLabel:'Review categories', nonRetroactive:true, affectsRanking:false,
-    actionEnds:{'2026-Q3':'2026-09-26'}},
+    deadlinePolicy:{type:'days-before-quarter-end',days:5}, actionEnds:{'2026-Q3':'2026-09-26'}},
 ];
 const RADAR_BENEFITS = [
   {cardId:'amex_plat', benefitId:'fhr_hotel_credit', cadence:'half', amount:'$300', requiresEnrollment:false,
@@ -562,7 +562,7 @@ const RADAR_BENEFITS = [
   {cardId:'biz_plat', benefitId:'wireless_service_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
     link:'https://global.americanexpress.com/card-benefits/detail/wireless-credit/business-platinum'},
   {cardId:'biz_gold', benefitId:'flexible_business_credit', cadence:'month', amount:'$20', requiresEnrollment:true,
-    detailBefore:'FedEx, Grubhub, and U.S. office supply stores through Oct 1, 2026', detailAfter:'Grubhub and U.S. office supply stores', detailChangesOn:'2026-10-02',
+    detailBefore:'FedEx through Oct 1, 2026; Grubhub and U.S. office supply stores continue', detailAfter:'Grubhub and U.S. office supply stores', detailChangesOn:'2026-10-02',
     link:'https://global.americanexpress.com/card-benefits/detail/240-flexible-business-credit/business-gold'},
   {cardId:'bcp', benefitId:'disney_bundle_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
     link:'https://global.americanexpress.com/card-benefits/detail/disney-streaming-credit/blue-cash-preferred'},
@@ -616,6 +616,15 @@ function periodMatchesCadence(key,cadence){
   const patterns={month:/^\d{4}-(?:0[1-9]|1[0-2])$/,quarter:/^\d{4}-Q[1-4]$/,half:/^\d{4}-H[12]$/,year:/^\d{4}-Y$/};
   return !!patterns[cadence]&&patterns[cadence].test(key);
 }
+function addCalendarDays(date,days){ return new Date(date.getFullYear(),date.getMonth(),date.getDate()+days); }
+function actionEndFor(action,period){
+  const override=action.actionEnds&&action.actionEnds[period.key];
+  if(override) return localDateFromIsoDate(override);
+  const policy=action.deadlinePolicy;
+  if(policy&&policy.type==='final-month-day') return new Date(period.end.getFullYear(),period.end.getMonth()-1,policy.exclusiveDay);
+  if(policy&&policy.type==='days-before-quarter-end') return addCalendarDays(period.end,-policy.days);
+  return period.end;
+}
 function recordWithinHistory(record,now){
   const cutoff=minusCalendarMonths(localDay(now),24);
   if(record.completedAt){ const d=new Date(record.completedAt); return !isNaN(d) && localDay(d)>=cutoff; }
@@ -648,6 +657,11 @@ function validTaskIdentity(kind,cardId,itemId,periodKey){
   const meta=RADAR_BENEFIT_MAP[cardId+':'+itemId];
   return !!meta&&['use','enroll-task'].includes(kind)&&periodMatchesCadence(periodKey,meta.cadence);
 }
+function currentPeriodForTask(kind,cardId,itemId,now){
+  if(kind==='activate'||kind==='select') return periodInfo('quarter',now).key;
+  const meta=RADAR_BENEFIT_MAP[cardId+':'+itemId];
+  return meta&&['use','enroll-task'].includes(kind)?periodInfo(meta.cadence,now).key:'';
+}
 function normalizeState(raw,now=new Date(),options={}){
   raw=plainObject(raw)?raw:{};
   const out=structuredClone(DEFAULT_STATE);
@@ -677,8 +691,9 @@ function normalizeState(raw,now=new Date(),options={}){
     if(!plainObject(r)||!['activate','select','use'].includes(r.actionType)) continue;
     const cardId=cleanId(r.cardId), itemId=cleanId(r.itemId||r.benefitId||r.quarterlyActionId), periodKey=typeof r.periodKey==='string'&&PERIOD_RE.test(r.periodKey)?r.periodKey:'';
     const legacyAction=QUARTERLY_ACTIONS.find(a=>a.actionType==='activate'&&a.cardId===cardId&&a.id===itemId);
-    const legacyUndated=r.completedAt===null&&r.legacyUndated===true&&!!legacyAction, completedAt=legacyUndated?null:(validEventIso(r.completedAt,now)?r.completedAt:'');
+    const legacyUndated=r.completedAt===null&&!!legacyAction, completedAt=legacyUndated?null:(validEventIso(r.completedAt,now)?r.completedAt:'');
     if(!cardId||!itemId||!periodKey||completedAt===''||!validCompletionIdentity(r.actionType,cardId,itemId,periodKey,{...options,labelSnapshot:r.labelSnapshot,cardNameSnapshot:r.cardNameSnapshot})) continue;
+    if(options.fromImport&&periodKey!==currentPeriodForTask(r.actionType,cardId,itemId,now)) continue;
     const rec={actionType:r.actionType,cardId,itemId,periodKey,completedAt,legacyUndated:legacyUndated||undefined,
       labelSnapshot:options.fromImport?'':cleanText(r.labelSnapshot,120),cardNameSnapshot:options.fromImport?'':cleanText(r.cardNameSnapshot,120)};
     if(recordWithinHistory(rec,now)) out.completions[canonicalTaskKey(r.actionType,cardId,itemId,periodKey)]=rec;
@@ -692,10 +707,12 @@ function normalizeState(raw,now=new Date(),options={}){
     const cardId=cleanId(r.cardId), itemId=cleanId(r.itemId), periodKey=typeof r.periodKey==='string'&&PERIOD_RE.test(r.periodKey)?r.periodKey:'';
     const expiry=new Date(r.expiresAt), maxExpiry=new Date(now.getFullYear()+2,now.getMonth(),now.getDate());
     if(!cardId||!itemId||!periodKey||!validTaskIdentity(r.taskKind,cardId,itemId,periodKey)||!validEventIso(r.skippedAt,now)||!validIso(r.expiresAt)||expiry<=now||expiry>maxExpiry) continue;
+    if(options.fromImport&&periodKey!==currentPeriodForTask(r.taskKind,cardId,itemId,now)) continue;
     out.radarSkips[canonicalTaskKey(r.taskKind,cardId,itemId,periodKey)]={taskKind:r.taskKind,cardId,itemId,periodKey,skippedAt:r.skippedAt,expiresAt:r.expiresAt};
   }
   if(plainObject(raw.activations)) for(const [legacyKey,value] of Object.entries(raw.activations)){
     if(!value) continue; const m=legacyKey.match(/^(\d{4}-Q[1-4]):(freedom_flex|discover_it)$/); if(!m) continue;
+    if(options.fromImport&&m[1]!==currentQuarter(now)) continue;
     const cardId=m[2], action=QUARTERLY_ACTIONS.find(a=>a.cardId===cardId), key=canonicalTaskKey('activate',cardId,action.id,m[1]);
     if(!out.completions[key]){
       const card=CARD_DB.find(c=>c.id===cardId), rec={actionType:'activate',cardId,itemId:action.id,periodKey:m[1],completedAt:null,legacyUndated:true,labelSnapshot:action.name,cardNameSnapshot:card.name};
@@ -705,28 +722,57 @@ function normalizeState(raw,now=new Date(),options={}){
   return out;
 }
 function inspectImportValue(v,depth,counter){
-  if(depth>8) throw new SetupLinkError('Setup link is too deeply nested');
-  if(typeof v==='string' && v.length>500) throw new SetupLinkError('Setup link contains oversized text');
+  if(depth>8) throw new SetupLinkError('This setup link contains data that cannot be imported safely.');
+  if(typeof v==='string' && v.length>500) throw new SetupLinkError('Some text in this setup link is too long.');
   if(!v||typeof v!=='object') return;
   for(const key of Object.keys(v)){
-    counter.n++; if(counter.n>2000) throw new SetupLinkError('Setup link contains too many fields');
-    if(['__proto__','prototype','constructor'].includes(key)) throw new SetupLinkError('Setup link contains unsafe fields');
-    if(/^(url|link|href)$/i.test(key)) throw new SetupLinkError('Setup links cannot provide external URLs');
+    counter.n++; if(counter.n>2000) throw new SetupLinkError('This setup link contains too much data.');
+    if(['__proto__','prototype','constructor'].includes(key)) throw new SetupLinkError('This setup link contains data that cannot be imported safely.');
+    if(/^(url|link|href)$/i.test(key)) throw new SetupLinkError('This setup link contains data that cannot be imported safely.');
     const val=v[key];
-    if(/(?:At|expiresAt)$/.test(key)&&val!==null&&typeof val==='string'&&!validIso(val)) throw new SetupLinkError('Setup link contains an invalid timestamp');
+    if(/(?:At|expiresAt)$/.test(key)&&val!==null&&typeof val==='string'&&!validIso(val)) throw new SetupLinkError('This setup link contains an invalid date.');
     inspectImportValue(val,depth+1,counter);
   }
+}
+function assertAllowedKeys(value,allowed){
+  if(!plainObject(value)) return;
+  for(const key of Object.keys(value)) if(!allowed.includes(key)) throw new SetupLinkError('This setup link contains data this app does not recognize.');
+}
+function validateRateMap(value){
+  if(!plainObject(value)) throw new SetupLinkError('This setup link contains data this app does not recognize.');
+  for(const [category,rate] of Object.entries(value)){
+    if(!CAT[category]&&category!=='other') throw new SetupLinkError('This setup link contains data this app does not recognize.');
+    if(!plainObject(rate)) throw new SetupLinkError('This setup link contains data this app does not recognize.');
+    assertAllowedKeys(rate,['v','u','note','cap']);
+  }
+}
+function validateImportShape(raw){
+  assertAllowedKeys(raw,['schemaVersion','catalogVersion','myCards','overrides','cpp','custom','coachDone','activations','enrollments','completions','radarHidden','radarSkips']);
+  if(raw.catalogVersion!=null&&typeof raw.catalogVersion!=='string') throw new SetupLinkError('This setup link contains data this app does not recognize.');
+  if(raw.coachDone!=null&&typeof raw.coachDone!=='boolean') throw new SetupLinkError('This setup link contains data this app does not recognize.');
+  if(raw.myCards!=null&&!Array.isArray(raw.myCards)) throw new SetupLinkError('This setup link contains data this app does not recognize.');
+  if(raw.custom!=null&&!Array.isArray(raw.custom)) throw new SetupLinkError('This setup link contains data this app does not recognize.');
+  for(const key of ['overrides','cpp','activations']) if(raw[key]!=null&&!plainObject(raw[key])) throw new SetupLinkError('This setup link contains data this app does not recognize.');
+  for(const key of ['enrollments','completions','radarHidden','radarSkips']) if(raw[key]!=null&&!Array.isArray(raw[key])&&!plainObject(raw[key])) throw new SetupLinkError('This setup link contains data this app does not recognize.');
+  if(Array.isArray(raw.custom)) for(const card of raw.custom){ assertAllowedKeys(card,['id','name','issuer','program','rates','notes']); if(plainObject(card)) validateRateMap(card.rates); }
+  if(plainObject(raw.overrides)) for(const rates of Object.values(raw.overrides)) validateRateMap(rates);
+  if(plainObject(raw.cpp)) for(const key of Object.keys(raw.cpp)) if(!PROGRAMS[key]) throw new SetupLinkError('This setup link contains data this app does not recognize.');
+  for(const record of recordsOf(raw.enrollments)) assertAllowedKeys(record,['cardId','benefitId','enrolledAt','labelSnapshot','cardNameSnapshot']);
+  for(const record of recordsOf(raw.completions)) assertAllowedKeys(record,['actionType','cardId','itemId','benefitId','quarterlyActionId','periodKey','completedAt','legacyUndated','labelSnapshot','cardNameSnapshot']);
+  for(const record of recordsOf(raw.radarHidden)) assertAllowedKeys(record,['cardId','benefitId','hiddenAt']);
+  for(const record of recordsOf(raw.radarSkips)) assertAllowedKeys(record,['taskKind','cardId','itemId','periodKey','skippedAt','expiresAt']);
 }
 function validateImportPayload(raw,encodedLength,decodedBytes){
   if(encodedLength>SETUP_MAX_ENCODED||decodedBytes>SETUP_MAX_DECODED) throw new SetupLinkError('Setup link is too large');
   const version=raw&&raw.schemaVersion==null?1:raw&&raw.schemaVersion;
   if(!plainObject(raw)||!Number.isInteger(version)||![1,2].includes(version)) throw new SetupLinkError('Setup link version is not supported');
   inspectImportValue(raw,0,{n:0});
+  validateImportShape(raw);
   if((raw.myCards||[]).length>50||(raw.custom||[]).length>25) throw new SetupLinkError('Setup link contains too many cards');
-  if(plainObject(raw.overrides)&&Object.keys(raw.overrides).length>50) throw new SetupLinkError('Setup link contains too many overrides');
-  if(plainObject(raw.cpp)&&Object.keys(raw.cpp).length>25) throw new SetupLinkError('Setup link contains too many valuations');
+  if(plainObject(raw.overrides)&&Object.keys(raw.overrides).length>50) throw new SetupLinkError('This setup link contains too many custom rate overrides.');
+  if(plainObject(raw.cpp)&&Object.keys(raw.cpp).length>25) throw new SetupLinkError('This setup link contains too many point valuations.');
   const recordCount=['enrollments','completions','radarHidden','radarSkips'].reduce((n,k)=>n+recordsOf(raw[k]).length,0);
-  if(recordCount>500) throw new SetupLinkError('Setup link contains too many activity records');
+  if(recordCount>500) throw new SetupLinkError('This setup link contains too much saved Radar activity.');
 }
 function encodeSetupPayload(raw){
   const bytes=new TextEncoder().encode(JSON.stringify(raw)); let binary='';
@@ -784,7 +830,7 @@ function loadState(){
 }
 function updateStorageWarning(){
   const el=document.getElementById('storageWarning'), text=document.getElementById('storageWarningText'); if(!el) return;
-  if(text) text.textContent=storageWarningReason==='newer'?'Changes will last only until you close this tab because newer saved data was left unchanged.':'Changes will last only until you close this tab because browser storage is unavailable.';
+  if(text) text.textContent=storageWarningReason==='newer'?'This app version cannot read the newer data already saved in this browser. That data was left unchanged, and changes made here will not be saved.':'Changes will last only until you close this tab because browser storage is unavailable.';
   el.hidden=storagePersistent;
 }
 function saveState(s){
@@ -813,14 +859,16 @@ function allCardsFor(state){ return [...CARD_DB,...state.custom]; }
 function getCardFor(id,state){ return allCardsFor(state).find(c=>c.id===id); }
 function allCards(){ return allCardsFor(S); }
 function getCard(id){ return getCardFor(id,S); }
-function cardRates(card){
-  const o = S.overrides[card.id]||{};
+function cardRatesFor(card,state){
+  const o = state.overrides[card.id]||{};
   const merged = {};
   for(const [k,r] of Object.entries(card.rates)) merged[k] = {...r};
   for(const [k,r] of Object.entries(o)) merged[k] = {...(merged[k]||{u:merged.other?merged.other.u:'%'}), ...r};
   return merged;
 }
-function cpp(card){ const p = S.cpp[card.program]; return (p!=null?p:PROGRAMS[card.program].cpp); }
+function cardRates(card){ return cardRatesFor(card,S); }
+function cppFor(card,state){ const p=state.cpp[card.program]; return p!=null?p:PROGRAMS[card.program].cpp; }
+function cpp(card){ return cppFor(card,S); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 let pendingUndo=null;
 function toast(msg,ms,undoFn){
@@ -882,7 +930,7 @@ function buildQuarterlyTasks(now=new Date(),state=S){
   const period=periodInfo('quarter',now), rot=ROTATING[period.key];
   return QUARTERLY_ACTIONS.filter(a=>state.myCards.includes(a.cardId)).map(a=>{
     const card=getCardFor(a.cardId,state), key=canonicalTaskKey(a.actionType,a.cardId,a.id,period.key), record=state.completions[key]||null;
-    const configuredEnd=a.actionEnds&&localDateFromIsoDate(a.actionEnds[period.key]), actionEnd=configuredEnd||period.end;
+    const actionEnd=actionEndFor(a,period);
     const info=rot&&rot[a.cardId], unavailable=a.cardId!=='usb_cashplus'&&!info;
     const detail=a.cardId==='usb_cashplus'?'Choose two 5% categories and one 2% category':
       info?`5%: ${info.label}`:'Current-quarter categories unavailable. Check the issuer.';
@@ -920,7 +968,7 @@ function compareRadarTasks(a,b,state=S){
 }
 function buildRadarTasks(now=new Date(),state=S){
   const all=[...buildQuarterlyTasks(now,state),...buildBenefitTasks(now,state)].sort((a,b)=>compareRadarTasks(a,b,state));
-  const suppressed=all.filter(t=>t.hidden||t.skipped);
+  const suppressed=all.filter(t=>(t.hidden||t.skipped)&&!t.closed&&!t.unavailable);
   const active=all.filter(t=>!t.hidden&&!t.skipped&&!t.closed&&!t.unavailable&&taskRetentionVisible(t,now));
   return {all,active,suppressed,unresolved:active.filter(t=>!t.done)};
 }
@@ -928,7 +976,7 @@ function taskSummary(task){
   if(!task) return '';
   if(task.actionType==='activate') return `Activate ${task.title}.${task.nonRetroactive?' Not retroactive.':''}`;
   if(task.actionType==='select') return `Choose ${task.title}.${task.nonRetroactive?' Not retroactive.':''}`;
-  if(task.actionType==='enroll') return `${task.prerequisiteLabel} for ${task.card.name}: ${task.title}.`;
+  if(task.actionType==='enroll') return task.prerequisiteLabel==='Add card to Uber'?`Add ${task.card.name} to Uber to use ${task.title}.`:`Enroll in ${task.title} for ${task.card.name}.`;
   return `${task.title} (${task.amount}) expires ${task.daysLeft===0?'today':`in ${task.daysLeft} days`}.`;
 }
 function completionRecordForTask(task){
@@ -960,24 +1008,24 @@ function setBenefitEnrollment(cardId,benefitId,checked,focusId){
 function skipTask(task){
   mutateWithUndo('Skipped for this period',()=>{
     S.radarSkips[task.key]={taskKind:task.kind,cardId:task.card.id,itemId:task.itemId,periodKey:task.periodKey,
-      skippedAt:new Date().toISOString(),expiresAt:task.end.toISOString()};
-  },'not-shown-toggle');
+      skippedAt:new Date().toISOString(),expiresAt:(task.actionEnd||task.end).toISOString()};
+  },'not-shown-toggle',`task-${task.key}`);
 }
-function unskipTask(task){ mutateWithUndo('Shown for this period',()=>{delete S.radarSkips[task.key];},task.key); }
+function unskipTask(task){ mutateWithUndo('Shown for this period',()=>{delete S.radarSkips[task.key];},`task-${task.key}`,'not-shown-toggle'); }
 function hideBenefitTask(task){
   const key=canonicalHiddenKey(task.card.id,task.benefitId);
-  mutateWithUndo('Future periods hidden from Radar',()=>{
+  mutateWithUndo('Hidden from Radar',()=>{
     S.radarHidden[key]={cardId:task.card.id,benefitId:task.benefitId,hiddenAt:new Date().toISOString()};
-  },'not-shown-toggle');
+  },'not-shown-toggle',`task-${task.key}`);
 }
-function restoreBenefit(cardId,benefitId,focusId){
-  mutateWithUndo('Future periods will appear in Radar',()=>{delete S.radarHidden[canonicalHiddenKey(cardId,benefitId)];},focusId);
+function restoreBenefit(cardId,benefitId,focusId,undoFocusId=focusId){
+  mutateWithUndo('Shown in Radar',()=>{delete S.radarHidden[canonicalHiddenKey(cardId,benefitId)];},focusId,undoFocusId);
 }
 function showTaskInRadar(task){
   mutateWithUndo('Shown in Radar',()=>{
     delete S.radarSkips[task.key];
     if(task.benefitId) delete S.radarHidden[canonicalHiddenKey(task.card.id,task.benefitId)];
-  },task.key);
+  },`task-${task.key}`,'not-shown-toggle');
 }
 function completionHistory(now=new Date()){
   const cutoff=minusCalendarMonths(localDay(now),24), events=[];
@@ -995,45 +1043,55 @@ function completionHistory(now=new Date()){
   return events.sort((a,b)=>new Date(b.sortAt)-new Date(a.sortAt)||a.label.localeCompare(b.label));
 }
 
-window.CardRouterRadar={normalizeState,periodInfo,periodEndFromKey,calendarDays,minusCalendarMonths,canonicalTaskKey,
-  buildRadarTasks:(state,now=new Date())=>buildRadarTasks(now,normalizeState(state,now))};
+window.CardRouterRadar={normalizeState,periodInfo,periodEndFromKey,calendarDays,minusCalendarMonths,canonicalTaskKey,actionEndFor,
+  buildRadarTasks:(state,now=new Date())=>buildRadarTasks(now,normalizeState(state,now)),
+  rankForState:(state,catId,now=new Date())=>rankCardsForState(normalizeState(state,now),catId,now)};
 
-/* Effective % return for card on category. Returns {eff, disp, note, viaRotating, needsActivation, cap} or null */
-function evaluate(card, catId){
-  const rates = cardRates(card);
+/* Effective % return for card on category. */
+function evaluateForState(card,catId,state,now=new Date()){
+  const rates=cardRatesFor(card,state);
   let r = rates[catId];
-  let viaRotating=false, needsActivation=false, rotLabel='';
+  let viaRotating=false, needsActivation=false, activationClosed=false, rotLabel='';
   if(card.rotating){
-    const rot = (ROTATING[currentQuarter()]||{})[card.id];
+    const period=periodInfo('quarter',now), rot=(ROTATING[period.key]||{})[card.id];
     if(rot && rot.cats.includes(catId)){
       const rotRate = {v:5,u:'%',cap:'$1,500/qtr cap'};
       const base = r || rates.other;
-      const effBase = base ? base.v * (base.u==='x'?cpp(card):1) : 0;
+      const effBase = base ? base.v * (base.u==='x'?cppFor(card,state):1) : 0;
       if(5 >= effBase){
-        const action=quarterlyActionForCard(card.id), period=currentQuarter();
-        r = rotRate; viaRotating = true;
-        needsActivation = !action || (action.affectsRanking&&!completionFor('activate',card.id,action.id,period));
-        rotLabel = ' (rotating 5% this quarter)';
+        const action=quarterlyActionForCard(card.id), completed=action&&completionFor('activate',card.id,action.id,period.key,state);
+        const closed=!!(action&&action.affectsRanking&&!completed&&localDay(now)>=actionEndFor(action,period));
+        if(closed){ activationClosed=true; rotLabel='activation closed; base rate shown'; }
+        else{
+          r=rotRate; viaRotating=true;
+          needsActivation=!action||(action.affectsRanking&&!completed);
+          rotLabel='rotating 5% this quarter';
+        }
       }
     }
   }
   if(!r) r = rates.other;
   if(!r) return null;
-  const eff = r.v * (r.u==='x' ? cpp(card) : 1);
+  const eff = r.v * (r.u==='x' ? cppFor(card,state) : 1);
   const disp = r.u==='x' ? r.v+'x pts' : r.v+'%';
-  const note = [r.note, r.cap, rotLabel && rotLabel.trim()].filter(Boolean).join(' · ');
-  return {eff, disp, note, viaRotating, needsActivation, unit:r.u, raw:r.v};
+  const note = [r.note, r.cap, rotLabel].filter(Boolean).join(' · ');
+  return {eff, disp, note, viaRotating, needsActivation, activationClosed, unit:r.u, raw:r.v};
+}
+function evaluate(card,catId){ return evaluateForState(card,catId,S,new Date()); }
+function rankCardsForState(state,catId,now=new Date()){
+  const held=state.myCards.map(id=>getCardFor(id,state)).filter(Boolean);
+  const rows=held.map((card,i)=>{const evaluated=evaluateForState(card,catId,state,now);return evaluated?{card,...evaluated,prio:i}:null;}).filter(Boolean);
+  rows.sort((a,b)=>b.eff-a.eff||Number(a.needsActivation)-Number(b.needsActivation)||a.prio-b.prio);
+  return rows;
 }
 function rankFor(catId){
-  const held = S.myCards.map(getCard).filter(Boolean);
-  const rows = held.map((c,i)=>{ const e=evaluate(c,catId); return e?{card:c, ...e, prio:i}:null; }).filter(Boolean);
-  rows.sort((a,b)=> b.eff-a.eff || Number(a.needsActivation)-Number(b.needsActivation) || a.prio-b.prio);
-  return rows;
+  return rankCardsForState(S,catId,new Date());
 }
 
 /* ---------- views ---------- */
 const mainEl = document.getElementById('main');
-let TAB='which', selectedCat=null, PROMOS_VIEW='overview', radarHistoryOpen=false, notShownOpen=false, historyLimit=20;
+const initialPromosView=history.state&&['radar','quarterly'].includes(history.state.promosView)?history.state.promosView:'overview';
+let TAB=initialPromosView==='overview'?'which':'promos', selectedCat=null, PROMOS_VIEW=initialPromosView, radarHistoryOpen=false, notShownOpen=false, historyLimit=20;
 
 function render(){
   document.querySelectorAll('nav button').forEach(b=>{
@@ -1080,6 +1138,7 @@ function renderWhich(){
           <div class="rc-body">
             <div class="rc-name">${esc(r.card.name)}
               ${r.needsActivation?'<span class="badge warn">activation required</span>':''}
+              ${r.activationClosed?'<span class="badge warn">activation closed</span>':''}
               ${r.viaRotating&&!r.needsActivation?'<span class="badge good">activated ✓</span>':''}
             </div>
             ${r.note?`<div class="rc-note">${esc(r.note)}</div>`:''}
@@ -1216,7 +1275,7 @@ function renderBenefits(){
     mainEl.innerHTML = `<div class="panel empty">Add your cards first. This tab will show every perk they carry, grouped by category.</div>`;
     return;
   }
-  const all = heldBenefits();
+  const renderNow=new Date(), all = heldBenefits();
   const cats = BENEFIT_CATS.filter(bc=>all.some(b=>b.cat===bc.id));
   if(!cats.length){ mainEl.innerHTML = `<div class="panel empty">Your cards don't carry notable side benefits — or they're not in the benefits database yet.</div>`; return; }
   if(selectedBenefitCat && !cats.some(c=>c.id===selectedBenefitCat)) selectedBenefitCat=null;
@@ -1236,21 +1295,22 @@ function renderBenefits(){
           <div class="sub2">${esc(b.card.name)}${b.note?' · '+esc(b.note):''}</div>
           ${(b.enroll&&(b.link||ENROLL_LINKS[b.card.id]))?`<div class="sub2"><a href="${b.link||ENROLL_LINKS[b.card.id]}" target="_blank" rel="noopener noreferrer" aria-label="Activate ${esc(b.name)} on issuer site, opens in a new tab">Activate <span aria-hidden="true">↗</span></a></div>`:''}
         </div>${b.value?`<div class="rc-rate" style="font-size:13.5px">${esc(b.value)}</div>`:''}</div>`;
-        const enrolled=enrollmentFor(b.card.id,b.id), p=periodInfo(meta.cadence,new Date()), useKey=canonicalTaskKey('use',b.card.id,b.id,p.key), used=S.completions[useKey];
+        const enrolled=enrollmentFor(b.card.id,b.id), p=periodInfo(meta.cadence,renderNow), useKey=canonicalTaskKey('use',b.card.id,b.id,p.key), used=S.completions[useKey];
         const hidden=!!S.radarHidden[canonicalHiddenKey(b.card.id,b.id)], linkLabel='Open benefit';
         const prerequisiteMark=meta.markPrerequisiteLabel||'Mark enrolled', prerequisiteDone=meta.prerequisiteDoneLabel||'Enrolled';
+        const restoreFocusId=meta.requiresEnrollment&&!enrolled?`enroll-${b.card.id}-${b.id}`:`use-${b.card.id}-${b.id}`;
         return `<div class="action-row"><div>
           <div class="action-title">${esc(b.name)}</div>
           <div class="action-meta">${esc(b.card.name)}${b.value?' · '+esc(b.value):''}${b.note?' · '+esc(b.note):''}</div>
           <div class="action-links"><a class="issuer-action" href="${meta.link}" target="_blank" rel="noopener noreferrer" aria-label="${linkLabel} for ${esc(b.name)}, ${esc(b.card.name)}, on issuer site, opens in a new tab">${linkLabel} <span aria-hidden="true">↗</span></a>
-          ${hidden?`<button class="manage-action" data-show-radar="${b.card.id}:${b.id}" data-focus-id="show-${b.card.id}-${b.id}" aria-label="Track future periods for ${esc(b.name)}, ${esc(b.card.name)}">Track future periods</button>`:''}</div>
+          ${hidden?`<button class="manage-action" data-show-radar="${b.card.id}:${b.id}" data-restore-focus="${restoreFocusId}" data-focus-id="show-${b.card.id}-${b.id}" aria-label="Track ${esc(b.name)} in Radar, ${esc(b.card.name)}">Track in Radar</button>`:''}</div>
         </div><div>
           ${meta.requiresEnrollment?`<label class="task-check"><input type="checkbox" data-benefit-enroll="${b.card.id}:${b.id}" data-focus-id="enroll-${b.card.id}-${b.id}" aria-label="${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark} for ${esc(b.name)}, ${esc(b.card.name)}" ${enrolled?'checked':''}>${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark}</label>`:''}
-          ${(!meta.requiresEnrollment||enrolled)?`<label class="task-check"><input type="checkbox" data-benefit-use="${b.card.id}:${b.id}" data-focus-id="use-${b.card.id}-${b.id}" aria-label="${used?'Used '+displayDate(used.completedAt):'Mark used'} for ${esc(b.name)}, ${esc(b.card.name)}" ${used?'checked':''}>${used?'Used '+displayDate(used.completedAt):'Mark used'}</label>`:''}
+          ${(!meta.requiresEnrollment||enrolled)?`<label class="task-check"><input type="checkbox" data-benefit-use="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="use-${b.card.id}-${b.id}" aria-label="${used?'Used '+displayDate(used.completedAt):'Mark used'} for ${esc(b.name)}, ${esc(b.card.name)}" ${used?'checked':''}>${used?'Used '+displayDate(used.completedAt):'Mark used'}</label>`:''}
         </div></div>`;
       }).join('') +
       `</div>
-      <p class="hint" style="margin:8px 4px">Before using a benefit that requires setup, complete it through the issuer or partner app or website.</p>`;
+      <p class="hint" style="margin:8px 4px">Complete any required setup in the issuer or partner app or website before using the benefit.</p>`;
   } else {
     html += `<p class="hint" style="margin:6px 4px">Tap a category to see which cards cover it and which perks need setup.</p>`;
   }
@@ -1261,14 +1321,13 @@ function renderBenefits(){
     const [cardId,benefitId]=cb.dataset.benefitEnroll.split(':'); setBenefitEnrollment(cardId,benefitId,cb.checked,cb.dataset.focusId);
   });
   mainEl.querySelectorAll('[data-benefit-use]').forEach(cb=>cb.onchange=()=>{
-    const [cardId,benefitId]=cb.dataset.benefitUse.split(':'), meta=RADAR_BENEFIT_MAP[cardId+':'+benefitId], p=periodInfo(meta.cadence,new Date());
-    const task=buildBenefitTasks(new Date()).find(t=>t.card.id===cardId&&t.benefitId===benefitId&&t.kind==='use')||{
-      key:canonicalTaskKey('use',cardId,benefitId,p.key),kind:'use',actionType:'use',itemId:benefitId,benefitId,periodKey:p.key,end:p.end,
+    const [cardId,benefitId]=cb.dataset.benefitUse.split(':'), periodKey=cb.dataset.periodKey, end=periodEndFromKey(periodKey);
+    const task={key:canonicalTaskKey('use',cardId,benefitId,periodKey),kind:'use',actionType:'use',itemId:benefitId,benefitId,periodKey,end,
       card:getCard(cardId),title:benefitById(cardId,benefitId).name};
     setTaskChecked(task,cb.checked,cb.dataset.focusId);
   });
   mainEl.querySelectorAll('[data-show-radar]').forEach(btn=>btn.onclick=()=>{
-    const [cardId,benefitId]=btn.dataset.showRadar.split(':'); restoreBenefit(cardId,benefitId,btn.dataset.focusId);
+    const [cardId,benefitId]=btn.dataset.showRadar.split(':'); restoreBenefit(cardId,benefitId,btn.dataset.restoreFocus,btn.dataset.focusId);
   });
 }
 
@@ -1288,9 +1347,10 @@ function taskStatusLines(task){
   return lines;
 }
 function renderTaskRow(task,{manage=false}={}){
-  const statuses=taskStatusLines(task), unavailable=task.closed||task.unavailable;
-  const checkboxText=task.done?completedLabel(task):task.closed?'Closed':task.unavailable?'Unavailable':task.markLabel;
-  const checkboxAria=task.closed?`Closed ${displayDate(periodLastDate(task.actionEnd))}`:checkboxText;
+  const statuses=taskStatusLines(task), disabled=task.unavailable;
+  const closedMark=task.actionType==='select'?'Mark selected before deadline':'Mark activated before deadline';
+  const checkboxText=task.done?completedLabel(task):task.unavailable?'Unavailable':task.closed?closedMark:task.markLabel;
+  const checkboxAria=checkboxText;
   const setupDone=task.meta&&task.meta.prerequisiteDoneLabel||'Enrolled';
   return `<div class="action-row ${task.done?'completed':''}"><div>
     <div class="action-title">${esc(task.title)}</div>
@@ -1298,10 +1358,10 @@ function renderTaskRow(task,{manage=false}={}){
     ${task.enrolled&&task.actionType==='use'?`<div class="action-meta">${esc(setupDone)} ${displayDate(task.enrolled.enrolledAt)}</div>`:''}
     ${statuses.map(status=>`<div class="action-meta ${status.urgent?'urgent':''}">${esc(status.text)}</div>`).join('')}
     <div class="action-links"><a class="issuer-action" href="${task.link}" target="_blank" rel="noopener noreferrer" aria-label="${esc(task.externalLabel)} for ${esc(task.title)}, ${esc(task.card.name)}, on issuer site, opens in a new tab">${esc(task.externalLabel)} <span aria-hidden="true">↗</span></a>
-      ${manage&&!task.done&&!unavailable?`<button class="manage-action" data-skip-task="${task.key}" aria-label="Skip ${esc(task.title)} for this period, ${esc(task.card.name)}">Skip this period</button>`:''}
-      ${manage&&task.benefitId?`<button class="manage-action" data-hide-task="${task.key}" aria-label="Hide future periods for ${esc(task.title)}, ${esc(task.card.name)} from Radar">Hide future periods</button>`:''}
+      ${manage&&!task.done&&!task.closed&&!disabled?`<button class="manage-action" data-skip-task="${task.key}" aria-label="Skip ${esc(task.title)} for this period, ${esc(task.card.name)}">Skip this period</button>`:''}
+      ${manage&&task.benefitId?`<button class="manage-action" data-hide-task="${task.key}" aria-label="Hide ${esc(task.title)} from Radar, ${esc(task.card.name)}">Hide this benefit</button>`:''}
     </div>
-  </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${unavailable?'disabled':''}>${esc(checkboxText)}</label></div>`;
+  </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div>`;
 }
 function radarOverviewState(radar){
   if(!S.myCards.length) return {copy:'Add cards to start Radar',action:'cards'};
@@ -1314,14 +1374,13 @@ function renderPromosOverview(){
   const now=new Date(), q=currentQuarter(now), days=quarterEndsInDays(now), radar=buildRadarTasks(now), preview=radar.unresolved.slice(0,2);
   const state=radarOverviewState(radar), qTasks=buildQuarterlyTasks(now), qDone=qTasks.filter(t=>t.done).length;
   const qRows=qTasks.filter(t=>!preview.some(p=>p.key===t.key)).slice(0,2);
-  const qSubtitle=`Complete ${q.replace('-',' ')} category checklist`;
+  const qSubtitle=`${q.replace('-',' ')} category checklist`;
   let html=`<div class="quarter-banner">${q.replace('-',' ')} · ${days} days left in the quarter</div>
     <div class="section-head"><h2 id="radar-heading">Radar</h2><button class="section-link" id="radar-view-all" aria-label="View all Radar items">View all <span aria-hidden="true">›</span></button></div>
     <p class="section-note">Priority actions across your cards</p>
     <p class="radar-summary"><strong>${esc(state.copy)}</strong></p>`;
   if(state.action==='cards') html+=`<div class="action-list"><div class="quiet-state"><button class="pill" data-go-cards>Add cards</button></div></div>`;
   else if(preview.length) html+=`<div class="action-list">${preview.map(t=>renderTaskRow(t)).join('')}</div>`;
-  else html+=`<div class="action-list"><div class="quiet-state">${esc(state.copy)}</div></div>`;
   const more=Math.max(0,radar.unresolved.length-preview.length); if(more) html+=`<div class="section-note" style="text-align:right">${more} more Radar item${more===1?'':'s'}</div>`;
   html+=`<div class="section-head"><h2>Quarterly actions</h2><button class="section-link" id="quarterly-view-all" aria-label="View all quarterly actions">View all <span aria-hidden="true">›</span></button></div>
     <div class="progress-line"><span>${esc(qSubtitle)}</span>${qTasks.length?`<strong>${qDone} of ${qTasks.length} complete</strong>`:''}</div>`;
@@ -1336,14 +1395,14 @@ function renderNotShown(tasks){
   let html=`<div class="disclosure"><button id="not-shown-toggle" data-focus-id="not-shown-toggle" aria-expanded="${notShownOpen}" aria-controls="not-shown-content">
     <span>Not shown in Radar (${tasks.length})</span><span aria-hidden="true">${notShownOpen?'⌃':'⌄'}</span></button>`;
   if(notShownOpen) html+=`<div id="not-shown-content" class="not-shown-list">${tasks.map(t=>`<div class="history-row"><div><strong>${esc(t.title)}</strong>
-    <div class="action-meta">${esc(t.card.name)} · ${[t.hidden?'Future periods hidden':'',t.skipped?'Skipped this period':''].filter(Boolean).join(' · ')}</div></div>
+    <div class="action-meta">${esc(t.card.name)} · ${[t.hidden?'Hidden from Radar':'',t.skipped?'Skipped this period':''].filter(Boolean).join(' · ')}</div></div>
     <div class="action-links">${t.skipped&&t.hidden?`<button class="manage-action" data-show-task="${t.key}" aria-label="Show ${esc(t.title)} in Radar, ${esc(t.card.name)}">Show in Radar</button>`:
-      `${t.skipped?`<button class="manage-action" data-unskip-task="${t.key}" aria-label="Show ${esc(t.title)} this period, ${esc(t.card.name)}">Show this period</button>`:''}${t.hidden?`<button class="manage-action" data-restore-task="${t.key}" aria-label="Show future periods for ${esc(t.title)}, ${esc(t.card.name)}">Show future periods</button>`:''}`}</div></div>`).join('')}</div>`;
+      `${t.skipped?`<button class="manage-action" data-unskip-task="${t.key}" aria-label="Show ${esc(t.title)} this period, ${esc(t.card.name)}">Show this period</button>`:''}${t.hidden?`<button class="manage-action" data-restore-task="${t.key}" aria-label="Show ${esc(t.title)} in Radar, ${esc(t.card.name)}">Show in Radar</button>`:''}`}</div></div>`).join('')}</div>`;
   return html+'</div>';
 }
 function renderHistory(){
   const events=completionHistory(), shown=events.slice(0,historyLimit);
-  let html=`<div class="disclosure"><button id="history-toggle" aria-expanded="${radarHistoryOpen}" aria-controls="history-content"><span>${radarHistoryOpen?'Hide':'Show'} completion history</span><span aria-hidden="true">${radarHistoryOpen?'⌃':'⌄'}</span></button>`;
+  let html=`<div class="disclosure"><button id="history-toggle" data-focus-id="history-toggle" aria-expanded="${radarHistoryOpen}" aria-controls="history-content"><span>${radarHistoryOpen?'Hide':'Show'} completion history</span><span aria-hidden="true">${radarHistoryOpen?'⌃':'⌄'}</span></button>`;
   if(radarHistoryOpen){
     let previous=''; html+='<div id="history-content">';
     for(const event of shown){
@@ -1353,7 +1412,7 @@ function renderHistory(){
         <span class="when">${event.undated?'Date unavailable':displayDate(event.at)}</span></div>`;
     }
     if(!events.length) html+='<div class="quiet-state">No completions yet.</div>';
-    if(events.length>historyLimit) html+='<button class="pill" id="history-more" style="margin:12px 4px">Load 20 older items</button>';
+    if(events.length>historyLimit) html+='<button class="pill" id="history-more" data-focus-id="history-more" style="margin:12px 4px">Load 20 older items</button>';
     html+='</div>';
   }
   return html+'</div>';
@@ -1373,7 +1432,7 @@ function renderFullRadar(){
 function renderFullQuarterly(){
   const tasks=buildQuarterlyTasks(new Date()), done=tasks.filter(t=>t.done).length;
   let html=`<button class="back-btn" id="promos-back"><span aria-hidden="true">‹</span> Promos</button>
-    <div class="progress-line"><span>Complete ${currentQuarter().replace('-',' ')} category checklist</span>${tasks.length?`<strong>${done} of ${tasks.length} complete</strong>`:''}</div>`;
+    <div class="progress-line"><span>${currentQuarter().replace('-',' ')} category checklist</span>${tasks.length?`<strong>${done} of ${tasks.length} complete</strong>`:''}</div>`;
   html+=tasks.length?`<div class="action-list">${tasks.map(t=>renderTaskRow(t)).join('')}</div>`:
     '<div class="action-list"><div class="quiet-state">No quarterly actions for your cards.</div></div>';
   html+=`<div class="panel"><div class="reminder-row"><p class="hint">Add reminders for the first day of each quarter.</p>
@@ -1391,11 +1450,11 @@ function bindPromoActions(){
   mainEl.querySelectorAll('[data-skip-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.skipTask);if(task)skipTask(task);});
   mainEl.querySelectorAll('[data-hide-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.hideTask);if(task)hideBenefitTask(task);});
   mainEl.querySelectorAll('[data-unskip-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.unskipTask);if(task)unskipTask(task);});
-  mainEl.querySelectorAll('[data-restore-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.restoreTask);if(task)restoreBenefit(task.card.id,task.benefitId,'not-shown-toggle');});
+  mainEl.querySelectorAll('[data-restore-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.restoreTask);if(task)restoreBenefit(task.card.id,task.benefitId,`task-${task.key}`,'not-shown-toggle');});
   mainEl.querySelectorAll('[data-show-task]').forEach(b=>b.onclick=()=>{const task=findCurrentTask(b.dataset.showTask);if(task)showTaskInRadar(task);});
   document.getElementById('not-shown-toggle')?.addEventListener('click',()=>{notShownOpen=!notShownOpen;render();restoreFocus('not-shown-toggle');});
   document.getElementById('history-toggle')?.addEventListener('click',()=>{radarHistoryOpen=!radarHistoryOpen;render();restoreFocus('history-toggle');});
-  document.getElementById('history-more')?.addEventListener('click',()=>{historyLimit+=20;render();});
+  document.getElementById('history-more')?.addEventListener('click',()=>{historyLimit+=20;render();restoreFocus(document.getElementById('history-more')?'history-more':'history-toggle');});
 }
 function renderPromos(){
   if(PROMOS_VIEW==='radar') renderFullRadar(); else if(PROMOS_VIEW==='quarterly') renderFullQuarterly(); else renderPromosOverview();
@@ -1451,15 +1510,14 @@ function renderSettings(){
 }
 
 function currentPeriodForRecord(record,now){
-  if(record.actionType==='activate'||record.actionType==='select') return record.periodKey===currentQuarter(now);
-  const meta=RADAR_BENEFIT_MAP[record.cardId+':'+record.itemId]; return !!meta&&record.periodKey===periodInfo(meta.cadence,now).key;
+  return record.periodKey===currentPeriodForTask(record.actionType,record.cardId,record.itemId,now);
 }
 function exportSetupState(now=new Date()){
   const stripSnapshots=r=>{const {labelSnapshot,cardNameSnapshot,...rest}=r;return rest;};
   return {schemaVersion:2,catalogVersion:RADAR_CATALOG_VERSION,myCards:[...S.myCards],overrides:structuredClone(S.overrides),cpp:structuredClone(S.cpp),
     custom:structuredClone(S.custom),coachDone:!!S.coachDone,enrollments:Object.values(S.enrollments).map(stripSnapshots),
     completions:Object.values(S.completions).filter(r=>currentPeriodForRecord(r,now)).map(stripSnapshots),
-    radarHidden:Object.values(S.radarHidden).map(r=>({...r})),radarSkips:Object.values(S.radarSkips).filter(r=>new Date(r.expiresAt)>now).map(r=>({...r}))};
+    radarHidden:Object.values(S.radarHidden).map(r=>({...r})),radarSkips:Object.values(S.radarSkips).filter(r=>new Date(r.expiresAt)>now&&r.periodKey===currentPeriodForTask(r.taskKind,r.cardId,r.itemId,now)).map(r=>({...r}))};
 }
 function setupUrl(){
   return location.href.split('#')[0]+'#'+encodeSetupState(exportSetupState());
@@ -1477,7 +1535,7 @@ function openModal(){ document.getElementById('modal').classList.add('open'); }
 function closeModal(){ document.getElementById('modal').classList.remove('open'); }
 document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal(); });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-history.replaceState({promosView:'overview'},'',location.pathname+location.search);
+history.replaceState({promosView:PROMOS_VIEW},'',location.pathname+location.search);
 window.addEventListener('popstate',e=>{
   PROMOS_VIEW=e.state&&['radar','quarterly'].includes(e.state.promosView)?e.state.promosView:'overview';
   TAB='promos'; render(); window.scrollTo({top:0,behavior:'auto'}); requestAnimationFrame(()=>document.getElementById('hdr').focus());

@@ -11,7 +11,7 @@ Tap a purchase category — dining, groceries, gas, flights, hotels, and more �
 - **Which card?** — tap a category and get a ranked answer. Points cards are compared against cash-back cards using cents-per-point valuations, so "3x Ultimate Rewards" and "5% cash back" compete on equal footing (shown as an effective ≈% for every card).
 - **Built-in rules database** — earn rates for ~19 popular US rewards cards, verified July 2026, including the Chase Sapphire Reserve revamp, the Amex Gold refresh, the Prime Visa, and the Citi Custom Cash closure to new applicants.
 - **Rotating 5% categories:** the current quarter's Chase Freedom Flex and Discover it categories are built in. Cards that need activation show an "activation required" warning until you check them off in Promos. When rates tie, activated rotating categories rank ahead of unactivated ones.
-- **Credit Radar:** the Promos tab prioritizes quarterly activations, Cash+ category selection, and verified calendar-based card credits before they expire. Open Radar for the full list, mark actions complete, skip a period, hide benefits you do not use, and restore anything from the inline "Not shown" section.
+- **Credit Radar:** the Promos tab prioritizes quarterly category actions, including Cash+ selection, and verified calendar-based card credits before they expire. Open Radar for the full list, mark actions complete, skip a period, hide benefits you do not use, and show hidden or skipped items again from the inline "Not shown in Radar" section.
 - **Shared completion status:** activation, enrollment, and benefit-use checkboxes stay synchronized across Radar, Quarterly Actions, Benefits, and card recommendations. A completion remains in the main Radar list until the period ends or for up to 30 days, whichever comes first. It then remains in completion history for up to 24 months.
 - **Priority tie-break** — when two cards earn the same, your hand-set card order decides (drag your true favorite to the top).
 - **Location guessing** — optionally let the app read your location and guess the category from the nearest merchant (via OpenStreetMap; no API key, no tracking).
@@ -54,13 +54,13 @@ Opening a setup link asks before replacing a setup already on that device. The l
 
 **Radar completion.** Issuers do not report completion back to this app. Use the labeled checkboxes after you activate, enroll, select, or use a benefit. Uncheck any status to correct it. A completion remains in the main Radar list until the period ends or for up to 30 days, whichever comes first. It then remains in completion history for up to 24 months.
 
-**Radar coverage.** Radar intentionally tracks only benefits with issuer-verified terms, a clear calendar reset, and an effective action page. Other perks remain available in Benefits without becoming recurring tasks. Benefit terms were checked in August 2026 and can still change.
+**Radar coverage.** Radar intentionally tracks only benefits with issuer-verified terms, a clear calendar reset, and a working issuer page for the action. Other perks remain available in Benefits without becoming recurring tasks. Benefit terms were checked in August 2026 and can still change.
 
 **Quarterly upkeep (5 minutes, 4× a year).** At each quarter's start: activate rotating categories (Promos tab links), re-check the new categories are reflected (see below), and re-pick US Bank Cash+ choices if you hold it.
 
 ## Maintaining the rules data
 
-Card rules drift. Two maintenance points:
+Card rules drift. Three maintenance points:
 
 1. **Any card's rates** — no code needed: tap ✎ on the card in the app and type the new rate (`3x` or `5%`). Overrides persist on your device.
 2. **Rotating categories for a new quarter** — edit the `ROTATING` table near the top of the `<script>` in `index.html`:
@@ -76,6 +76,8 @@ const ROTATING = {
 ```
 
 Valid category ids: `dining, groceries, gas, flights, hotels, transit, streaming, drugstores, online, entertain, phone, shipping, united_way, rent, other`.
+
+3. **Quarterly action deadlines** — verify the `QUARTERLY_ACTIONS` table whenever issuer terms change. Freedom uses an exclusive cutoff on the 15th day of the quarter's final month, so the last activation day is the 14th. Cash+ closes five calendar days before quarter-end. A quarter-specific `actionEnds` value can override either policy when an issuer publishes a different date.
 
 ## Privacy
 

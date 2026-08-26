@@ -72,6 +72,22 @@ document.getElementById('app').addEventListener('load',()=>{
     const closed=R.buildRadarTasks(state,new Date(2026,8,15,12));
     assert(closed.all[0].closed,'Action should close September 15'); equal(closed.active.length,0);
   });
+  test('deadline policies continue into later quarters',()=>{
+    const freedom=R.buildRadarTasks({myCards:['freedom_flex']},new Date(2026,9,2,12)).all[0];
+    const cash=R.buildRadarTasks({myCards:['usb_cashplus']},new Date(2026,9,2,12)).all[0];
+    equal(freedom.actionEnd.getMonth(),11); equal(freedom.actionEnd.getDate(),15);
+    equal(cash.actionEnd.getMonth(),11); equal(cash.actionEnd.getDate(),27);
+  });
+  test('closed unrecorded activation windows fall back to the base card rate',()=>{
+    const before=R.rankForState({myCards:['freedom_flex']},'gas',new Date(2026,8,14,12))[0];
+    const closed=R.rankForState({myCards:['freedom_flex']},'gas',new Date(2026,8,15,12))[0];
+    const completed=R.rankForState({myCards:['freedom_flex'],completions:[{
+      actionType:'activate',cardId:'freedom_flex',itemId:'freedom_flex_5x',periodKey:'2026-Q3',completedAt:'2026-09-14T12:00:00.000Z'
+    }]},'gas',new Date(2026,8,15,12))[0];
+    equal(before.eff,5); assert(before.needsActivation,'Activation should still be actionable September 14');
+    equal(closed.eff,1); assert(closed.activationClosed,'Closed activation should use the base rate');
+    equal(completed.eff,5); assert(completed.viaRotating,'Recorded activation should retain the rotating rate');
+  });
   test('issuer action data includes the verified Discover link and Uber setup wording',()=>{
     const now=new Date(2026,7,26,12), radar=R.buildRadarTasks({myCards:['discover_it','amex_gold']},now);
     const discover=radar.all.find(t=>t.itemId==='discover_5pct'), uber=radar.all.find(t=>t.itemId==='uber_cash');
@@ -81,7 +97,7 @@ document.getElementById('app').addEventListener('load',()=>{
   test('time-bounded Business Gold copy changes after FedEx eligibility ends',()=>{
     const before=R.buildRadarTasks({myCards:['biz_gold']},new Date(2026,8,30,12)).all.find(t=>t.itemId==='flexible_business_credit');
     const after=R.buildRadarTasks({myCards:['biz_gold']},new Date(2026,9,2,12)).all.find(t=>t.itemId==='flexible_business_credit');
-    assert(before.detail.includes('FedEx'),'FedEx should appear through October 1');
+    assert(before.detail.startsWith('FedEx through Oct 1, 2026;'),'Only FedEx should carry the October cutoff');
     assert(!after.detail.includes('FedEx'),'FedEx should disappear beginning October 2');
   });
   test('enrollment changes one recurring row into its usage phase',()=>{
@@ -103,15 +119,28 @@ document.getElementById('app').addEventListener('load',()=>{
     }},enrollments:[{cardId:'amex_gold',benefitId:'dining_credit',enrolledAt:'9999-12-31T00:00:00.000Z'}]},now);
     equal(Object.keys(state.completions).length,0); equal(Object.keys(state.enrollments).length,0);
   });
-  test('only marked known legacy activations may remain undated',()=>{
+  test('known undated activations from the preceding schema are upgraded compatibly',()=>{
     const now=new Date(2026,7,26,12), base={actionType:'activate',cardId:'discover_it',itemId:'discover_5pct',periodKey:'2026-Q3',completedAt:null};
-    equal(Object.keys(R.normalizeState({completions:[base]},now).completions).length,0);
-    equal(Object.keys(R.normalizeState({completions:[{...base,legacyUndated:true}]},now).completions).length,1);
+    const normalized=R.normalizeState({completions:[base]},now), record=Object.values(normalized.completions)[0];
+    equal(Object.keys(normalized.completions).length,1); assert(record.legacyUndated,'Undated known activation should receive the migration marker');
+  });
+  test('setup imports cannot preload future-period completion or skip state',()=>{
+    const now=new Date(2026,7,26,12), future={actionType:'activate',cardId:'freedom_flex',itemId:'freedom_flex_5x',periodKey:'2027-Q3',completedAt:'2026-08-26T12:00:00.000Z'};
+    const skip={taskKind:'activate',cardId:'freedom_flex',itemId:'freedom_flex_5x',periodKey:'2027-Q3',skippedAt:'2026-08-26T12:00:00.000Z',expiresAt:'2027-10-01T00:00:00.000Z'};
+    const imported=R.normalizeState({completions:[future],radarSkips:[skip]},now,{fromImport:true});
+    equal(Object.keys(imported.completions).length,0); equal(Object.keys(imported.radarSkips).length,0);
   });
   test('setup schema versions must be supported integers',()=>{
     let threw=false; try{R.validateImportPayload({schemaVersion:'banana'},20,20);}catch(error){threw=true;}
     assert(threw,'Invalid schema version should be rejected');
     R.validateImportPayload({schemaVersion:2,myCards:[]},20,20);
+    R.validateImportPayload({myCards:['freedom_flex'],overrides:{freedom_flex:{gas:{v:4,u:'%'}}},cpp:{chase:1.5},custom:[],activations:{'2026-Q3:freedom_flex':true}},200,200);
+  });
+  test('setup validation rejects unknown root and record fields',()=>{
+    for(const raw of [{schemaVersion:2,surprise:true},{schemaVersion:2,completions:[{actionType:'use',mystery:true}]},{schemaVersion:2,myCards:'not a card list'}]){
+      let threw=false; try{R.validateImportPayload(raw,100,100);}catch(error){threw=true;}
+      assert(threw,'Unknown setup fields should be rejected atomically');
+    }
   });
   test('compact setup encoding round-trips Unicode data',()=>{
     const raw={schemaVersion:2,custom:[{name:'Café 東京'}]}, encoded=R.encodeSetupPayload(raw), decoded=JSON.parse(R.decodeSetupPayload(encoded));
