@@ -813,7 +813,7 @@ function validateImportShape(raw,now=new Date()){
     const itemId=record.itemId||record.benefitId||record.quarterlyActionId, action=QUARTERLY_ACTIONS.find(item=>item.actionType===record.actionType&&item.cardId===record.cardId&&item.id===itemId);
     const periodEnd=periodEndFromKey(record.periodKey), expectedAttestedBy=action&&periodEnd?localIsoDate(periodLastDate(actionEndFor(action,{key:record.periodKey,end:periodEnd}))):'';
     const completionTimeValid=record.completedAt===null||(typeof record.completedAt==='string'&&validEventIso(record.completedAt,now));
-    if(!['activate','select','use'].includes(record.actionType)||!validSetupId(record.cardId)||!validSetupId(itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validCompletionIdentity(record.actionType,record.cardId,itemId,record.periodKey,{fromImport:true})||!completionTimeValid||(record.completedAt===null&&!(action&&record.actionType==='activate'))||(record.completedAt!==null&&!recordWithinHistory({completedAt:record.completedAt,periodKey:record.periodKey},now))||(record.legacyUndated!=null&&typeof record.legacyUndated!=='boolean')||(record.attestedBy!=null&&record.attestedBy!==expectedAttestedBy)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
+    if(!['activate','select','use'].includes(record.actionType)||!validSetupId(record.cardId)||!validSetupId(itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validCompletionIdentity(record.actionType,record.cardId,itemId,record.periodKey,{fromImport:true})||!completionTimeValid||(record.completedAt===null&&!(action&&record.actionType==='activate'))||(record.legacyUndated!=null&&typeof record.legacyUndated!=='boolean')||(record.attestedBy!=null&&record.attestedBy!==expectedAttestedBy)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
   }
   for(const record of recordsOf(raw.radarHidden)){
     assertAllowedKeys(record,['cardId','benefitId','hiddenAt']);
@@ -822,7 +822,7 @@ function validateImportShape(raw,now=new Date()){
   for(const record of recordsOf(raw.radarSkips)){
     assertAllowedKeys(record,['taskKind','cardId','itemId','periodKey','skippedAt','expiresAt']);
     const expiry=new Date(record.expiresAt), maxExpiry=new Date(now.getFullYear()+2,now.getMonth(),now.getDate());
-    if(!['activate','select','use','enroll-task'].includes(record.taskKind)||!validSetupId(record.cardId)||!validSetupId(record.itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validTaskIdentity(record.taskKind,record.cardId,record.itemId,record.periodKey)||typeof record.skippedAt!=='string'||!validEventIso(record.skippedAt,now)||typeof record.expiresAt!=='string'||!validIso(record.expiresAt)||expiry<=now||expiry>maxExpiry) invalidSetupData();
+    if(!['activate','select','use','enroll-task'].includes(record.taskKind)||!validSetupId(record.cardId)||!validSetupId(record.itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validTaskIdentity(record.taskKind,record.cardId,record.itemId,record.periodKey)||typeof record.skippedAt!=='string'||!validEventIso(record.skippedAt,now)||typeof record.expiresAt!=='string'||!validIso(record.expiresAt)||expiry>maxExpiry) invalidSetupData();
   }
 }
 function validateImportPayload(raw,encodedLength,decodedBytes,now=new Date()){
@@ -957,7 +957,10 @@ function captureRefreshFocus(now){
   const active=document.activeElement; if(!active||!mainEl.contains(active)) return null;
   if(active.dataset.taskCheck) return {type:'focusId',value:currentFocusForTaskKey(active.dataset.taskCheck,now)};
   if(active.dataset.focusId) return {type:'focusId',value:active.dataset.focusId};
-  for(const attribute of ['data-skip-task','data-hide-task','data-unskip-task','data-restore-task','data-show-task','data-show-radar','data-benefit-enroll','data-benefit-use','data-bcat']){
+  for(const attribute of ['data-skip-task','data-hide-task','data-unskip-task','data-restore-task','data-show-task']){
+    if(active.hasAttribute(attribute)) return {type:'focusId',value:currentFocusForTaskKey(active.getAttribute(attribute),now)};
+  }
+  for(const attribute of ['data-show-radar','data-benefit-enroll','data-benefit-use','data-bcat']){
     if(active.hasAttribute(attribute)) return {type:'attribute',attribute,value:active.getAttribute(attribute)};
   }
   if(active.id) return {type:'id',value:active.id};

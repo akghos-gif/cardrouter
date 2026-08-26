@@ -190,6 +190,15 @@ document.getElementById('app').addEventListener('load',async()=>{
       assert(threw,'Unsupported setup identity should reject the whole import');
     }
   });
+  test('older valid setup links keep working after Radar records age out',()=>{
+    const now=new Date(2026,7,26,12), raw={schemaVersion:2,myCards:['freedom_flex'],completions:[{
+      actionType:'activate',cardId:'freedom_flex',itemId:'freedom_flex_5x',periodKey:'2023-Q3',completedAt:'2023-08-01T12:00:00.000Z'
+    }],radarSkips:[{
+      taskKind:'activate',cardId:'freedom_flex',itemId:'freedom_flex_5x',periodKey:'2023-Q3',skippedAt:'2023-08-01T12:00:00.000Z',expiresAt:'2023-10-01T00:00:00.000Z'
+    }]};
+    const validated=R.validateImportPayload(raw,500,400,now), state=R.normalizeState(validated,now,{fromImport:true});
+    equal(state.myCards[0],'freedom_flex'); equal(Object.keys(state.completions).length,0); equal(Object.keys(state.radarSkips).length,0);
+  });
   test('late quarterly completion records an attested deadline separately',()=>{
     const now=new Date(2026,8,16,12), task=R.buildRadarTasks({myCards:['freedom_flex']},now).all[0];
     const record=R.completionRecordForTask(task,now), completed=R.buildRadarTasks({myCards:['freedom_flex'],completions:[record]},now).all[0];
