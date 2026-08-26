@@ -958,7 +958,10 @@ function captureRefreshFocus(now){
   if(active.dataset.taskCheck) return {type:'focusId',value:currentFocusForTaskKey(active.dataset.taskCheck,now)};
   if(active.dataset.focusId) return {type:'focusId',value:active.dataset.focusId};
   for(const attribute of ['data-skip-task','data-hide-task','data-unskip-task','data-restore-task','data-show-task']){
-    if(active.hasAttribute(attribute)) return {type:'focusId',value:currentFocusForTaskKey(active.getAttribute(attribute),now)};
+    if(active.hasAttribute(attribute)){
+      const focusId=currentFocusForTaskKey(active.getAttribute(attribute),now);
+      return {type:'taskAction',attribute,taskKey:focusId.replace(/^task-/,''),focusId};
+    }
   }
   for(const attribute of ['data-show-radar','data-benefit-enroll','data-benefit-use','data-bcat']){
     if(active.hasAttribute(attribute)) return {type:'attribute',attribute,value:active.getAttribute(attribute)};
@@ -972,6 +975,14 @@ function restoreRefreshFocus(target){
   requestAnimationFrame(()=>{
     let element=null;
     if(target.type==='focusId') element=[...document.querySelectorAll('[data-focus-id]')].find(item=>item.dataset.focusId===target.value);
+    else if(target.type==='taskAction'){
+      element=[...document.querySelectorAll(`[${target.attribute}]`)].find(item=>item.getAttribute(target.attribute)===target.taskKey);
+      if(!element) element=[...document.querySelectorAll('[data-focus-id]')].find(item=>item.dataset.focusId===target.focusId);
+      if(!element) for(const attribute of ['data-skip-task','data-hide-task','data-unskip-task','data-restore-task','data-show-task']){
+        element=[...document.querySelectorAll(`[${attribute}]`)].find(item=>item.getAttribute(attribute)===target.taskKey); if(element) break;
+      }
+      if(!element) element=document.getElementById('not-shown-toggle');
+    }
     else if(target.type==='attribute') element=[...document.querySelectorAll(`[${target.attribute}]`)].find(item=>item.getAttribute(target.attribute)===target.value);
     else if(target.type==='id') element=document.getElementById(target.value);
     else if(target.type==='aria') element=[...document.querySelectorAll('[aria-label]')].find(item=>item.getAttribute('aria-label')===target.value);
