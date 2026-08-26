@@ -986,6 +986,7 @@ function restoreRefreshFocus(target){
     else if(target.type==='attribute') element=[...document.querySelectorAll(`[${target.attribute}]`)].find(item=>item.getAttribute(target.attribute)===target.value);
     else if(target.type==='id') element=document.getElementById(target.value);
     else if(target.type==='aria') element=[...document.querySelectorAll('[aria-label]')].find(item=>item.getAttribute('aria-label')===target.value);
+    if(!element) element=document.getElementById('promos-back')||document.getElementById('radar-view-all')||mainEl.querySelector('button, a, input');
     element?.focus({preventScroll:true});
   });
 }
