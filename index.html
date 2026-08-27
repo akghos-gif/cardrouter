@@ -106,7 +106,7 @@
   a{color:var(--accent)}
   button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
     outline:3px solid var(--accent); outline-offset:2px}
-  .recurring-status:focus-visible,.confirmed-status:focus-visible,.recurring-head h2:focus-visible{
+  .recurring-status:focus-visible,.confirmed-status:focus-visible,.recurring-head h2:focus-visible,.section-head h2:focus-visible{
     outline:3px solid var(--accent); outline-offset:3px; border-radius:4px}
   .storage-warning{max-width:532px; margin:0 auto 10px; padding:10px 14px; border:1px solid var(--warn); border-radius:12px;
     color:var(--ink); background:color-mix(in srgb, var(--warn) 8%, var(--card)); font-size:13px; line-height:1.4}
@@ -169,7 +169,7 @@
   .recurring-status{font-size:12.5px; color:var(--muted); line-height:1.4; margin-top:3px}
   .recurring-status.needs-review{color:var(--warn); font-weight:750}
   .recurring-manage{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-top:4px}
-  .recurring-discovery{margin:8px -2px 1px; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--bg)}
+  .recurring-discovery{margin:8px 0 1px; padding:12px 0 0; border-top:1px solid var(--line)}
   .recurring-discovery-title{font-size:13.5px; font-weight:750; line-height:1.35}
   .recurring-discovery-copy,.review-note,.review-fallback{font-size:12.5px; line-height:1.45; margin:5px 0 0; color:var(--muted)}
   .review-fallback{color:var(--ink); font-weight:650}
@@ -446,7 +446,7 @@ const BENEFITS = {
     {cat:'rideshare', name:'Lyft credit', value:'$10/mo ($120/yr)', enroll:false, note:'thru 9/2027; plus 5x points on Lyft'},
     {cat:'streamcr', name:'Apple TV+ & Apple Music', value:'~$288/yr', enroll:true, note:'complimentary thru 6/2027; activate'},
     {id:'stubhub_viagogo_credit', cat:'streamcr', name:'StubHub / viagogo credit', value:'$150 semiannual ($300/yr)', enroll:true, note:'activation required'},
-    {id:'peloton_credit', cat:'fitness', name:'Peloton credit', value:'$10/mo ($120/yr)', enroll:true, note:'activation required'},
+    {id:'peloton_credit', cat:'fitness', name:'Peloton membership credit', value:'$10/mo ($120/yr)', enroll:true, note:'activation required; direct Peloton billing required'},
     {cat:'protect', name:'Top-tier travel insurance + primary rental CDW, purchase protection', value:'', enroll:false, note:''},
   ],
   csp: [
@@ -580,7 +580,9 @@ const RADAR_BENEFITS = [
   {cardId:'csr', benefitId:'stubhub_viagogo_credit', cadence:'half', amount:'$150', requiresEnrollment:true,
     link:'https://www.chase.com/personal/credit-cards/education/rewards-benefits/how-to-use-the-%24300-stubhub-credit-with-chase-sapphire-reserve'},
   {cardId:'csr', benefitId:'peloton_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
-    recurringEligible:true, recurringTermsVersion:'2026-08-26-1', recurringQualifier:'Confirm only if an eligible Peloton payment is charged to this card every month.',
+    prerequisiteLabel:'Activate the benefit', markPrerequisiteLabel:'Mark activated', prerequisiteDoneLabel:'Activated',
+    recurringEligible:true, recurringTermsVersion:'2026-08-26-1', recurringActionLabel:'Membership billed monthly', recurringConfirmLabel:'Confirm membership setup',
+    recurringQuestion:'Is an eligible Peloton membership billed directly to this card every month?', recurringQualifier:'Eligible memberships must be billed directly by Peloton, not through an app store.',
     link:'https://www.onepeloton.com/chase-sapphire-reserve'},
   {cardId:'csp', benefitId:'doordash_promo_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
     link:'https://www.doordash.com/en/dashpass/partner/chase/preferred'},
@@ -1631,12 +1633,13 @@ function taskStatusLines(task){
 function recurringDiscoveryParts(task){
   if(task.actionType!=='use'||!task.meta?.recurringEligible||['active','review-due'].includes(task.recurring?.status)) return {button:'',panel:''};
   const open=recurringDiscoveryOpenKey===task.key, panelId=`recurring-discovery-${task.card.id}-${task.benefitId}`;
-  const label=task.recurring?.status==='terms-changed'?'Review payment setup':task.recurring?.status==='none'?'Payment repeats monthly':'Confirm payment setup';
-  const question=task.recurring?.status==='terms-changed'?'Is an eligible monthly payment still set up on this card?':'Is an eligible monthly payment already set up on this card?';
+  const label=task.recurring?.status==='terms-changed'?'Review payment setup':task.recurring?.status==='none'?(task.meta.recurringActionLabel||'Payment repeats monthly'):'Confirm payment setup';
+  const question=task.recurring?.status==='terms-changed'?'Is an eligible monthly payment still set up on this card?':task.meta.recurringQuestion||'Is an eligible monthly payment already set up on this card?';
+  const confirmLabel=task.meta.recurringConfirmLabel||'Confirm recurring payment';
   const button=`<button class="manage-action" data-recurring-disclosure="${task.key}" data-focus-id="recurring-disclosure-${task.card.id}-${task.benefitId}" aria-expanded="${open}" aria-controls="${panelId}" aria-label="${esc(`${label} for ${task.title}, ${task.card.name}`)}">${esc(label)}</button>`;
   const panel=`<div class="recurring-discovery" id="${panelId}" ${open?'':'hidden'}><div class="recurring-discovery-title">${esc(question)}</div>
       <p class="recurring-discovery-copy">${esc(task.meta.recurringQualifier)} We’ll hide monthly reminders and ask you to confirm again in six months. ChooseMyCard can’t verify the payment or statement credit.</p>
-      <div class="choice-row"><button class="pill primary" data-confirm-recurring="${task.card.id}:${task.benefitId}" aria-label="Confirm recurring payment for ${esc(task.title)}, ${esc(task.card.name)}">Confirm recurring payment</button><button class="pill" data-dismiss-recurring="${task.card.id}:${task.benefitId}" data-task-key="${task.key}" aria-label="Keep monthly reminders for ${esc(task.title)}, ${esc(task.card.name)}">Keep monthly reminders</button></div>
+      <div class="choice-row"><button class="pill primary" data-confirm-recurring="${task.card.id}:${task.benefitId}" aria-label="${esc(confirmLabel)} for ${esc(task.title)}, ${esc(task.card.name)}">${esc(confirmLabel)}</button><button class="pill" data-dismiss-recurring="${task.card.id}:${task.benefitId}" data-task-key="${task.key}" aria-label="Keep monthly reminders for ${esc(task.title)}, ${esc(task.card.name)}">Keep monthly reminders</button></div>
     </div>`;
   return {button,panel};
 }
@@ -1676,18 +1679,18 @@ function renderPromosOverview(){
   const qRows=qTasks.filter(t=>!preview.some(p=>p.key===t.key)).slice(0,2);
   const qSubtitle=`${q.replace('-',' ')} category checklist`;
   let html=`<div class="quarter-banner">${q.replace('-',' ')} · ${days} days left in the quarter</div>
-    <div class="section-head"><h2 id="radar-heading"><span class="title-icon" aria-hidden="true">📡</span>My Radar</h2><button class="section-link" id="radar-view-all" aria-label="View all My Radar items">View all <span aria-hidden="true">›</span></button></div>
+    <div class="section-head"><h2 id="radar-heading" tabindex="-1" data-focus-id="radar-heading"><span class="title-icon" aria-hidden="true">📡</span>My Radar</h2><button class="section-link" id="radar-view-all" aria-label="View all My Radar items">View all <span aria-hidden="true">›</span></button></div>
     <p class="section-note">Benefits and quarterly categories that need attention</p>
     <p class="radar-summary"><strong>${esc(state.copy)}</strong></p>`;
   if(state.action==='cards') html+=`<div class="action-list"><div class="quiet-state"><button class="pill" data-go-cards>Add cards</button></div></div>`;
-  else if(preview.length) html+=`<div class="action-list">${preview.map(t=>renderTaskRow(t)).join('')}</div>`;
+  else if(preview.length) html+=`<div class="action-list">${preview.map(t=>renderTaskRow(t,{allowRecurring:true})).join('')}</div>`;
   const more=Math.max(0,radar.unresolved.length-preview.length); if(more) html+=`<div class="section-note" style="text-align:right">${more} more item${more===1?'':'s'}</div>`;
   if(reviewCount&&radar.unresolved.length) html+=`<div class="section-note" style="text-align:right">${reviewCount} benefit setup${reviewCount===1?'':'s'} also need${reviewCount===1?'s':''} confirmation</div>`;
-  html+=`<div class="section-head"><h2><span class="title-icon" aria-hidden="true">📅</span>Quarterly actions</h2><button class="section-link" id="quarterly-view-all" aria-label="View all quarterly actions">View all <span aria-hidden="true">›</span></button></div>
+  html+=`<div class="section-head"><h2><span class="title-icon" aria-hidden="true">📅</span>Quarterly actions</h2><button class="section-link" id="quarterly-view-all" aria-label="Open quarterly actions checklist">Open checklist <span aria-hidden="true">›</span></button></div>
     <p class="section-note">Your complete category checklist. These items also appear in My Radar when they need attention.</p>
     <div class="progress-line"><span>${esc(qSubtitle)}</span>${qTasks.length?`<strong>${qDone} of ${qTasks.length} complete</strong>`:''}</div>`;
   if(qRows.length) html+=`<div class="action-list">${qRows.map(t=>renderTaskRow(t)).join('')}</div>`;
-  else html+=`<div class="action-list"><div class="quiet-state">${qTasks.length?'Your unfinished quarterly actions are shown in My Radar above.':'No quarterly actions for your cards.'}</div></div>`;
+  else if(!qTasks.length) html+=`<div class="action-list"><div class="quiet-state">No quarterly actions for your cards.</div></div>`;
   html+=`<p class="section-note" style="margin-top:12px">Check items off after you complete them on the issuer or partner site. Status is stored only on this device.</p>
     <div class="panel"><div class="reminder-row"><p class="hint">Add reminders for the first day of each quarter.</p>
     <button class="pill" id="ics">📅 Download calendar reminders</button></div></div>`;
@@ -1811,7 +1814,7 @@ function findCurrentTaskOrRefresh(key,now=new Date()){
 }
 function confirmRecurringSetup(cardId,benefitId,{review=false}={},mutationNow=new Date()){
   const key=canonicalRecurringKey(cardId,benefitId), meta=RADAR_BENEFIT_MAP[key]; if(!meta?.recurringEligible) return;
-  const focusId=review?`recurring-confirmed-${key}`:`recurring-status-${key}`;
+  const focusId=review?`recurring-confirmed-${key}`:PROMOS_VIEW==='overview'?'radar-heading':`recurring-status-${key}`;
   const total=recurringReviewSession?.keys.length||0, alreadyConfirmed=recurringReviewSession?.confirmed.has(key), reviewed=review?Math.min(total,(recurringReviewSession?.confirmed.size||0)+(alreadyConfirmed?0:1)):0;
   const message=review&&total?`Benefit setup confirmed · ${reviewed} of ${total} reviewed`:'Benefit setup confirmed';
   mutateWithUndo(message,()=>{
@@ -1851,6 +1854,11 @@ function bindPromoActions(){
     const opening=recurringDiscoveryOpenKey!==task.key; recurringDiscoveryOpenKey=opening?task.key:'';
     if(opening){ const now=new Date(); setRecurringPromptPreference(task.card.id,task.benefitId,{},now); saveState(S,now); }
     render(); restoreFocus(`recurring-disclosure-${task.card.id}-${task.benefitId}`);
+    if(opening) requestAnimationFrame(()=>{
+      const panel=document.getElementById(`recurring-discovery-${task.card.id}-${task.benefitId}`); if(!panel) return;
+      const safeBottom=window.innerHeight-84, rect=panel.getBoundingClientRect();
+      if(rect.bottom>safeBottom) window.scrollBy({top:rect.bottom-safeBottom+12,behavior:'auto'});
+    });
   });
   mainEl.querySelectorAll('[data-dismiss-recurring]').forEach(button=>button.onclick=()=>{
     const [cardId,benefitId]=button.dataset.dismissRecurring.split(':'), now=new Date();

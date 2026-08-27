@@ -263,6 +263,7 @@ document.getElementById('app').addEventListener('load',async()=>{
       equal(overviewIcons.map(icon=>icon.textContent).join(''),'📡📅');
       assert(overviewIcons.every(icon=>icon.getAttribute('aria-hidden')==='true'),'Overview icons should be decorative');
       assert(doc.body.textContent.includes('These items also appear in My Radar when they need attention.'),'Quarterly overlap should be explained');
+      assert(doc.getElementById('quarterly-view-all').textContent.includes('Open checklist'),'Quarterly destination should describe its distinct checklist job');
       doc.getElementById('radar-view-all').click();
       equal(doc.title,'ChooseMyCard · My Radar'); equal(doc.getElementById('hdrsub').textContent,'what needs attention');
       equal(doc.querySelector('#hdr .title-icon').textContent,'📡'); equal(doc.querySelector('#hdr .title-icon').getAttribute('aria-hidden'),'true');
@@ -441,6 +442,21 @@ document.getElementById('app').addEventListener('load',async()=>{
       assert(disclosure.getAttribute('aria-label').includes(benefit)&&disclosure.getAttribute('aria-label').includes(card),'Disclosure accessible name should identify the benefit and card');
       assert(panel.querySelector('[data-confirm-recurring]').getAttribute('aria-label').includes(benefit),'Confirm accessible name should identify the benefit');
       assert(panel.querySelector('[data-dismiss-recurring]').getAttribute('aria-label').includes(card),'Dismiss accessible name should identify the card');
+    });
+  });
+  test('Promos overview exposes Peloton subscription setup without duplicating quarterly actions',async()=>{
+    const enrolledAt=new Date().toISOString(), state={schemaVersion:3,myCards:['discover_it','csr'],enrollments:[{cardId:'csr',benefitId:'peloton_credit',enrolledAt}]};
+    await withAppState(state,async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click(); await afterRender(win);
+      assert(!doc.body.textContent.includes('Your unfinished quarterly actions are shown in My Radar above.'),'Quarterly overview should not render a duplicate-feed empty card');
+      const pelotonRow=[...doc.querySelectorAll('.action-row')].find(row=>row.querySelector('.action-title')?.textContent.includes('Peloton membership credit'));
+      assert(pelotonRow,'Expected Peloton membership credit in the Radar preview');
+      assert(pelotonRow.querySelector('.task-check').textContent.includes('Mark used'),'Manual monthly fallback should remain available');
+      const setup=pelotonRow.querySelector('[data-recurring-disclosure]'); equal(setup.textContent.trim(),'Membership billed monthly'); setup.click(); await afterRender(win);
+      const panel=doc.querySelector('.recurring-discovery:not([hidden])'); assert(panel.textContent.includes('billed directly by Peloton'),'Subscription setup should explain direct-billing eligibility');
+      panel.querySelector('[data-confirm-recurring]').click(); await afterRender(win);
+      const saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.keys(saved.recurringSetups).length,1); equal(Object.keys(saved.completions).length,0);
+      equal(doc.activeElement.dataset.focusId,'radar-heading'); assert(![...doc.querySelectorAll('.action-row')].some(row=>row.textContent.includes('Peloton membership credit')),'Confirmed subscription should leave the monthly Radar preview');
     });
   });
   test('confirming a recurring payment hides reminders without checking Mark used',async()=>{

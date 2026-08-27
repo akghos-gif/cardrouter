@@ -22,14 +22,14 @@ Implement user-confirmed recurring benefit setups inside the existing My Radar p
 
 ## My Radar experience
 
-- Offer one inline recurring-payment suggestion at a time on an eligible enrolled monthly-use row.
+- Offer one auto-expanded inline recurring-payment suggestion at a time in full My Radar. Eligible rows in the Promos preview expose the same control only when the user opens it.
 - Show active confirmations in **Benefits with recurring payments**, with **Manage benefit setups** revealing terms, inactive records, and resume controls.
 - Show due confirmations after Priority and Due Soon actions but before Later items under **Confirm recurring benefit setups**.
 - Keep external links top-right, keep `Mark used` separate, and never create another route, modal, or individual benefit page.
 
 ## Verification and handoff
 
-- The dependency-free browser harness passes 52 of 52 checks covering schema, timing, lifecycle, validation, import, focus, and UI states.
+- The dependency-free browser harness passes 53 of 53 checks covering schema, timing, lifecycle, validation, import, focus, and UI states.
 - The 320px, 390×844, and desktop layouts were verified in light and dark modes with no console errors or horizontal overflow.
 - Independent engineering, product, accessibility, and copy reviews report no remaining P0-P2 findings.
 - Keep the implementation on `codex/credit-radar`. Do not push or merge before user approval.
