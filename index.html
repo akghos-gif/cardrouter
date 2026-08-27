@@ -13,7 +13,7 @@
   :root{
     --bg:#f4f5f7; --card:#ffffff; --ink:#1a1d21; --muted:#596270; --line:#e5e7eb;
     --accent:#2563eb; --primary-bg:#2563eb; --accent-ink:#ffffff; --gold:#b45309; --good:#047857; --warn:#b91c1c;
-    --chip:#eef2ff; --chip-ink:#3730a3; --radius:16px;
+    --chip:#eef2ff; --chip-ink:#3730a3; --radius:16px; --nav-h:74px;
   }
   @media (prefers-color-scheme: dark){
     :root{ --bg:#0f1115; --card:#191c22; --ink:#f3f4f6; --muted:#aeb6c2; --line:#2a2f38;
@@ -21,7 +21,7 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   body{margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    background:var(--bg); color:var(--ink); padding-bottom:calc(74px + env(safe-area-inset-bottom));}
+    background:var(--bg); color:var(--ink); padding-bottom:calc(var(--nav-h) + 12px + env(safe-area-inset-bottom));}
   .brand{display:flex; align-items:center; gap:11px;
     padding:calc(env(safe-area-inset-top, 24px) + 30px) 18px 12px;
     background:linear-gradient(180deg, rgba(37,99,235,.10), transparent); }
@@ -59,7 +59,7 @@
     border-top:1px solid var(--line); padding:7px 6px calc(7px + env(safe-area-inset-bottom));
     box-shadow:0 -6px 18px rgba(0,0,0,.08)}
   nav button{flex:1; background:none; border:none; color:var(--muted); font-size:10.5px; font-weight:600;
-    cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; padding:0; font-family:inherit}
+    cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; padding:0; font-family:inherit; min-width:0; line-height:1.2; overflow-wrap:anywhere; text-align:center}
   nav button .em{font-size:19px; line-height:1; display:flex; align-items:center; justify-content:center;
     width:54px; height:30px; border-radius:99px; background:rgba(125,125,125,.10);
     border:1.5px solid transparent; transition:background .18s, transform .18s, border-color .18s, box-shadow .18s}
@@ -76,7 +76,7 @@
   .row .title{font-weight:600; font-size:14.5px}
   .row .sub2{color:var(--muted); font-size:12.5px; margin-top:1px}
   .iconbtn{border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px;
-    width:32px; height:32px; font-size:15px; cursor:pointer}
+    width:44px; height:44px; font-size:15px; cursor:pointer; flex:none}
   .iconbtn:disabled{opacity:.3}
   .pill{border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:99px;
     padding:8px 14px; min-height:44px; font-size:13.5px; cursor:pointer; font-weight:500}
@@ -93,19 +93,24 @@
   .modal.open{display:flex}
   .sheet{background:var(--card); width:100%; max-height:86vh; overflow:auto; border-radius:18px 18px 0 0; padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
   .sheet-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
+  .field-label{display:block; font-size:13.5px; font-weight:600; line-height:1.35}
+  .field-label .tag{display:block; font-weight:400}
+  .sr-only{position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important}
   .empty{color:var(--muted); text-align:center; padding:22px 10px; font-size:14px; line-height:1.5}
-  .toast{position:fixed; bottom:calc(84px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%);
+  .toast{position:fixed; bottom:calc(var(--nav-h) + 10px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%);
     background:var(--ink); color:var(--bg); padding:7px 9px 7px 16px; border-radius:99px; font-size:13px; opacity:0;
     transition:opacity .2s ease-out; pointer-events:none; z-index:60; max-width:92%; text-align:center;
     display:flex; align-items:center; gap:10px; box-shadow:0 8px 24px rgba(0,0,0,.24)}
   .toast.show{opacity:.97; pointer-events:auto}
   .toast button{border:0; border-radius:99px; background:var(--bg); color:var(--ink); min-height:44px; padding:0 14px;
     font:inherit; font-weight:700; cursor:pointer}
+  #toastmsg{min-width:0; overflow-wrap:anywhere}
   .tag{font-size:11px; color:var(--muted)}
   .quarter-banner{font-size:12.5px; color:var(--muted); margin:2px 4px 8px}
   a{color:var(--accent)}
   button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
     outline:3px solid var(--accent); outline-offset:2px}
+  .row[tabindex]:focus-visible{outline:3px solid var(--accent); outline-offset:2px; border-radius:10px}
   .recurring-status:focus-visible,.confirmed-status:focus-visible,.recurring-head h2:focus-visible,.section-head h2:focus-visible{
     outline:3px solid var(--accent); outline-offset:3px; border-radius:4px}
   .storage-warning{max-width:532px; margin:0 auto 10px; padding:10px 14px; border:1px solid var(--warn); border-radius:12px;
@@ -155,6 +160,17 @@
   .history-row .when{color:var(--muted); white-space:nowrap}
   .progress-line{display:flex; align-items:center; justify-content:space-between; gap:12px; color:var(--muted); font-size:12.5px; margin:0 4px 7px}
   .progress-line strong{color:var(--ink)}
+  .quarterly-nav{width:100%; display:flex; align-items:center; justify-content:space-between; gap:14px; margin:18px 0 8px;
+    padding:13px 14px; border:1px solid var(--line); border-radius:var(--radius); background:var(--card); color:var(--ink);
+    font:inherit; text-align:left; cursor:pointer}
+  .quarterly-nav-copy{display:flex; align-items:center; gap:10px; min-width:0}
+  .quarterly-nav-copy strong{display:block; font-size:14.5px; line-height:1.3}
+  .quarterly-nav-copy span{display:block; color:var(--muted); font-size:12.5px; line-height:1.4; margin-top:2px}
+  .quarterly-nav-action{flex:none; color:var(--accent); font-size:12.5px; font-weight:700; text-align:right}
+  .radar-toolbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin:4px 4px 10px}
+  .quarterly-filter{border:1px solid var(--line); border-radius:99px; min-height:44px; padding:8px 14px; background:var(--card);
+    color:var(--ink); font:inherit; font-size:12.5px; font-weight:700; cursor:pointer}
+  .quarterly-filter[aria-pressed="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); background:var(--primary-soft)}
   .reminder-row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 0 2px}
   .reminder-row .hint{margin:0}
   .not-shown-list{border:1px solid var(--line); border-radius:12px; padding:0 12px; background:var(--card)}
@@ -169,7 +185,14 @@
   .recurring-status{font-size:12.5px; color:var(--muted); line-height:1.4; margin-top:3px}
   .recurring-status.needs-review{color:var(--warn); font-weight:750}
   .recurring-manage{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-top:4px}
-  .recurring-discovery{margin:8px 0 1px; padding:12px 0 0; border-top:1px solid var(--line)}
+  .recurring-setup{margin:10px -14px -13px; border-top:1px solid var(--line)}
+  .recurring-setup-toggle{width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:52px;
+    border:0; background:color-mix(in srgb, var(--accent) 4%, transparent); color:var(--ink); padding:10px 14px; font:inherit; cursor:pointer; text-align:left}
+  .recurring-setup-toggle strong{display:block; font-size:13px; line-height:1.35}
+  .recurring-setup-toggle span{display:block; color:var(--muted); font-size:12px; line-height:1.4; margin-top:2px; font-weight:400}
+  .recurring-chevron{flex:none; color:var(--muted); transform:rotate(0); transition:transform .15s ease}
+  .recurring-setup-toggle[aria-expanded="true"] .recurring-chevron{transform:rotate(180deg)}
+  .recurring-discovery{padding:13px 14px 15px; border-top:1px solid var(--line); background:color-mix(in srgb, var(--accent) 2%, transparent)}
   .recurring-discovery-title{font-size:13.5px; font-weight:750; line-height:1.35}
   .recurring-discovery-copy,.review-note,.review-fallback{font-size:12.5px; line-height:1.45; margin:5px 0 0; color:var(--muted)}
   .review-fallback{color:var(--ink); font-weight:650}
@@ -178,16 +201,36 @@
   .recurring-count{font-size:12px; color:var(--warn); font-weight:750}
   .review-confirm{white-space:nowrap}
   .confirmed-status{display:inline-flex; align-items:center; min-height:44px; color:var(--good); font-size:12.5px; font-weight:750}
+  .confirmed-visit .confirmed-status{color:var(--ink)}
+  .confirmed-details{display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-top:5px}
+  .more-options{margin-top:4px}
+  .more-options > button{display:flex; align-items:center; gap:6px; border:0; background:none; color:var(--muted); min-height:44px;
+    padding:8px 0; font:inherit; font-size:12.5px; font-weight:600; cursor:pointer}
+  .more-options-panel{padding:2px 0 7px; border-top:1px solid var(--line)}
+  .more-options-panel p{font-size:12px; line-height:1.45; color:var(--muted); margin:8px 0 2px}
   .terms-changed{color:var(--warn); font-weight:750}
   @media (max-width:420px){
-    .action-topline{gap:8px}
-    .action-topline .issuer-action{font-size:12px}
+    header{flex-wrap:wrap; align-items:flex-start}
+    header h1{white-space:normal; max-width:100%; overflow-wrap:anywhere}
+    header .sub{min-width:0; overflow-wrap:anywhere}
+    .brand .bname{overflow-wrap:anywhere}
+    .action-topline{gap:8px; flex-wrap:wrap}
+    .action-topline .issuer-action{font-size:12px; white-space:normal; max-width:100%; overflow-wrap:anywhere}
     .action-footer{flex-wrap:wrap}
     .task-check{max-width:none; width:max-content}
     .action-links{margin-top:3px}
     .reminder-row{align-items:flex-start; flex-direction:column}
     .recurring-head{align-items:flex-start}
     .recurring-manage{align-items:flex-start; flex-direction:column}
+    .confirmed-details,.radar-toolbar{align-items:flex-start; flex-direction:column}
+    .quarterly-filter{width:100%}
+    .quarterly-nav{align-items:flex-start; flex-wrap:wrap}
+    .quarterly-nav-action{white-space:normal}
+    .progress-line,.history-row{align-items:flex-start; flex-wrap:wrap}
+    .history-row .when{white-space:normal}
+    .choice-row{flex-direction:column}
+    .choice-row .pill{width:100%}
+    .toast{border-radius:16px; align-items:flex-start; text-align:left; flex-wrap:wrap}
     .review-confirm{white-space:normal}
   }
   @media (prefers-reduced-motion:reduce){
@@ -246,7 +289,7 @@
   <button data-tab="settings"><span class="em">⚙️</span>Settings</button>
 </nav>
 
-<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="modal" id="modal"><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" tabindex="-1"></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
   <span id="toastmsg"></span><button id="toastundo" hidden>Undo</button>
 </div>
@@ -571,8 +614,8 @@ const RADAR_BENEFITS = [
     prerequisiteLabel:'Add card to Uber', markPrerequisiteLabel:'Mark card added', prerequisiteDoneLabel:'Card added', prerequisiteToast:'Marked card added',
     link:'https://global.americanexpress.com/card-benefits/detail/uber-rides-with-platinum/platinum'},
   {cardId:'amex_plat', benefitId:'digital_entertainment_credit', cadence:'month', amount:'$25', requiresEnrollment:true,
-    recurringEligible:true, recurringTermsVersion:'2026-08-27-2', recurringActionLabel:'Subscription billed monthly', recurringConfirmLabel:'Confirm subscription setup',
-    recurringQuestion:'Is an eligible entertainment subscription billed directly to this card every month?', recurringQualifier:'Eligible providers are Disney+, ESPN streaming, Hulu, The New York Times, Paramount+, Peacock, The Wall Street Journal, YouTube Premium, YouTube Music, and YouTube TV. Purchase directly from the provider; third-party billing does not qualify.',
+    recurringEligible:true, recurringChargeNoun:'subscription', recurringTermsVersion:'2026-08-27-2',
+    recurringQualifier:'Eligible providers are Disney+, ESPN streaming, Hulu, The New York Times, Paramount+, Peacock, The Wall Street Journal, YouTube Premium, YouTube Music, and YouTube TV. Purchase directly from the provider; app stores, digital wallets, cable bundles, and other third-party billing do not qualify.',
     link:'https://global.americanexpress.com/card-benefits/detail/digital-entertainment/platinum'},
   {cardId:'amex_plat', benefitId:'lululemon_credit', cadence:'quarter', amount:'$75', requiresEnrollment:true,
     link:'https://global.americanexpress.com/card-benefits/detail/lululemon-credit/platinum'},
@@ -582,8 +625,8 @@ const RADAR_BENEFITS = [
     link:'https://www.chase.com/personal/credit-cards/education/rewards-benefits/how-to-use-the-%24300-stubhub-credit-with-chase-sapphire-reserve'},
   {cardId:'csr', benefitId:'peloton_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
     prerequisiteLabel:'Activate the benefit', markPrerequisiteLabel:'Mark activated', prerequisiteDoneLabel:'Activated',
-    recurringEligible:true, recurringTermsVersion:'2026-08-27-2', recurringActionLabel:'Membership billed monthly', recurringConfirmLabel:'Confirm membership setup',
-    recurringQuestion:'Is an eligible Peloton membership billed directly to this card every month?', recurringQualifier:'Eligible memberships are All-Access, Rental, App+, Guide, App One, and Strength+. Purchase in the U.S. directly from Peloton, not through an app store.',
+    recurringEligible:true, recurringChargeNoun:'membership', recurringTermsVersion:'2026-08-27-2',
+    recurringQualifier:'Eligible memberships are All-Access, Rental, App+, Guide, App One, and Strength+. Purchase in the U.S. directly from Peloton, with this card saved on the Peloton account, not through an app store.',
     link:'https://www.onepeloton.com/chase-sapphire-reserve'},
   {cardId:'csp', benefitId:'doordash_promo_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
     link:'https://www.doordash.com/en/dashpass/partner/chase/preferred'},
@@ -601,15 +644,15 @@ const RADAR_BENEFITS = [
   {cardId:'biz_plat', benefitId:'indeed_credit', cadence:'quarter', amount:'$90', requiresEnrollment:true,
     link:'https://global.americanexpress.com/card-benefits/detail/indeed-benefit/business-platinum'},
   {cardId:'biz_plat', benefitId:'wireless_service_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
-    recurringEligible:true, recurringTermsVersion:'2026-08-27-2', recurringActionLabel:'Wireless bill paid monthly', recurringConfirmLabel:'Confirm wireless setup',
-    recurringQuestion:'Is eligible monthly wireless service billed directly to this card?', recurringQualifier:'Only service billed directly by an eligible U.S. wireless provider qualifies. Google Fi, hardware, reseller, and bundled TV, internet, or VoIP charges do not.',
+    recurringEligible:true, recurringChargeNoun:'bill', recurringTermsVersion:'2026-08-27-2',
+    recurringQualifier:'Only service billed directly by an eligible U.S. wireless provider qualifies. Google Fi, hardware, reseller, and bundled TV, internet, or VoIP charges do not.',
     link:'https://global.americanexpress.com/card-benefits/detail/wireless-credit/business-platinum'},
   {cardId:'biz_gold', benefitId:'flexible_business_credit', cadence:'month', amount:'$20', requiresEnrollment:true,
     detailBefore:'FedEx through Oct 1, 2026; Grubhub and U.S. office supply stores continue', detailAfter:'Grubhub and U.S. office supply stores', detailChangesOn:'2026-10-02',
     link:'https://global.americanexpress.com/card-benefits/detail/240-flexible-business-credit/business-gold'},
   {cardId:'bcp', benefitId:'disney_bundle_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
-    recurringEligible:true, recurringTermsVersion:'2026-08-27-2', recurringActionLabel:'Subscription billed monthly', recurringConfirmLabel:'Confirm subscription setup',
-    recurringQuestion:'Is an eligible Disney+, Hulu, or ESPN subscription billed directly to this card every month?', recurringQualifier:'Only monthly subscriptions purchased directly from DisneyPlus.com, Hulu.com, or Stream.ESPN.com qualify for reminder suppression. An annual subscription earns up to $10 only in the month charged, so it cannot be saved as a monthly setup. Third-party or cable billing does not qualify.',
+    recurringEligible:true, recurringChargeNoun:'subscription', recurringTermsVersion:'2026-08-27-2',
+    recurringQualifier:'Only monthly subscriptions purchased directly from DisneyPlus.com, Hulu.com, or Stream.ESPN.com qualify for reminder suppression. An annual subscription earns up to $10 only in the month charged, so it can’t be confirmed as a monthly recurring charge. Third-party or cable billing does not qualify.',
     link:'https://global.americanexpress.com/card-benefits/detail/disney-streaming-credit/blue-cash-preferred'},
 ].map(x=>({...x, sourceVerifiedAt:RADAR_CATALOG_VERSION}));
 const RADAR_BENEFIT_MAP = Object.fromEntries(RADAR_BENEFITS.map(x=>[x.cardId+':'+x.benefitId,x]));
@@ -972,10 +1015,10 @@ function loadState(){
       const decoded=decodeSetupPayload(encoded), bytes=new TextEncoder().encode(decoded).length, raw=JSON.parse(decoded), importNow=new Date();
       const validated=validateImportPayload(raw,encoded.length,bytes,importNow);
       const imported=normalizeState(validated,importNow,{fromImport:true});
-      if(stateHasData(local)&&!confirm('Replace this device\'s cards, settings, benefit enrollments, recurring benefit setups, items hidden from My Radar, skipped periods, and current checkmarks with this setup link? Imported recurring benefit setups will not hide monthly reminders until you confirm them again in My Radar on this device.')){
+      if(stateHasData(local)&&!confirm('Replace this device\'s cards, settings, benefit enrollments, recurring charge confirmations, items hidden from Benefit Radar, skipped periods, and current checkmarks with this setup link? Imported recurring charge confirmations will not hide monthly reminders until you confirm them again in Benefit Radar on this device.')){
         startupNotice='Setup import canceled'; return local;
       }
-      startupNotice=Object.keys(imported.recurringSetups).length?'Setup imported · confirm recurring benefit setups in My Radar':'Setup imported'; return imported;
+      startupNotice=Object.keys(imported.recurringSetups).length?'Setup imported · confirm recurring charges in Benefit Radar':'Setup imported'; return imported;
     }catch(e){ startupNotice=e instanceof SetupLinkError?e.message:'This setup link could not be imported.'; }
   }
   return local;
@@ -1029,16 +1072,45 @@ function cppFor(card,state){ const p=state.cpp[card.program]; return p!=null?p:P
 function cpp(card){ return cppFor(card,S); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 let pendingUndo=null;
+function clearToast(){
+  const t=document.getElementById('toast'), undo=document.getElementById('toastundo');
+  pendingUndo=null; clearTimeout(t._h); undo.hidden=true; t.classList.remove('show');
+}
+function keepFocusedControlVisible(){
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const target=document.activeElement, toastEl=document.getElementById('toast'), nav=document.querySelector('nav');
+    if(!target||!mainEl.contains(target)) return;
+    const rect=target.getBoundingClientRect(), navTop=nav?.getBoundingClientRect().top??window.innerHeight;
+    const toastTop=toastEl.classList.contains('show')?toastEl.getBoundingClientRect().top:window.innerHeight;
+    const safeBottom=Math.min(window.innerHeight-12,navTop-12,toastTop-12);
+    if(rect.bottom>safeBottom) window.scrollBy({top:rect.bottom-safeBottom,behavior:'auto'});
+    else if(rect.top<12) window.scrollBy({top:rect.top-12,behavior:'auto'});
+  }));
+}
 function toast(msg,ms,undoFn){
   const t=document.getElementById('toast'), text=document.getElementById('toastmsg'), undo=document.getElementById('toastundo');
   text.textContent=msg; pendingUndo=undoFn||null; undo.hidden=!undoFn; t.classList.add('show'); clearTimeout(t._h);
+  keepFocusedControlVisible();
   undo.onclick=()=>{ if(!pendingUndo) return; const fn=pendingUndo; pendingUndo=null; undo.hidden=true; fn(); };
-  t._h=setTimeout(()=>{pendingUndo=null; undo.hidden=true; t.classList.remove('show');},ms||2600);
+  const dismiss=()=>{
+    if(document.activeElement===undo){ t._h=setTimeout(dismiss,1000); return; }
+    pendingUndo=null; undo.hidden=true; t.classList.remove('show');
+  };
+  t._h=setTimeout(dismiss,ms||2600);
 }
 function mutateWithUndo(message,mutator,focusId,undoFocusId=focusId,mutationNow=new Date()){
-  const before=structuredClone(S), reviewBefore=recurringReviewSession?{keys:[...recurringReviewSession.keys],confirmed:[...recurringReviewSession.confirmed]}:null;
+  const before=structuredClone(S), snapshotToken=promosVisitToken,
+    reviewBefore=recurringReviewSession?{keys:[...recurringReviewSession.keys],confirmed:[...recurringReviewSession.confirmed]}:null,
+    confirmedBefore=[...confirmedThisVisit.entries()].map(([key,value])=>[key,structuredClone(value)]);
   mutator(); saveState(S,mutationNow); render(); restoreFocus(focusId);
-  toast(message,5000,()=>{ S=before; recurringReviewSession=reviewBefore?{keys:[...reviewBefore.keys],confirmed:new Set(reviewBefore.confirmed)}:null; saveState(S); render(); restoreFocus(undoFocusId); toast('Change undone'); });
+  toast(message,9000,()=>{
+    S=before;
+    if(snapshotToken===promosVisitToken){
+      recurringReviewSession=reviewBefore?{keys:[...reviewBefore.keys],confirmed:new Set(reviewBefore.confirmed)}:null;
+      confirmedThisVisit=new Map(confirmedBefore.map(([key,value])=>[key,structuredClone(value)]));
+    }
+    saveState(S); render(); restoreFocus(undoFocusId); toast('Change undone');
+  });
 }
 function restoreFocus(focusId){
   requestAnimationFrame(()=>{
@@ -1048,8 +1120,10 @@ function restoreFocus(focusId){
     target.focus({preventScroll:true});
     const rect=target.getBoundingClientRect();
     if(rect.top<12||rect.bottom>window.innerHeight-12) target.scrollIntoView({block:'center'});
+    keepFocusedControlVisible();
   });
 }
+function focusPageHeading(){ requestAnimationFrame(()=>document.getElementById('hdr')?.focus()); }
 function captureRefreshFocus(now){
   const active=document.activeElement; if(!active||!mainEl.contains(active)) return null;
   if(active.dataset.taskCheck) return {type:'focusId',value:currentFocusForTaskKey(active.dataset.taskCheck,now)};
@@ -1060,7 +1134,7 @@ function captureRefreshFocus(now){
       return {type:'taskAction',attribute,taskKey:focusId.replace(/^task-/,''),focusId};
     }
   }
-  for(const attribute of ['data-show-radar','data-benefit-enroll','data-benefit-use','data-bcat','data-recurring-disclosure','data-review-confirm','data-resume-recurring']){
+  for(const attribute of ['data-show-radar','data-benefit-enroll','data-benefit-use','data-bcat','data-recurring-disclosure','data-review-confirm','data-remove-recurring','data-more-options']){
     if(active.hasAttribute(attribute)) return {type:'attribute',attribute,value:active.getAttribute(attribute)};
   }
   if(active.id) return {type:'id',value:active.id};
@@ -1146,12 +1220,6 @@ function suspendRecurringSetup(cardId,benefitId,reason,mutationNow=new Date()){
   const key=canonicalRecurringKey(cardId,benefitId), record=S.recurringSetups[key];
   if(record&&RECURRING_SUSPENSION_REASONS.has(reason)){ record.suspendedAt=mutationNow.toISOString(); record.suspensionReason=reason; }
 }
-function setRecurringPromptPreference(cardId,benefitId,{dismissed=false}={},mutationNow=new Date()){
-  const key=canonicalRecurringKey(cardId,benefitId), meta=RADAR_BENEFIT_MAP[key]; if(!meta?.recurringEligible) return;
-  const existing=S.recurringPromptPrefs[key], shownAt=existing&&existing.termsVersion===meta.recurringTermsVersion?existing.shownAt:mutationNow.toISOString();
-  const record={cardId,benefitId,termsVersion:meta.recurringTermsVersion,shownAt}; if(dismissed) record.dismissedAt=mutationNow.toISOString();
-  S.recurringPromptPrefs[key]=record;
-}
 function benefitAmount(meta,now){ return meta.decemberAmount&&now.getMonth()===11?meta.decemberAmount:meta.amount; }
 function benefitDetail(meta,benefit,now){
   if(meta.detailChangesOn){ const change=localDateFromIsoDate(meta.detailChangesOn); return now<change?meta.detailBefore:meta.detailAfter; }
@@ -1214,10 +1282,11 @@ function buildRadarTasks(now=new Date(),state=S){
   const suppressed=all.filter(t=>(t.hidden||t.skipped)&&!t.closed&&!t.unavailable);
   const recurring=all.filter(t=>t.recurringSuppressed&&!t.hidden&&!t.skipped&&!t.closed&&!t.unavailable);
   const active=all.filter(t=>!t.recurringSuppressed&&!t.hidden&&!t.skipped&&!t.closed&&!t.unavailable&&taskRetentionVisible(t,now));
-  return {all,active,suppressed,recurring,unresolved:active.filter(t=>!t.done)};
+  return {all,active,suppressed,recurring,unresolved:active.filter(t=>!t.done||t.recurring?.status==='terms-changed')};
 }
 function taskSummary(task){
   if(!task) return '';
+  if(task.recurring?.status==='terms-changed') return `Review the recurring charge for ${task.title}. Benefit terms changed.`;
   if(task.actionType==='activate') return `Activate ${task.title}.${task.nonRetroactive?' Not retroactive.':''}`;
   if(task.actionType==='select') return `Choose ${task.title}.${task.nonRetroactive?' Not retroactive.':''}`;
   if(task.actionType==='enroll') return task.prerequisiteLabel==='Add card to Uber'?`Add ${task.card.name} to Uber to use ${task.title}.`:`Enroll in ${task.title} for ${task.card.name}.`;
@@ -1253,7 +1322,7 @@ function setTaskChecked(task,checked,focusId,mutationNow=new Date()){
       const key=canonicalEnrollmentKey(task.card.id,task.benefitId);
       if(checked){ S.enrollments[key]={cardId:task.card.id,benefitId:task.benefitId,enrolledAt:mutationNow.toISOString(),labelSnapshot:task.title,cardNameSnapshot:task.card.name}; delete S.radarSkips[task.key]; }
       else{ delete S.enrollments[key]; suspendRecurringSetup(task.card.id,task.benefitId,'enrollment-removed',mutationNow); }
-    }else if(checked) S.completions[task.key]=completionRecordForTask(task,mutationNow);
+    }else if(checked){ S.completions[task.key]=completionRecordForTask(task,mutationNow); delete S.radarSkips[task.key]; }
     else delete S.completions[task.key];
   },nextFocus,focusId||task.key,mutationNow);
 }
@@ -1270,24 +1339,26 @@ function setBenefitEnrollment(cardId,benefitId,checked,focusId,periodKey,mutatio
 }
 function skipTask(task,mutationNow=new Date()){
   if(!taskPeriodIsCurrent(task,mutationNow)){ refreshForPeriodChange(currentFocusForTask(task,mutationNow)); return; }
-  mutateWithUndo('Skipped for this period',()=>{
+  const staysVisible=TAB==='promos'&&PROMOS_VIEW==='radar'&&RADAR_FILTER==='quarterly'&&/^\d{4}-Q[1-4]$/.test(task.periodKey), focusId=staysVisible?`task-${task.key}`:'not-shown-toggle';
+  mutateWithUndo(skippedPeriodLabel(task),()=>{
     S.radarSkips[task.key]={taskKind:task.kind,cardId:task.card.id,itemId:task.itemId,periodKey:task.periodKey,
       skippedAt:mutationNow.toISOString(),expiresAt:(task.actionEnd||task.end).toISOString()};
-  },'not-shown-toggle',`task-${task.key}`,mutationNow);
+  },focusId,`task-${task.key}`,mutationNow);
 }
-function unskipTask(task){ mutateWithUndo('Shown for this period',()=>{delete S.radarSkips[task.key];},`task-${task.key}`,'not-shown-toggle'); }
+function unskipTask(task){ mutateWithUndo('Shown for this period',()=>{delete S.radarSkips[task.key];},`task-${task.key}`,`task-${task.key}`); }
 function hideBenefitTask(task){
-  const key=canonicalHiddenKey(task.card.id,task.benefitId);
-  mutateWithUndo('Hidden from My Radar',()=>{
+  const key=canonicalHiddenKey(task.card.id,task.benefitId), active=buildRadarTasks(new Date()).active, index=active.findIndex(item=>item.key===task.key), next=active[index+1]||active[index-1];
+  mutateWithUndo('Hidden from Benefit Radar',()=>{
     S.radarHidden[key]={cardId:task.card.id,benefitId:task.benefitId,hiddenAt:new Date().toISOString()};
     suspendRecurringSetup(task.card.id,task.benefitId,'hidden');
-  },'not-shown-toggle',`task-${task.key}`);
+    moreOptionsOpenKey='';
+  },next?`task-${next.key}`:'radar-heading',`task-${task.key}`);
 }
 function restoreBenefit(cardId,benefitId,focusId,undoFocusId=focusId){
-  mutateWithUndo('Shown in My Radar',()=>{delete S.radarHidden[canonicalHiddenKey(cardId,benefitId)];},focusId,undoFocusId);
+  mutateWithUndo('Shown in Benefit Radar',()=>{delete S.radarHidden[canonicalHiddenKey(cardId,benefitId)];},focusId,undoFocusId);
 }
 function showTaskInRadar(task){
-  mutateWithUndo('Shown in My Radar',()=>{
+  mutateWithUndo('Shown in Benefit Radar',()=>{
     delete S.radarSkips[task.key];
     if(task.benefitId) delete S.radarHidden[canonicalHiddenKey(task.card.id,task.benefitId)];
   },`task-${task.key}`,'not-shown-toggle');
@@ -1359,9 +1430,16 @@ function rankFor(catId){
 
 /* ---------- views ---------- */
 const mainEl = document.getElementById('main');
-const initialPromosView=history.state&&['radar','quarterly'].includes(history.state.promosView)?history.state.promosView:'overview';
-let TAB=initialPromosView==='overview'?'which':'promos', selectedCat=null, PROMOS_VIEW=initialPromosView, radarHistoryOpen=false, notShownOpen=false, historyLimit=20;
-let recurringManageOpen=false, recurringDiscoveryOpenKey='', recurringReviewSession=null;
+function normalizePromosHistory(state){
+  if(state?.promosView==='quarterly') return {view:'radar',filter:'quarterly'};
+  if(state?.promosView==='radar') return {view:'radar',filter:['all','quarterly'].includes(state.radarFilter)?state.radarFilter:'all'};
+  return {view:'overview',filter:'all'};
+}
+const initialPromosHistory=normalizePromosHistory(history.state);
+let TAB=initialPromosHistory.view==='overview'?'which':'promos', selectedCat=null, PROMOS_VIEW=initialPromosHistory.view, RADAR_FILTER=initialPromosHistory.filter,
+  radarHistoryOpen=false, notShownOpen=false, historyLimit=20;
+let recurringDiscoveryOpenKey='', recurringReviewSession=null, moreOptionsOpenKey='', confirmedThisVisit=new Map();
+let promosVisitToken='';
 let renderedDayKey=localIsoDate(localDay(new Date())), renderedMonthKey=periodInfo('month',new Date()).key;
 
 function render(){
@@ -1376,8 +1454,7 @@ function render(){
   if(TAB==='cards'){ hdr.textContent='My cards'; sub.textContent='priority order breaks ties'; renderCards(); }
   if(TAB==='benefits'){ hdr.textContent='Benefits'; sub.textContent='what your cards give you'; renderBenefits(); }
   if(TAB==='promos'){
-    if(PROMOS_VIEW==='radar'){ hdr.innerHTML='<span class="title-icon" aria-hidden="true">📡</span>My Radar'; sub.textContent='what needs attention'; }
-    else if(PROMOS_VIEW==='quarterly'){ hdr.innerHTML='<span class="title-icon" aria-hidden="true">📅</span>Quarterly actions'; sub.textContent=currentQuarter().replace('-',' '); }
+    if(PROMOS_VIEW==='radar'){ hdr.innerHTML='<span class="title-icon" aria-hidden="true">📡</span>Benefit Radar'; sub.textContent='what needs attention'; }
     else { hdr.textContent='Promos & activations'; sub.textContent=currentQuarter().replace('-',' '); }
     renderPromos();
   }
@@ -1395,12 +1472,12 @@ function renderWhich(){
       <p class="hint" style="margin:0 0 16px">Pick the credit cards you carry and set their priority — then this screen tells you which one to tap for every kind of purchase. Your picks stay on <b>this device only</b>, so everyone who uses this app sets up their own.</p>
       <button class="pill primary" id="onboard" style="font-size:15px; padding:11px 22px">Pick my cards →</button>
     </div>`;
-    document.getElementById('onboard').onclick=()=>{ TAB='cards'; render(); };
+    document.getElementById('onboard').onclick=()=>{ TAB='cards'; render(); restoreFocus('add-card-heading'); };
     return;
   }
   let html = `<div class="panel"><div class="catgrid">` +
-    CATS.map(c=>`<button class="catbtn ${selectedCat===c.id?'active':''}" data-cat="${c.id}"><span class="em">${c.em}</span>${c.name}</button>`).join('') +
-    `</div><button class="locbtn" id="locbtn">📍 Guess category from my location</button></div>`;
+    CATS.map(c=>`<button class="catbtn ${selectedCat===c.id?'active':''}" data-cat="${c.id}" data-focus-id="category-${c.id}" aria-pressed="${selectedCat===c.id}"><span class="em">${c.em}</span>${c.name}</button>`).join('') +
+    `</div><button class="locbtn" id="locbtn" data-focus-id="location-guess">📍 Guess category from my location</button></div>`;
   if(selectedCat){
     const rows = rankFor(selectedCat);
     html += `<h2>${CAT[selectedCat].em} ${CAT[selectedCat].name}</h2>`;
@@ -1425,13 +1502,13 @@ function renderWhich(){
     html += `<p class="hint" style="margin:6px 4px">Tap a category, or use location to guess it.</p>`;
   }
   mainEl.innerHTML = html;
-  mainEl.querySelectorAll('.catbtn').forEach(b=>b.onclick=()=>{selectedCat=b.dataset.cat; render();});
+  mainEl.querySelectorAll('.catbtn').forEach(b=>b.onclick=()=>{selectedCat=b.dataset.cat; render(); restoreFocus(`category-${b.dataset.cat}`);});
   const lb = document.getElementById('locbtn'); if(lb) lb.onclick = guessFromLocation;
 }
 
 function guessFromLocation(){
   const lb=document.getElementById('locbtn'); lb.textContent='📍 Locating…';
-  if(!navigator.geolocation){ toast('Geolocation not available'); return; }
+  if(!navigator.geolocation){ toast('Geolocation not available'); restoreFocus('location-guess'); return; }
   navigator.geolocation.getCurrentPosition(async pos=>{
     try{
       lb.textContent='📍 Looking up merchant…';
@@ -1453,9 +1530,9 @@ function guessFromLocation(){
       const hit = map.find(([re])=>re.test(t));
       if(hit){ selectedCat = hit[1]; toast(`Looks like: ${j.name||j.type||'a '+hit[1]+' spot'}`); }
       else toast(`Couldn't classify "${j.name||j.type||'this spot'}" — pick manually`);
-      render();
-    }catch(e){ toast('Lookup failed — pick a category manually'); render(); }
-  }, ()=>{ toast('Location permission denied'); render(); }, {enableHighAccuracy:true, timeout:8000});
+      render(); restoreFocus(hit?`category-${hit[1]}`:'location-guess');
+    }catch(e){ toast('Lookup failed — pick a category manually'); render(); restoreFocus('location-guess'); }
+  }, ()=>{ toast('Location permission denied'); render(); restoreFocus('location-guess'); }, {enableHighAccuracy:true, timeout:8000});
 }
 
 function renderCards(){
@@ -1463,51 +1540,51 @@ function renderCards(){
   let html = '';
   if(held.length){
     html += `<div class="panel">` + held.map((c,i)=>`
-      <div class="row">
+      <div class="row" tabindex="-1" data-focus-id="card-row-${c.id}">
         <div class="grow"><div class="title">${i+1}. ${esc(c.name)}</div><div class="sub2">${esc(c.issuer)} · ${esc(PROGRAMS[c.program].name)}</div></div>
-        <button class="iconbtn" data-up="${c.id}" ${i===0?'disabled':''}>↑</button>
-        <button class="iconbtn" data-down="${c.id}" ${i===held.length-1?'disabled':''}>↓</button>
-        <button class="iconbtn" data-edit="${c.id}">✎</button>
-        <button class="iconbtn" data-del="${c.id}">✕</button>
+        <button class="iconbtn" data-up="${c.id}" aria-label="Move ${esc(c.name)} up" ${i===0?'disabled':''}><span aria-hidden="true">↑</span></button>
+        <button class="iconbtn" data-down="${c.id}" aria-label="Move ${esc(c.name)} down" ${i===held.length-1?'disabled':''}><span aria-hidden="true">↓</span></button>
+        <button class="iconbtn" data-edit="${c.id}" data-focus-id="edit-card-${c.id}" aria-label="Edit ${esc(c.name)} rates"><span aria-hidden="true">✎</span></button>
+        <button class="iconbtn" data-del="${c.id}" aria-label="Delete ${esc(c.name)}"><span aria-hidden="true">✕</span></button>
       </div>`).join('') + `</div>
       <p class="section-note">Order = tie-break priority (your original spec). ✎ to view/edit a card's earn rates.</p>`;
   } else html += `<div class="panel empty">No cards yet — add the 4–6 you carry.</div>`;
 
   const avail = allCards().filter(c=>!S.myCards.includes(c.id));
-  html += `<h2>Add a card</h2><div class="panel">` +
+  html += `<h2 id="add-card-heading" tabindex="-1" data-focus-id="add-card-heading">Add a card</h2><div class="panel">` +
     (avail.length? avail.map(c=>`
       <div class="row"><div class="grow"><div class="title">${esc(c.name)}</div><div class="sub2">${esc(c.issuer)}</div></div>
-      <button class="pill" data-add="${c.id}">Add</button></div>`).join('') : '<div class="empty">All database cards added.</div>') +
+      <button class="pill" data-add="${c.id}" data-focus-id="add-card-${c.id}" aria-label="Add ${esc(c.name)}">Add</button></div>`).join('') : '<div class="empty">All database cards added.</div>') +
     `</div><div style="margin:10px 0 20px; text-align:center"><button class="pill" id="addcustom">+ Custom card</button></div>`;
   mainEl.innerHTML = html;
 
-  mainEl.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{ S.myCards.push(b.dataset.add); saveState(S); render(); coachWhichTab(); });
+  mainEl.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{ const card=getCard(b.dataset.add); S.myCards.push(b.dataset.add); saveState(S); render(); restoreFocus(`card-row-${b.dataset.add}`); toast(`${card.name} added`); coachWhichTab(); });
   mainEl.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
-    const mutationNow=new Date(), cardId=b.dataset.del;
+    const mutationNow=new Date(), cardId=b.dataset.del, card=getCard(cardId), heldIds=[...S.myCards], index=heldIds.indexOf(cardId), nextId=heldIds[index+1]||heldIds[index-1];
     for(const record of Object.values(S.recurringSetups)) if(record.cardId===cardId) suspendRecurringSetup(record.cardId,record.benefitId,'card-removed',mutationNow);
-    S.myCards=S.myCards.filter(x=>x!==cardId); saveState(S,mutationNow); render();
+    S.myCards=S.myCards.filter(x=>x!==cardId); saveState(S,mutationNow); render(); restoreFocus(nextId?`card-row-${nextId}`:'add-card-heading'); toast(`${card.name} removed`);
   });
   mainEl.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{ move(b.dataset.up,-1); });
   mainEl.querySelectorAll('[data-down]').forEach(b=>b.onclick=()=>{ move(b.dataset.down,1); });
-  mainEl.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit));
-  document.getElementById('addcustom').onclick = openCustomCard;
+  mainEl.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit,b));
+  document.getElementById('addcustom').onclick = event=>openCustomCard(event.currentTarget);
 }
-function move(id,d){ const i=S.myCards.indexOf(id); const j=i+d; if(j<0||j>=S.myCards.length)return;
-  [S.myCards[i],S.myCards[j]]=[S.myCards[j],S.myCards[i]]; saveState(S); render(); }
+function move(id,d){ const i=S.myCards.indexOf(id); const j=i+d; if(j<0||j>=S.myCards.length)return; const card=getCard(id);
+  [S.myCards[i],S.myCards[j]]=[S.myCards[j],S.myCards[i]]; saveState(S); render(); restoreFocus(`card-row-${id}`); toast(`${card.name} moved ${d<0?'up':'down'}`); }
 
-function openEditor(id){
+function openEditor(id,opener){
   const card = getCard(id); const rates = cardRates(card);
   const sheet = document.getElementById('sheet');
-  sheet.innerHTML = `<div class="sheet-head"><h3>${esc(card.name)}</h3><button class="iconbtn" id="closex">✕</button></div>
+  sheet.innerHTML = `<div class="sheet-head"><h3 id="sheet-title">${esc(card.name)} rates</h3><button class="iconbtn" id="closex" aria-label="Close ${esc(card.name)} rate editor"><span aria-hidden="true">✕</span></button></div>
     ${card.notes?`<p class="hint">${esc(card.notes)}</p>`:''}
     <div class="rate-grid">` +
     CATS.map(c=>{ const r = rates[c.id];
-      return `<div>${c.em} ${c.name}${r&&r.note?`<div class="tag">${esc(r.note)}</div>`:''}${r&&r.cap?`<div class="tag">⚠ ${esc(r.cap)}</div>`:''}</div>
-        <input type="text" inputmode="decimal" data-rk="${c.id}" value="${r? r.v+(r.u==='x'?'x':'%') :''}" placeholder="—">`;
+      return `<label class="field-label" for="rate-${c.id}">${c.em} ${c.name}${r&&r.note?`<span class="tag">${esc(r.note)}</span>`:''}${r&&r.cap?`<span class="tag">⚠ ${esc(r.cap)}</span>`:''}</label>
+        <input id="rate-${c.id}" type="text" inputmode="decimal" data-rk="${c.id}" value="${r? r.v+(r.u==='x'?'x':'%') :''}" placeholder="—">`;
     }).join('') +
     `</div><p class="hint" style="margin-top:10px">Enter like <b>3x</b> (points) or <b>5%</b> (cash back). Blank = falls back to "everything else". Rules drift — edit here when issuers change them.</p>
     <div style="display:flex; gap:8px; margin-top:12px"><button class="pill primary" id="saveRates" style="flex:1">Save</button></div>`;
-  openModal();
+  openModal('[data-rk]',opener);
   document.getElementById('closex').onclick=closeModal;
   document.getElementById('saveRates').onclick=()=>{
     const ov = {};
@@ -1516,17 +1593,17 @@ function openEditor(id){
       const m = t.match(/^([\d.]+)\s*(x|%)?$/i); if(!m) return;
       ov[inp.dataset.rk] = {v:parseFloat(m[1]), u:(m[2]||'%').toLowerCase()};
     });
-    S.overrides[id]=ov; saveState(S); closeModal(); render(); toast('Rates saved');
+    S.overrides[id]=ov; saveState(S); closeModal(false); render(); restoreFocus(`edit-card-${id}`); toast('Rates saved');
   };
 }
-function openCustomCard(){
+function openCustomCard(opener){
   const sheet=document.getElementById('sheet');
-  sheet.innerHTML = `<div class="sheet-head"><h3>Custom card</h3><button class="iconbtn" id="closex">✕</button></div>
+  sheet.innerHTML = `<div class="sheet-head"><h3 id="sheet-title">Custom card</h3><button class="iconbtn" id="closex" aria-label="Close custom card editor"><span aria-hidden="true">✕</span></button></div>
     <div style="display:grid; gap:8px">
-      <input type="text" id="ccname" maxlength="120" placeholder="Card name">
-      <select id="ccprog">${Object.entries(PROGRAMS).map(([k,p])=>`<option value="${k}">${p.name}</option>`).join('')}</select>
+      <label class="field-label" for="ccname">Card name</label><input type="text" id="ccname" maxlength="120">
+      <label class="field-label" for="ccprog">Rewards program</label><select id="ccprog">${Object.entries(PROGRAMS).map(([k,p])=>`<option value="${k}">${p.name}</option>`).join('')}</select>
       <button class="pill primary" id="ccsave">Create, then set rates with ✎</button></div>`;
-  openModal();
+  openModal('#ccname',opener);
   document.getElementById('closex').onclick=closeModal;
   document.getElementById('ccsave').onclick=()=>{
     const name=document.getElementById('ccname').value.trim(); if(!name){toast('Name it first');return;}
@@ -1537,7 +1614,7 @@ function openCustomCard(){
       id=`cust_${slug}_${token}`;
     }while(getCard(id));
     S.custom.push({id, name, issuer:'Custom', program:document.getElementById('ccprog').value, rates:{other:{v:1,u:'%'}}, notes:''});
-    S.myCards.push(id); saveState(S); closeModal(); render(); coachWhichTab();
+    S.myCards.push(id); saveState(S); closeModal(false); render(); restoreFocus(`card-row-${id}`); toast(`${name} created`); coachWhichTab();
   };
 }
 
@@ -1559,7 +1636,7 @@ function renderBenefits(){
   if(selectedBenefitCat && !cats.some(c=>c.id===selectedBenefitCat)) selectedBenefitCat=null;
   let html = `<div class="panel"><div class="catgrid">` +
     cats.map(bc=>{ const n = all.filter(b=>b.cat===bc.id).length;
-      return `<button class="catbtn ${selectedBenefitCat===bc.id?'active':''}" data-bcat="${bc.id}">
+      return `<button class="catbtn ${selectedBenefitCat===bc.id?'active':''}" data-bcat="${bc.id}" data-focus-id="benefit-category-${bc.id}" aria-pressed="${selectedBenefitCat===bc.id}">
         <span class="em">${bc.em}</span>${bc.name}<span class="tag">${n} perk${n>1?'s':''}</span></button>`; }).join('') +
     `</div></div>`;
   if(selectedBenefitCat){
@@ -1589,7 +1666,7 @@ function renderBenefits(){
           <div class="action-topline"><div class="action-title">${esc(b.name)}</div>
             <a class="issuer-action" href="${meta.link}" target="_blank" rel="noopener noreferrer" aria-label="${linkLabel} for ${esc(b.name)}, ${esc(b.card.name)}, on issuer or partner site, opens in a new tab">${linkLabel} <span aria-hidden="true">↗</span></a></div>
           <div class="action-meta">${esc(b.card.name)}${b.value?' · '+esc(b.value):''}${b.note?' · '+esc(b.note):''}</div>
-          <div class="action-footer"><div class="action-links">${hidden?`<button class="manage-action" data-show-radar="${b.card.id}:${b.id}" data-restore-focus="${restoreFocusId}" data-focus-id="show-${b.card.id}-${b.id}" aria-label="Show ${esc(b.name)} in My Radar, ${esc(b.card.name)}">Show in My Radar</button>`:''}</div>
+          <div class="action-footer"><div class="action-links">${hidden?`<button class="manage-action" data-show-radar="${b.card.id}:${b.id}" data-restore-focus="${restoreFocusId}" data-focus-id="show-${b.card.id}-${b.id}" aria-label="Show ${esc(b.name)} in Benefit Radar, ${esc(b.card.name)}">Show in Benefit Radar</button>`:''}</div>
             <div class="task-checks">
               ${meta.requiresEnrollment?`<label class="task-check"><input type="checkbox" data-benefit-enroll="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="enroll-${b.card.id}-${b.id}" aria-label="${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark} for ${esc(b.name)}, ${esc(b.card.name)}" ${enrolled?'checked':''}>${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark}</label>`:''}
               ${(!meta.requiresEnrollment||enrolled)?`<label class="task-check"><input type="checkbox" data-benefit-use="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="use-${b.card.id}-${b.id}" aria-label="${used?'Used '+displayDate(used.completedAt):'Mark used'} for ${esc(b.name)}, ${esc(b.card.name)}" ${used?'checked':''}>${used?'Used '+displayDate(used.completedAt):'Mark used'}</label>`:''}
@@ -1600,9 +1677,9 @@ function renderBenefits(){
   } else {
     html += `<p class="hint" style="margin:6px 4px">Tap a category to see which cards cover it and which perks need setup.</p>`;
   }
-  html += `<div class="section-note" style="margin-top:10px">Benefits data checked August 2026. You can track monthly, quarterly, and semiannual credits in My Radar.</div>`;
+  html += `<div class="section-note" style="margin-top:10px">Benefits data checked August 2026. You can track monthly, quarterly, and semiannual credits in Benefit Radar.</div>`;
   mainEl.innerHTML = html;
-  mainEl.querySelectorAll('[data-bcat]').forEach(b=>b.onclick=()=>{ selectedBenefitCat = (selectedBenefitCat===b.dataset.bcat)?null:b.dataset.bcat; render(); });
+  mainEl.querySelectorAll('[data-bcat]').forEach(b=>b.onclick=()=>{ selectedBenefitCat = (selectedBenefitCat===b.dataset.bcat)?null:b.dataset.bcat; render(); restoreFocus(`benefit-category-${b.dataset.bcat}`); });
   mainEl.querySelectorAll('[data-benefit-enroll]').forEach(cb=>cb.onchange=()=>{
     const mutationNow=new Date(), [cardId,benefitId]=cb.dataset.benefitEnroll.split(':'); setBenefitEnrollment(cardId,benefitId,cb.checked,cb.dataset.focusId,cb.dataset.periodKey,mutationNow);
   });
@@ -1618,9 +1695,11 @@ function renderBenefits(){
 }
 
 function taskStatusLines(task){
-  if(task.done) return [];
+  const recurringTermsChanged=task.recurring?.status==='terms-changed';
+  if(task.done&&!recurringTermsChanged) return [];
   const lines=[];
-  if(task.recurring?.status==='terms-changed') lines.push({text:'Benefit terms changed. Confirm this payment setup again.',urgent:true});
+  if(recurringTermsChanged) lines.push({text:'Benefit terms changed. Review this recurring charge.',urgent:true});
+  if(task.done) return lines;
   if(task.nonRetroactive) lines.push({text:'Not retroactive',urgent:true});
   if(task.closed) lines.push({text:`Deadline passed: ${displayDate(periodLastDate(task.actionEnd))}`,urgent:true});
   else if(task.unavailable) lines.push({text:'Current categories unavailable. Check the issuer before activating.',urgent:true});
@@ -1633,27 +1712,38 @@ function taskStatusLines(task){
   }else if(task.actionType==='use') lines.push({text:task.daysLeft===0?'Expires today':`Expires in ${task.daysLeft} days`,urgent:task.daysLeft<=7});
   return lines;
 }
-function recurringDiscoveryParts(task){
-  if(task.actionType!=='use'||!task.meta?.recurringEligible||['active','review-due'].includes(task.recurring?.status)) return {button:'',panel:''};
-  const open=recurringDiscoveryOpenKey===task.key, panelId=`recurring-discovery-${task.card.id}-${task.benefitId}`;
-  const label=task.recurring?.status==='terms-changed'?'Review payment setup':task.recurring?.status==='none'?(task.meta.recurringActionLabel||'Payment repeats monthly'):'Confirm payment setup';
-  const question=task.recurring?.status==='terms-changed'?'Is an eligible monthly payment still set up on this card?':task.meta.recurringQuestion||'Is an eligible monthly payment already set up on this card?';
-  const confirmLabel=task.meta.recurringConfirmLabel||'Confirm recurring payment';
-  const button=`<button class="manage-action" data-recurring-disclosure="${task.key}" data-focus-id="recurring-disclosure-${task.card.id}-${task.benefitId}" aria-expanded="${open}" aria-controls="${panelId}" aria-label="${esc(`${label} for ${task.title}, ${task.card.name}`)}">${esc(label)}</button>`;
-  const panel=`<div class="recurring-discovery" id="${panelId}" ${open?'':'hidden'}><div class="recurring-discovery-title">${esc(question)}</div>
-      <p class="recurring-discovery-copy">${esc(task.meta.recurringQualifier)} We’ll hide monthly reminders and ask you to confirm again in six months. ChooseMyCard can’t verify the payment or statement credit.</p>
-      <div class="choice-row"><button class="pill primary" data-confirm-recurring="${task.card.id}:${task.benefitId}" aria-label="${esc(confirmLabel)} for ${esc(task.title)}, ${esc(task.card.name)}">${esc(confirmLabel)}</button><button class="pill" data-dismiss-recurring="${task.card.id}:${task.benefitId}" data-task-key="${task.key}" aria-label="Keep monthly reminders for ${esc(task.title)}, ${esc(task.card.name)}">Keep monthly reminders</button></div>
-    </div>`;
-  return {button,panel};
+function skipPeriodLabel(task){
+  const key=String(task.periodKey||'');
+  let match=key.match(/^\d{4}-(\d{2})$/); if(match) return `Skip ${new Date(2000,+match[1]-1,1).toLocaleDateString(undefined,{month:'long'})}`;
+  match=key.match(/^\d{4}-Q([1-4])$/); if(match) return `Skip Q${match[1]}`;
+  match=key.match(/^\d{4}-H([12])$/); if(match) return match[1]==='1'?'Skip Jan–Jun':'Skip Jul–Dec';
+  match=key.match(/^(\d{4})-Y$/); if(match) return `Skip ${match[1]}`;
+  return 'Skip this benefit period';
 }
-function renderTaskRow(task,{manage=false,allowRecurring=false}={}){
+function showPeriodLabel(task){ return skipPeriodLabel(task).replace(/^Skip /,'Show '); }
+function skippedPeriodLabel(task){ return skipPeriodLabel(task).replace(/^Skip /,'Skipped '); }
+function recurringReviewDateForNew(now=new Date()){ return addCalendarMonths(localDay(now),6); }
+function recurringDiscoveryParts(task){
+  if(task.actionType!=='use'||!task.meta?.recurringEligible||['active','review-due'].includes(task.recurring?.status)||(task.done&&task.recurring?.status!=='terms-changed')) return '';
+  const open=recurringDiscoveryOpenKey===task.key, panelId=`recurring-discovery-${task.card.id}-${task.benefitId}`;
+  const label=task.recurring?.status==='terms-changed'?'Review recurring charge':'Confirm recurring charge';
+  const noun=task.meta.recurringChargeNoun||'payment', reviewDate=displayCalendarDate(recurringReviewDateForNew(new Date()),new Date());
+  return `<div class="recurring-setup"><button class="recurring-setup-toggle" data-recurring-disclosure="${task.key}" data-focus-id="recurring-disclosure-${task.card.id}-${task.benefitId}" aria-expanded="${open}" aria-controls="${panelId}" aria-label="${esc(`${label} for ${task.title}, ${task.card.name}`)}"><span><strong>${esc(label)}</strong><span>Confirm that an eligible ${esc(noun)} is charged to this card every month.</span></span><span class="recurring-chevron" aria-hidden="true">⌄</span></button>
+    <div class="recurring-discovery" id="${panelId}" ${open?'':'hidden'}><div class="recurring-discovery-title">${esc(task.meta.recurringQualifier)}</div>
+      <p class="recurring-discovery-copy">Routine monthly reminders stay out of Benefit Radar. We’ll ask you to review this charge on ${esc(reviewDate)}.</p>
+      <p class="recurring-discovery-copy">ChooseMyCard can’t verify the payment or statement credit.</p>
+      <div class="choice-row"><button class="pill primary" data-confirm-recurring="${task.card.id}:${task.benefitId}" aria-label="Confirm recurring charge for ${esc(task.title)}, ${esc(task.card.name)}">Confirm recurring charge</button><button class="pill" data-dismiss-recurring="${task.card.id}:${task.benefitId}" data-task-key="${task.key}" aria-label="Close recurring charge details for ${esc(task.title)}, ${esc(task.card.name)}">Cancel</button></div>
+    </div></div>`;
+}
+function renderTaskRow(task,{manage=false,allowRecurring=false,quarterlyInventory=false}={}){
   const statuses=taskStatusLines(task), disabled=task.unavailable;
-  const recurringDiscovery=allowRecurring?recurringDiscoveryParts(task):{button:'',panel:''};
+  const recurringDiscovery=allowRecurring?recurringDiscoveryParts(task):'';
   const closedDate=task.actionEnd&&displayDate(periodLastDate(task.actionEnd));
   const closedMark=task.actionType==='select'?`I selected by ${closedDate}`:`I activated by ${closedDate}`;
   const checkboxText=task.done?completedLabel(task):task.unavailable?'Unavailable':task.closed?closedMark:task.markLabel;
   const checkboxAria=checkboxText;
   const setupDone=task.meta&&task.meta.prerequisiteDoneLabel||'Enrolled';
+  const moreId=`more-options-${task.key.replace(/[^A-Za-z0-9_-]/g,'-')}`, moreOpen=moreOptionsOpenKey===task.key;
   return `<div class="action-row ${task.done?'completed':''}">
     <div class="action-topline"><div class="action-title">${esc(task.title)}</div>
       <a class="issuer-action" href="${task.link}" target="_blank" rel="noopener noreferrer" aria-label="${esc(task.externalLabel)} for ${esc(task.title)}, ${esc(task.card.name)}, on issuer or partner site, opens in a new tab">${esc(task.externalLabel)} <span aria-hidden="true">↗</span></a></div>
@@ -1661,42 +1751,67 @@ function renderTaskRow(task,{manage=false,allowRecurring=false}={}){
     ${task.enrolled&&task.actionType==='use'?`<div class="action-meta">${esc(setupDone)} ${displayDate(task.enrolled.enrolledAt)}</div>`:''}
     ${statuses.map(status=>`<div class="action-meta ${status.urgent?'urgent':''}">${esc(status.text)}</div>`).join('')}
     <div class="action-footer"><div class="action-links">
-      ${manage&&!task.done&&!task.closed&&!disabled?`<button class="manage-action" data-skip-task="${task.key}" aria-label="Skip ${esc(task.title)} for this period, ${esc(task.card.name)}">Skip this period</button>`:''}
-      ${manage&&task.benefitId?`<button class="manage-action" data-hide-task="${task.key}" aria-label="Hide ${esc(task.title)} from My Radar, ${esc(task.card.name)}">Hide this benefit</button>`:''}
-      ${recurringDiscovery.button}
-    </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-task-state="${task.closed?'closed':task.unavailable?'unavailable':'open'}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div>${recurringDiscovery.panel}</div>`;
+      ${manage&&!task.done&&!task.closed&&!disabled?(task.skipped&&quarterlyInventory?`<button class="manage-action" data-unskip-task="${task.key}" aria-label="${esc(showPeriodLabel(task))}: ${esc(task.title)}, ${esc(task.card.name)}">${esc(showPeriodLabel(task))}</button>`:`<button class="manage-action" data-skip-task="${task.key}" aria-label="${esc(skipPeriodLabel(task))}: ${esc(task.title)}, ${esc(task.card.name)}">${esc(skipPeriodLabel(task))}</button>`):''}
+    </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-task-state="${task.closed?'closed':task.unavailable?'unavailable':'open'}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div>
+    ${manage&&task.benefitId?`<div class="more-options"><button data-more-options="${task.key}" data-focus-id="more-options-${task.key}" aria-expanded="${moreOpen}" aria-controls="${moreId}" aria-label="More options for ${esc(task.title)}, ${esc(task.card.name)}">More options <span aria-hidden="true">${moreOpen?'⌃':'⌄'}</span></button><div class="more-options-panel" id="${moreId}" ${moreOpen?'':'hidden'}><p>Stops all reminders for this benefit until you restore it from Hidden.</p><button class="manage-action" data-hide-task="${task.key}" aria-label="Hide ${esc(task.title)} from Benefit Radar, ${esc(task.card.name)}">Hide from Benefit Radar</button></div></div>`:''}
+    ${recurringDiscovery}</div>`;
 }
 function radarOverviewState(radar,now=new Date()){
   const reviewCount=recurringSetupsForState(S,now).filter(item=>item.status==='review-due').length;
-  if(!S.myCards.length) return {copy:'Add cards to start My Radar',action:'cards'};
-  if(!radar.all.length) return {copy:'My Radar does not currently track actions for your cards.'};
-  if(!radar.unresolved.length&&reviewCount) return {copy:`${reviewCount} benefit setup${reviewCount===1?'':'s'} need${reviewCount===1?'s':''} confirmation.`};
+  if(!S.myCards.length) return {copy:'Add cards to start Benefit Radar',action:'cards'};
+  if(!radar.all.length) return {copy:'Benefit Radar does not currently track actions for your cards.'};
+  if(!radar.unresolved.length&&reviewCount) return {copy:`${reviewCount} recurring charge${reviewCount===1?'':'s'} need${reviewCount===1?'s':''} review.`};
   if(!radar.unresolved.length&&radar.suppressed.some(t=>!t.done)) return {copy:'All unfinished items are hidden or skipped.'};
   if(!radar.unresolved.length) return {copy:'Nothing needs your attention'};
   return {copy:taskSummary(radar.unresolved[0])};
 }
+function pruneConfirmedThisVisit(now=new Date()){
+  for(const [key,entry] of confirmedThisVisit) if(!taskPeriodIsCurrent(entry.task,now)||!S.recurringSetups[key]) confirmedThisVisit.delete(key);
+}
+function overviewItems(radar,now=new Date()){
+  pruneConfirmedThisVisit(now);
+  const setupMap=new Map(recurringSetupsForState(S,now).map(item=>[item.key,item]));
+  const reviewKeys=recurringReviewSession?.keys||[...setupMap.values()].filter(item=>item.status==='review-due').map(item=>item.key);
+  const reviewItems=reviewKeys.map(key=>{
+    const setup=setupMap.get(key), confirmed=!!recurringReviewSession?.confirmed.has(key);
+    if(!setup||(!confirmed&&setup.status!=='review-due')) return null;
+    return {type:confirmed?'review-confirmed':'review',setup};
+  }).filter(Boolean);
+  const items=[...radar.unresolved.map(task=>({type:'task',task})),
+    ...[...confirmedThisVisit.values()].filter(entry=>entry.overviewSlot!=null).map(entry=>({type:'confirmed',entry,task:entry.task})),...reviewItems];
+  const groupRank=item=>item.type.startsWith('review')?2:({act:0,soon:1,later:3}[item.task?.group]??3);
+  return items.sort((a,b)=>groupRank(a)-groupRank(b)||
+    (a.task&&b.task?compareRadarTasks(a.task,b.task):a.setup&&b.setup?a.setup.reviewDue-b.setup.reviewDue:0)||
+    ((a.entry?.overviewSlot??Number.MAX_SAFE_INTEGER)-(b.entry?.overviewSlot??Number.MAX_SAFE_INTEGER)));
+}
+function renderConfirmedVisitRow(entry,now=new Date()){
+  const record=S.recurringSetups[entry.recurringKey], status=record&&recurringSetupStatus(record.cardId,record.benefitId,S,now);
+  if(!record||!status.meta) return '';
+  return `<article class="action-row confirmed-visit"><div class="action-title">${esc(entry.task.title)}</div><div class="action-meta">${esc(entry.task.card.name)}${entry.task.detail?' · '+esc(entry.task.detail):''}</div><div class="confirmed-details"><div><div class="confirmed-status" tabindex="-1" data-focus-id="recurring-confirmed-visit-${entry.recurringKey}">Recurring charge confirmed</div><div class="action-meta">Review ${displayCalendarDate(status.reviewDue,now)}</div></div><div><button class="manage-action" data-remove-recurring="${entry.recurringKey}" data-remove-context="visit" data-focus-id="recurring-remove-visit-${entry.recurringKey}" aria-label="Remove recurring charge confirmation for ${esc(entry.task.title)}, ${esc(entry.task.card.name)}">Remove confirmation</button><div class="action-meta">Routine monthly reminders will resume.</div></div></div></article>`;
+}
+function renderRecurringOverviewRow(setup,confirmed=false,now=new Date()){
+  const key=setup.key;
+  if(confirmed) return `<article class="action-row completed"><div class="action-title">${esc(setup.benefit.name)}</div><div class="action-meta">${esc(setup.card.name)} · ${esc(recurringItemValue(setup,now))}</div><div class="confirmed-status" tabindex="-1" data-focus-id="recurring-confirmed-${key}">Recurring charge confirmed today · Next review ${displayCalendarDate(setup.reviewDue,now)}</div></article>`;
+  return `<article class="action-row"><div class="action-topline"><div class="action-title">${esc(setup.benefit.name)}</div><a class="issuer-action" href="${setup.meta.link}" target="_blank" rel="noopener noreferrer" aria-label="Check terms for ${esc(setup.benefit.name)}, ${esc(setup.card.name)}, opens in a new tab">Check terms <span aria-hidden="true">↗</span></a></div><div class="action-meta">${esc(setup.card.name)} · ${esc(recurringItemValue(setup,now))}</div><div class="action-meta urgent">Review recurring charge</div><div class="recurring-discovery-title">Is this still charged to ${esc(setup.card.name)} every month?</div><div class="review-fallback">Monthly reminders return ${displayCalendarDate(setup.graceEnd,now)} if you don’t confirm.</div><div class="action-footer"><button class="manage-action" data-remove-recurring="${key}" data-remove-context="review" data-focus-id="recurring-remove-review-${key}" aria-label="Remove recurring charge confirmation for ${esc(setup.benefit.name)}, ${esc(setup.card.name)}">Remove confirmation</button><button class="pill primary review-confirm" data-review-confirm="${key}" data-focus-id="recurring-review-confirm-${key}" aria-label="Confirm ${esc(setup.benefit.name)} is still charged to ${esc(setup.card.name)} every month">Yes, still recurring</button></div></article>`;
+}
 function renderPromosOverview(){
-  const now=new Date(), q=currentQuarter(now), days=quarterEndsInDays(now), radar=buildRadarTasks(now), preview=radar.unresolved.slice(0,2);
+  const now=new Date(), q=currentQuarter(now), days=quarterEndsInDays(now), radar=buildRadarTasks(now), allOverviewItems=overviewItems(radar,now), preview=allOverviewItems.slice(0,2);
   const state=radarOverviewState(radar,now), qTasks=buildQuarterlyTasks(now), qDone=qTasks.filter(t=>t.done).length;
-  const reviewCount=recurringSetupsForState(S,now).filter(item=>item.status==='review-due').length;
-  const qRows=qTasks.filter(t=>!preview.some(p=>p.key===t.key)).slice(0,2);
-  const qSubtitle=`${q.replace('-',' ')} category checklist`;
+  if(preview[0]?.type==='review') state.copy=`${preview[0].setup.benefit.name} recurring charge needs review.`;
+  else if(preview[0]?.type==='review-confirmed') state.copy='Recurring charge confirmed.';
   let html=`<div class="quarter-banner">${q.replace('-',' ')} · ${days} days left in the quarter</div>
-    <div class="section-head"><h2 id="radar-heading" tabindex="-1" data-focus-id="radar-heading"><span class="title-icon" aria-hidden="true">📡</span>My Radar</h2><button class="section-link" id="radar-view-all" aria-label="View all My Radar items">View all <span aria-hidden="true">›</span></button></div>
+    <div class="section-head"><h2 id="radar-heading" tabindex="-1" data-focus-id="radar-heading"><span class="title-icon" aria-hidden="true">📡</span>Benefit Radar</h2><button class="section-link" id="radar-view-all" aria-label="View all Benefit Radar items">View all <span aria-hidden="true">›</span></button></div>
     <p class="section-note">Benefits and quarterly categories that need attention</p>
     <p class="radar-summary"><strong>${esc(state.copy)}</strong></p>`;
   if(state.action==='cards') html+=`<div class="action-list"><div class="quiet-state"><button class="pill" data-go-cards>Add cards</button></div></div>`;
-  else if(preview.length) html+=`<div class="action-list">${preview.map(t=>renderTaskRow(t,{allowRecurring:true})).join('')}</div>`;
-  const more=Math.max(0,radar.unresolved.length-preview.length); if(more) html+=`<div class="section-note" style="text-align:right">${more} more item${more===1?'':'s'}</div>`;
-  if(reviewCount&&radar.unresolved.length) html+=`<div class="section-note" style="text-align:right">${reviewCount} benefit setup${reviewCount===1?'':'s'} also need${reviewCount===1?'s':''} confirmation</div>`;
-  html+=`<div class="section-head"><h2><span class="title-icon" aria-hidden="true">📅</span>Quarterly actions</h2><button class="section-link" id="quarterly-view-all" aria-label="Open quarterly actions checklist">Open checklist <span aria-hidden="true">›</span></button></div>
-    <p class="section-note">Your complete category checklist. These items also appear in My Radar when they need attention.</p>
-    <div class="progress-line"><span>${esc(qSubtitle)}</span>${qTasks.length?`<strong>${qDone} of ${qTasks.length} complete</strong>`:''}</div>`;
-  if(qRows.length) html+=`<div class="action-list">${qRows.map(t=>renderTaskRow(t)).join('')}</div>`;
-  else if(!qTasks.length) html+=`<div class="action-list"><div class="quiet-state">No quarterly actions for your cards.</div></div>`;
+  else if(preview.length) html+=`<div class="action-list">${preview.map(item=>item.type==='confirmed'?renderConfirmedVisitRow(item.entry,now):item.type==='review'||item.type==='review-confirmed'?renderRecurringOverviewRow(item.setup,item.type==='review-confirmed',now):renderTaskRow(item.task,{allowRecurring:true})).join('')}</div>`;
+  const more=Math.max(0,allOverviewItems.length-preview.length); if(more) html+=`<div class="section-note" style="text-align:right">${more} more item${more===1?'':'s'}</div>`;
+  const hiddenReviewCount=allOverviewItems.slice(preview.length).filter(item=>item.type==='review').length;
+  if(hiddenReviewCount) html+=`<div class="section-note" style="text-align:right">${hiddenReviewCount} recurring charge${hiddenReviewCount===1?'':'s'} also need${hiddenReviewCount===1?'s':''} review</div>`;
+  if(qTasks.length) html+=`<button class="quarterly-nav" id="quarterly-view-all" aria-label="View quarterly categories in Benefit Radar, ${qDone} of ${qTasks.length} complete"><span class="quarterly-nav-copy"><span class="title-icon" aria-hidden="true">📅</span><span><strong>Quarterly categories</strong><span>${qDone} of ${qTasks.length} complete</span></span></span><span class="quarterly-nav-action">View in Benefit Radar <span aria-hidden="true">›</span></span></button>`;
   html+=`<p class="section-note" style="margin-top:12px">Check items off after you complete them on the issuer or partner site. Status is stored only on this device.</p>
     <div class="panel"><div class="reminder-row"><p class="hint">Add reminders for the first day of each quarter.</p>
-    <button class="pill" id="ics">📅 Download calendar reminders</button></div></div>`;
+    <button class="pill" id="ics">📅 Download quarterly reminders</button></div></div>`;
   mainEl.innerHTML=html;
 }
 function renderNotShown(tasks){
@@ -1704,9 +1819,9 @@ function renderNotShown(tasks){
   let html=`<div class="disclosure"><button id="not-shown-toggle" data-focus-id="not-shown-toggle" aria-expanded="${notShownOpen}" aria-controls="not-shown-content">
     <span>Hidden (${tasks.length})</span><span aria-hidden="true">${notShownOpen?'⌃':'⌄'}</span></button>`;
   if(notShownOpen) html+=`<div id="not-shown-content" class="not-shown-list">${tasks.map(t=>`<div class="history-row"><div><strong>${esc(t.title)}</strong>
-    <div class="action-meta">${esc(t.card.name)}${t.skipped?' · Skipped this period':''}</div></div>
-    <div class="action-links">${t.skipped&&t.hidden?`<button class="manage-action" data-show-task="${t.key}" aria-label="Show ${esc(t.title)} in My Radar, ${esc(t.card.name)}">Show in My Radar</button>`:
-      `${t.skipped?`<button class="manage-action" data-unskip-task="${t.key}" aria-label="Show ${esc(t.title)} this period, ${esc(t.card.name)}">Show this period</button>`:''}${t.hidden?`<button class="manage-action" data-restore-task="${t.key}" aria-label="Show ${esc(t.title)} in My Radar, ${esc(t.card.name)}">Show in My Radar</button>`:''}`}</div></div>`).join('')}</div>`;
+    <div class="action-meta">${esc(t.card.name)}${t.skipped?' · '+esc(skippedPeriodLabel(t)):''}</div></div>
+    <div class="action-links">${t.skipped&&t.hidden?`<button class="manage-action" data-show-task="${t.key}" aria-label="Show ${esc(t.title)} in Benefit Radar, ${esc(t.card.name)}">Show in Benefit Radar</button>`:
+      `${t.skipped?`<button class="manage-action" data-unskip-task="${t.key}" aria-label="${esc(showPeriodLabel(t))}: ${esc(t.title)}, ${esc(t.card.name)}">${esc(showPeriodLabel(t))}</button>`:''}${t.hidden?`<button class="manage-action" data-restore-task="${t.key}" aria-label="Show ${esc(t.title)} in Benefit Radar, ${esc(t.card.name)}">Show in Benefit Radar</button>`:''}`}</div></div>`).join('')}</div>`;
   return html+'</div>';
 }
 function renderHistory(){
@@ -1726,40 +1841,26 @@ function renderHistory(){
   }
   return html+'</div>';
 }
+function newPromosVisitToken(){ return globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`; }
 function beginRadarVisit(now=new Date()){
-  recurringManageOpen=false; recurringDiscoveryOpenKey='';
-  const due=recurringSetupsForState(S,now).filter(item=>item.status==='review-due'&&!S.radarHidden[canonicalHiddenKey(item.record.cardId,item.record.benefitId)]);
-  recurringReviewSession={keys:due.map(item=>item.key),confirmed:new Set()};
-  const candidate=buildRadarTasks(now).unresolved.find(task=>task.actionType==='use'&&task.meta?.recurringEligible&&['none','terms-changed'].includes(task.recurring?.status)&&!S.recurringPromptPrefs[canonicalRecurringKey(task.card.id,task.benefitId)]);
-  if(candidate){
-    setRecurringPromptPreference(candidate.card.id,candidate.benefitId,{},now); saveState(S,now); recurringDiscoveryOpenKey=candidate.key;
-  }
+  if(!promosVisitToken) promosVisitToken=newPromosVisitToken();
+  const due=recurringSetupsForState(S,now).filter(item=>item.status==='review-due'&&!S.radarHidden[canonicalHiddenKey(item.record.cardId,item.record.benefitId)]), dueKeys=due.map(item=>item.key);
+  if(!recurringReviewSession) recurringReviewSession={keys:dueKeys,confirmed:new Set()};
+  else recurringReviewSession.keys=[...new Set([...recurringReviewSession.keys.filter(key=>recurringReviewSession.confirmed.has(key)||dueKeys.includes(key)),...dueKeys])];
+}
+function endPromosVisit(){
+  promosVisitToken=''; confirmedThisVisit.clear(); recurringReviewSession=null; recurringDiscoveryOpenKey=''; moreOptionsOpenKey=''; clearToast();
 }
 function recurringItemValue(item,now=new Date()){ return `Up to ${benefitAmount(item.meta,now)}/mo`; }
-function inactiveRecurringLabel(item){
-  if(item.status==='terms-changed') return 'Terms changed · Monthly reminders resumed';
-  if(item.status==='expired') return 'Review missed · Monthly reminders resumed';
-  if(item.record.suspensionReason==='imported') return 'Imported setup · Confirm again in My Radar';
-  if(item.record.suspensionReason==='card-removed') return 'Card was removed · Confirm again';
-  if(item.record.suspensionReason==='enrollment-removed') return 'Enrollment was removed · Confirm again';
-  if(item.record.suspensionReason==='hidden') return 'Hidden from My Radar · Confirm after restoring';
-  return 'Needs confirmation';
-}
 function renderRecurringQuiet(now=new Date()){
   const all=recurringSetupsForState(S,now).filter(item=>S.myCards.includes(item.record.cardId));
   const sessionKeys=new Set(recurringReviewSession?.keys||[]);
-  const active=all.filter(item=>item.status==='active'&&!sessionKeys.has(item.key));
-  const inactive=all.filter(item=>['expired','suspended','terms-changed'].includes(item.status));
-  if(!active.length&&!inactive.length) return '';
+  const active=all.filter(item=>item.status==='active'&&!sessionKeys.has(item.key)&&!confirmedThisVisit.has(item.key));
+  if(!active.length) return '';
   const nextReview=active.map(item=>item.reviewDue).sort((a,b)=>a-b)[0];
-  const summary=active.length?`${active.length} benefit${active.length===1?'':'s'} · Hidden from monthly reminders · Next review ${displayCalendarDate(nextReview,now)}`:'No saved setup is currently hiding monthly reminders.';
-  const defaultRows=active.map(item=>`<article class="recurring-row" data-recurring-row="${item.key}"><h3>${esc(item.benefit.name)}</h3><div class="action-meta">${esc(item.card.name)} · ${esc(recurringItemValue(item,now))}</div><div class="recurring-status" tabindex="-1" data-focus-id="recurring-status-${item.key}">Monthly payment set up · You confirmed ${displayCalendarDate(item.record.confirmedOn,now)}</div></article>`).join('');
-  const manageRows=recurringManageOpen?[...active,...inactive].map(item=>{
-    const isActive=item.status==='active', status=isActive?`Monthly payment set up · Next review ${displayCalendarDate(item.reviewDue,now)}`:inactiveRecurringLabel(item);
-    const showHidden=!!S.radarHidden[canonicalHiddenKey(item.record.cardId,item.record.benefitId)], actionLabel=showHidden?'Show in My Radar and resume':'Resume monthly reminders';
-    return `<article class="recurring-row" data-recurring-row="${item.key}"><div class="action-topline"><h3 class="action-title">${esc(item.benefit.name)}</h3><a class="issuer-action" href="${item.meta.link}" target="_blank" rel="noopener noreferrer" aria-label="Check terms for ${esc(item.benefit.name)}, ${esc(item.card.name)}, opens in a new tab">Check terms <span aria-hidden="true">↗</span></a></div><div class="action-meta">${esc(item.card.name)} · ${esc(recurringItemValue(item,now))}</div><div class="recurring-status ${isActive?'':'needs-review'}">${esc(status)}</div><div class="recurring-manage"><span class="action-meta">Confirmed ${displayCalendarDate(item.record.confirmedOn,now)}</span><button class="manage-action" data-resume-recurring="${item.key}" data-show-hidden-recurring="${showHidden}" data-focus-id="recurring-resume-${item.key}" aria-label="${actionLabel} for ${esc(item.benefit.name)}, ${esc(item.card.name)}">${actionLabel}</button></div></article>`;
-  }).join(''):defaultRows;
-  return `<section class="recurring-section" aria-labelledby="recurring-heading"><div class="recurring-head"><h2 id="recurring-heading" tabindex="-1" data-focus-id="recurring-heading">Benefits with recurring payments</h2><button class="section-action" id="recurring-manage-toggle" data-focus-id="recurring-manage-toggle" aria-expanded="${recurringManageOpen}" aria-controls="recurring-setup-list">${recurringManageOpen?'Done':'Manage benefit setups'}</button></div><p class="section-note">${esc(summary)}</p><div class="recurring-list" id="recurring-setup-list">${manageRows}</div></section>`;
+  const summary=`${active.length} confirmed charge${active.length===1?'':'s'} · Routine monthly reminders paused · Next review ${displayCalendarDate(nextReview,now)}`;
+  const rows=active.map(item=>`<article class="recurring-row" data-recurring-row="${item.key}"><div class="action-topline"><h3 class="action-title">${esc(item.benefit.name)}</h3><a class="issuer-action" href="${item.meta.link}" target="_blank" rel="noopener noreferrer" aria-label="Check terms for ${esc(item.benefit.name)}, ${esc(item.card.name)}, opens in a new tab">Check terms <span aria-hidden="true">↗</span></a></div><div class="action-meta">${esc(item.card.name)} · ${esc(recurringItemValue(item,now))}</div><div class="recurring-status" tabindex="-1" data-focus-id="recurring-status-${item.key}">Confirmed ${displayCalendarDate(item.record.confirmedOn,now)} · Review ${displayCalendarDate(item.reviewDue,now)}</div><div class="recurring-manage"><div class="action-meta">Routine monthly reminders stay out of Benefit Radar.</div><div><button class="manage-action" data-remove-recurring="${item.key}" data-remove-context="quiet" data-focus-id="recurring-remove-${item.key}" aria-label="Remove recurring charge confirmation for ${esc(item.benefit.name)}, ${esc(item.card.name)}">Remove confirmation</button><div class="action-meta">Routine monthly reminders will resume.</div></div></div></article>`).join('');
+  return `<section class="recurring-section" aria-labelledby="recurring-heading"><div class="recurring-head"><h2 id="recurring-heading" tabindex="-1" data-focus-id="recurring-heading">Confirmed recurring charges</h2></div><p class="section-note">${esc(summary)}</p><div class="recurring-list" id="recurring-setup-list">${rows}</div></section>`;
 }
 function renderRecurringReview(now=new Date()){
   if(!recurringReviewSession) recurringReviewSession={keys:recurringSetupsForState(S,now).filter(item=>item.status==='review-due').map(item=>item.key),confirmed:new Set()};
@@ -1770,42 +1871,44 @@ function renderRecurringReview(now=new Date()){
   const rows=keys.map(key=>{
     const item=itemMap.get(key); if(!item) return '';
     const confirmed=recurringReviewSession.confirmed.has(key);
-    if(confirmed) return `<article class="action-row completed"><div class="action-topline"><h3 class="action-title">${esc(item.benefit.name)}</h3></div><div class="action-meta">${esc(item.card.name)} · ${esc(recurringItemValue(item,now))}</div><div class="confirmed-status" tabindex="-1" data-focus-id="recurring-confirmed-${key}">Confirmed today</div></article>`;
-    return `<article class="action-row"><div class="action-topline"><h3 class="action-title">${esc(item.benefit.name)}</h3><a class="issuer-action" href="${item.meta.link}" target="_blank" rel="noopener noreferrer" aria-label="Check terms for ${esc(item.benefit.name)}, ${esc(item.card.name)}, opens in a new tab">Check terms <span aria-hidden="true">↗</span></a></div><div class="action-meta">${esc(item.card.name)} · ${esc(recurringItemValue(item,now))}</div><div class="action-meta">Setup last confirmed by you ${displayCalendarDate(item.record.confirmedOn,now)}</div><div class="review-fallback">Monthly reminders resume ${displayCalendarDate(item.graceEnd,now)} if not confirmed.</div><div class="action-footer"><button class="manage-action" data-resume-recurring="${key}" data-focus-id="recurring-resume-${key}" aria-label="Resume monthly reminders for ${esc(item.benefit.name)}, ${esc(item.card.name)}">Resume monthly reminders</button><button class="pill review-confirm" data-review-confirm="${key}" data-focus-id="recurring-review-confirm-${key}" aria-label="Confirm ${esc(item.benefit.name)} is still billed to ${esc(item.card.name)}">Still billed to this card</button></div></article>`;
+    if(confirmed) return `<article class="action-row completed"><div class="action-topline"><h3 class="action-title">${esc(item.benefit.name)}</h3></div><div class="action-meta">${esc(item.card.name)} · ${esc(recurringItemValue(item,now))}</div><div class="confirmed-status" tabindex="-1" data-focus-id="recurring-confirmed-${key}">Recurring charge confirmed today · Next review ${displayCalendarDate(item.reviewDue,now)}</div></article>`;
+    return `<article class="action-row"><div class="action-topline"><h3 class="action-title">${esc(item.benefit.name)}</h3><a class="issuer-action" href="${item.meta.link}" target="_blank" rel="noopener noreferrer" aria-label="Check terms for ${esc(item.benefit.name)}, ${esc(item.card.name)}, opens in a new tab">Check terms <span aria-hidden="true">↗</span></a></div><div class="action-meta">${esc(item.card.name)} · ${esc(recurringItemValue(item,now))}</div><div class="recurring-discovery-title">Is this still charged to ${esc(item.card.name)} every month?</div><div class="review-fallback">Monthly reminders return ${displayCalendarDate(item.graceEnd,now)} if you don’t confirm.</div><div class="action-footer"><button class="manage-action" data-remove-recurring="${key}" data-remove-context="review" data-focus-id="recurring-remove-review-${key}" aria-label="Remove recurring charge confirmation for ${esc(item.benefit.name)}, ${esc(item.card.name)}">Remove confirmation</button><button class="pill primary review-confirm" data-review-confirm="${key}" data-focus-id="recurring-review-confirm-${key}" aria-label="Confirm ${esc(item.benefit.name)} is still charged to ${esc(item.card.name)} every month">Yes, still recurring</button></div><div class="action-meta">Removing the confirmation resumes routine monthly reminders.</div></article>`;
   }).join('');
-  return `<section class="recurring-section" aria-labelledby="recurring-review-heading"><div class="recurring-head"><h2 id="recurring-review-heading" tabindex="-1" data-focus-id="recurring-review-heading">Confirm recurring benefit setups</h2><span class="recurring-count">Review due</span></div><p class="review-note">Check that each eligible payment is still billed to this card. ChooseMyCard can’t verify payments or statement credits.</p><div class="progress-line"><span>Review every 6 months</span><strong>${confirmedCount} of ${keys.length} reviewed</strong></div><div class="action-list">${rows}</div></section>`;
+  return `<section class="recurring-section" aria-labelledby="recurring-review-heading"><div class="recurring-head"><h2 id="recurring-review-heading" tabindex="-1" data-focus-id="recurring-review-heading">Review recurring charges</h2><span class="recurring-count">Review due</span></div><p class="review-note">Check that each eligible charge still goes to the card shown. ChooseMyCard can’t verify payments or statement credits.</p><div class="progress-line" role="status" aria-live="polite" aria-atomic="true"><span>Review every 6 months</span><strong>${confirmedCount} of ${keys.length} reviewed</strong></div><div class="action-list">${rows}</div></section>`;
 }
 function renderFullRadar(){
-  const now=new Date(), radar=buildRadarTasks(now), state=radarOverviewState(radar,now), groups=[['act','Priority actions'],['soon','Due soon']];
+  const now=new Date(), radar=buildRadarTasks(now), state=radarOverviewState(radar,now), qTasks=buildQuarterlyTasks(now).sort((a,b)=>compareRadarTasks(a,b)), qDone=qTasks.filter(t=>t.done).length;
+  pruneConfirmedThisVisit(now);
   let html=`<button class="back-btn" id="promos-back"><span aria-hidden="true">‹</span> Promos</button>
-    <p class="section-note">Check items off after you complete them on the issuer or partner site. Status is stored only on this device.</p>`;
-  const reviewDue=recurringSetupsForState(S,now).some(item=>item.status==='review-due');
-  if(!radar.active.length&&!reviewDue) html+=`<div class="action-list"><div class="quiet-state"><strong>${esc(state.copy)}</strong>${state.action==='cards'?'<div style="margin-top:10px"><button class="pill" data-go-cards>Add cards</button></div>':''}</div></div>`;
-  else if(!radar.unresolved.length&&!reviewDue) html+=`<div class="action-list"><div class="quiet-state"><strong>Nothing needs your attention</strong></div></div>`;
-  for(const [id,label] of groups){
-    const tasks=radar.active.filter(t=>!t.done&&t.group===id); if(!tasks.length) continue;
-    html+=`<h2>${label}</h2><div class="action-list">${tasks.map(t=>renderTaskRow(t,{manage:true,allowRecurring:true})).join('')}</div>`;
+    <div class="radar-toolbar"><p class="section-note">Check items off after you complete them on the issuer or partner site. Status is stored only on this device.</p><button class="quarterly-filter" id="quarterly-filter" data-focus-id="quarterly-filter" aria-pressed="${RADAR_FILTER==='quarterly'}">${RADAR_FILTER==='quarterly'?'Show all':'Quarterly only'}</button></div><div id="radar-filter-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>`;
+  if(RADAR_FILTER==='quarterly'){
+    html+=`<div class="progress-line"><span>${currentQuarter(now).replace('-',' ')} quarterly categories</span>${qTasks.length?`<strong>${qDone} of ${qTasks.length} complete</strong>`:''}</div>`;
+    html+=qTasks.length?`<div class="action-list">${qTasks.map(t=>renderTaskRow(t,{manage:true,quarterlyInventory:true})).join('')}</div>`:'<div class="action-list"><div class="quiet-state">No quarterly categories apply to your cards.</div></div>';
+    html+=`<div class="panel"><div class="reminder-row"><p class="hint">Add reminders for the first day of each quarter.</p><button class="pill" id="ics">📅 Download quarterly reminders</button></div></div>`;
+    mainEl.innerHTML=html; return;
   }
+  const retained=[...confirmedThisVisit.values()];
+  const renderGroup=(id,label)=>{
+    const items=[...radar.unresolved.filter(t=>t.group===id).map(task=>({type:'task',task})),...retained.filter(entry=>entry.group===id).map(entry=>({type:'confirmed',entry,task:entry.task}))]
+      .sort((a,b)=>compareRadarTasks(a.task,b.task));
+    return items.length?`<h2>${label}</h2><div class="action-list">${items.map(item=>item.type==='confirmed'?renderConfirmedVisitRow(item.entry,now):renderTaskRow(item.task,{manage:true,allowRecurring:true})).join('')}</div>`:'';
+  };
+  const reviewDue=recurringSetupsForState(S,now).some(item=>item.status==='review-due');
+  if(!radar.active.length&&!reviewDue&&!retained.length) html+=`<div class="action-list"><div class="quiet-state"><strong>${esc(state.copy)}</strong>${state.action==='cards'?'<div style="margin-top:10px"><button class="pill" data-go-cards>Add cards</button></div>':''}</div></div>`;
+  else if(!radar.unresolved.length&&!reviewDue&&!retained.length) html+=`<div class="action-list"><div class="quiet-state"><strong>Nothing needs your attention</strong></div></div>`;
+  html+=renderGroup('act','Priority');
+  html+=renderGroup('soon','Due soon');
   html+=renderRecurringReview(now);
-  const later=radar.active.filter(t=>!t.done&&t.group==='later'); if(later.length) html+=`<h2>Later</h2><div class="action-list">${later.map(t=>renderTaskRow(t,{manage:true,allowRecurring:true})).join('')}</div>`;
-  html+=renderRecurringQuiet(now);
-  const completed=radar.active.filter(t=>t.done);
+  html+=renderGroup('later','Later');
+  const completed=radar.active.filter(t=>t.done&&t.recurring?.status!=='terms-changed');
   if(completed.length) html+=`<h2>Recently completed</h2><div class="action-list">${completed.map(t=>renderTaskRow(t,{manage:true,allowRecurring:true})).join('')}</div>`;
+  html+=renderRecurringQuiet(now);
   html+=renderNotShown(radar.suppressed)+renderHistory();
-  mainEl.innerHTML=html;
-}
-function renderFullQuarterly(){
-  const tasks=buildQuarterlyTasks(new Date()), done=tasks.filter(t=>t.done).length;
-  let html=`<button class="back-btn" id="promos-back"><span aria-hidden="true">‹</span> Promos</button>
-    <p class="section-note">Check items off after you complete them on the issuer site. Status is stored only on this device.</p>
-    <div class="progress-line"><span>${currentQuarter().replace('-',' ')} category checklist</span>${tasks.length?`<strong>${done} of ${tasks.length} complete</strong>`:''}</div>`;
-  html+=tasks.length?`<div class="action-list">${tasks.map(t=>renderTaskRow(t)).join('')}</div>`:
-    '<div class="action-list"><div class="quiet-state">No quarterly actions for your cards.</div></div>';
-  html+=`<div class="panel"><div class="reminder-row"><p class="hint">Add reminders for the first day of each quarter.</p>
-    <button class="pill" id="ics">📅 Download calendar reminders</button></div></div>`;
+  html+=`<div class="panel"><div class="reminder-row"><p class="hint">Add reminders for the first day of each quarter.</p><button class="pill" id="ics">📅 Download quarterly reminders</button></div></div>`;
   mainEl.innerHTML=html;
 }
 function findCurrentTask(key,now=new Date()){ return buildRadarTasks(now).all.find(t=>t.key===key); }
+function findCurrentTaskByBenefit(cardId,benefitId,now=new Date()){ return buildRadarTasks(now).all.find(t=>t.actionType==='use'&&t.card.id===cardId&&t.benefitId===benefitId); }
 function currentFocusForTaskKey(key,now=new Date()){
   const parts=String(key).split(':'); if(parts.length!==4) return '';
   const [kind,cardId,itemId]=parts, periodKey=currentPeriodForTask(kind,cardId,itemId,now);
@@ -1817,30 +1920,46 @@ function findCurrentTaskOrRefresh(key,now=new Date()){
 }
 function confirmRecurringSetup(cardId,benefitId,{review=false}={},mutationNow=new Date()){
   const key=canonicalRecurringKey(cardId,benefitId), meta=RADAR_BENEFIT_MAP[key]; if(!meta?.recurringEligible) return;
-  const focusId=review?`recurring-confirmed-${key}`:PROMOS_VIEW==='overview'?'radar-heading':`recurring-status-${key}`;
-  const total=recurringReviewSession?.keys.length||0, alreadyConfirmed=recurringReviewSession?.confirmed.has(key), reviewed=review?Math.min(total,(recurringReviewSession?.confirmed.size||0)+(alreadyConfirmed?0:1)):0;
-  const message=review&&total?`Benefit setup confirmed · ${reviewed} of ${total} reviewed`:'Benefit setup confirmed';
+  if(review&&recurringSetupStatus(cardId,benefitId,S,mutationNow).status!=='review-due'){
+    if(recurringReviewSession){ recurringReviewSession.keys=recurringReviewSession.keys.filter(item=>item!==key); recurringReviewSession.confirmed.delete(key); }
+    const resumedTask=findCurrentTaskByBenefit(cardId,benefitId,mutationNow); render(); restoreFocus(resumedTask?`recurring-disclosure-${cardId}-${benefitId}`:'radar-heading');
+    toast('The review window ended. Monthly reminders have resumed.',5000); return;
+  }
+  const task=findCurrentTaskByBenefit(cardId,benefitId,mutationNow), radar=buildRadarTasks(mutationNow);
+  const slot=task?overviewItems(radar,mutationNow).findIndex(item=>item.task?.key===task.key):-1, overviewSlot=slot>=0?slot:null;
+  const reviewDate=recurringReviewDateForNew(mutationNow), focusId=review?`recurring-confirmed-${key}`:`recurring-confirmed-visit-${key}`;
+  const reviewConfirmed=review&&recurringReviewSession?new Set([...recurringReviewSession.confirmed,key]):null;
+  const progress=reviewConfirmed?` ${reviewConfirmed.size} of ${recurringReviewSession.keys.length} reviewed.`:'';
+  const message=`Recurring charge confirmed. We’ll ask you to confirm again on ${displayCalendarDate(reviewDate,mutationNow)}.${progress}`;
   mutateWithUndo(message,()=>{
     S.recurringSetups[key]={cardId,benefitId,confirmedAt:mutationNow.toISOString(),confirmedOn:localIsoDate(localDay(mutationNow)),termsVersion:meta.recurringTermsVersion};
     delete S.recurringPromptPrefs[key];
     if(review&&recurringReviewSession?.keys.includes(key)) recurringReviewSession.confirmed.add(key);
+    else if(task) confirmedThisVisit.set(key,{recurringKey:key,task:structuredClone(task),taskKey:task.key,group:task.group,overviewSlot,periodKey:task.periodKey,visitToken:promosVisitToken});
     recurringDiscoveryOpenKey='';
   },focusId,review?`recurring-review-confirm-${key}`:`recurring-disclosure-${cardId}-${benefitId}`,mutationNow);
 }
-function resumeRecurringSetup(key,focusId,undoFocusId,mutationNow=new Date(),showHidden=false){
+function removeRecurringSetup(key,context='quiet',mutationNow=new Date()){
   const record=S.recurringSetups[key]; if(!record) return;
-  mutateWithUndo(showHidden?'Shown in My Radar · monthly reminders resumed':'Monthly reminders resumed',()=>{
-    delete S.recurringSetups[key]; setRecurringPromptPreference(record.cardId,record.benefitId,{dismissed:true},mutationNow);
-    if(showHidden) delete S.radarHidden[canonicalHiddenKey(record.cardId,record.benefitId)];
+  const task=findCurrentTaskByBenefit(record.cardId,record.benefitId,mutationNow), focusId=task?`recurring-disclosure-${record.cardId}-${record.benefitId}`:'radar-heading';
+  const undoFocusId=context==='visit'?`recurring-confirmed-visit-${key}`:context==='review'?`recurring-review-confirm-${key}`:`recurring-status-${key}`;
+  mutateWithUndo('Confirmation removed. Monthly reminders will resume.',()=>{
+    delete S.recurringSetups[key]; confirmedThisVisit.delete(key);
     if(recurringReviewSession){ recurringReviewSession.keys=recurringReviewSession.keys.filter(item=>item!==key); recurringReviewSession.confirmed.delete(key); }
   },focusId,undoFocusId,mutationNow);
 }
 function bindPromoActions(){
-  document.getElementById('radar-view-all')?.addEventListener('click',()=>openPromosSubview('radar'));
+  document.getElementById('radar-view-all')?.addEventListener('click',()=>openPromosSubview('all'));
   document.getElementById('quarterly-view-all')?.addEventListener('click',()=>openPromosSubview('quarterly'));
   document.getElementById('promos-back')?.addEventListener('click',backFromPromos);
   document.getElementById('ics')?.addEventListener('click',downloadICS);
-  mainEl.querySelectorAll('[data-go-cards]').forEach(b=>b.onclick=()=>{TAB='cards';PROMOS_VIEW='overview';render();});
+  document.getElementById('quarterly-filter')?.addEventListener('click',button=>{
+    RADAR_FILTER=RADAR_FILTER==='quarterly'?'all':'quarterly'; history.replaceState({promosView:'radar',radarFilter:RADAR_FILTER},'',location.pathname+location.search); render(); restoreFocus('quarterly-filter');
+    const count=RADAR_FILTER==='quarterly'?buildQuarterlyTasks(new Date()).length:buildRadarTasks(new Date()).active.length;
+    const message=RADAR_FILTER==='quarterly'?`Showing ${count} quarterly categor${count===1?'y':'ies'}.`:'Showing all Benefit Radar items.';
+    requestAnimationFrame(()=>{ const status=document.getElementById('radar-filter-status'); if(status) status.textContent=message; });
+  });
+  mainEl.querySelectorAll('[data-go-cards]').forEach(b=>b.onclick=()=>{endPromosVisit();TAB='cards';PROMOS_VIEW='overview';RADAR_FILTER='all';render();restoreFocus('add-card-heading');});
   mainEl.querySelectorAll('[data-task-check]').forEach(cb=>cb.onchange=()=>{
     const mutationNow=new Date(), task=findCurrentTaskOrRefresh(cb.dataset.taskCheck,mutationNow); if(!task) return;
     const currentState=task.closed?'closed':task.unavailable?'unavailable':'open';
@@ -1849,13 +1968,15 @@ function bindPromoActions(){
   });
   mainEl.querySelectorAll('[data-skip-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.skipTask,mutationNow);if(task)skipTask(task,mutationNow);});
   mainEl.querySelectorAll('[data-hide-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.hideTask,mutationNow);if(task)hideBenefitTask(task);});
+  mainEl.querySelectorAll('[data-more-options]').forEach(button=>button.onclick=()=>{
+    const opening=moreOptionsOpenKey!==button.dataset.moreOptions; moreOptionsOpenKey=opening?button.dataset.moreOptions:''; render(); restoreFocus(`more-options-${button.dataset.moreOptions}`);
+  });
   mainEl.querySelectorAll('[data-unskip-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.unskipTask,mutationNow);if(task)unskipTask(task);});
   mainEl.querySelectorAll('[data-restore-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.restoreTask,mutationNow);if(task)restoreBenefit(task.card.id,task.benefitId,`task-${task.key}`,'not-shown-toggle');});
   mainEl.querySelectorAll('[data-show-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.showTask,mutationNow);if(task)showTaskInRadar(task);});
   mainEl.querySelectorAll('[data-recurring-disclosure]').forEach(button=>button.onclick=()=>{
     const task=findCurrentTask(button.dataset.recurringDisclosure); if(!task) return;
     const opening=recurringDiscoveryOpenKey!==task.key; recurringDiscoveryOpenKey=opening?task.key:'';
-    if(opening){ const now=new Date(); setRecurringPromptPreference(task.card.id,task.benefitId,{},now); saveState(S,now); }
     render(); restoreFocus(`recurring-disclosure-${task.card.id}-${task.benefitId}`);
     if(opening) requestAnimationFrame(()=>{
       const panel=document.getElementById(`recurring-discovery-${task.card.id}-${task.benefitId}`); if(!panel) return;
@@ -1864,8 +1985,8 @@ function bindPromoActions(){
     });
   });
   mainEl.querySelectorAll('[data-dismiss-recurring]').forEach(button=>button.onclick=()=>{
-    const [cardId,benefitId]=button.dataset.dismissRecurring.split(':'), now=new Date();
-    setRecurringPromptPreference(cardId,benefitId,{dismissed:true},now); recurringDiscoveryOpenKey=''; saveState(S,now); render(); restoreFocus(`recurring-disclosure-${cardId}-${benefitId}`); toast('Monthly reminders kept');
+    const [cardId,benefitId]=button.dataset.dismissRecurring.split(':');
+    recurringDiscoveryOpenKey=''; render(); restoreFocus(`recurring-disclosure-${cardId}-${benefitId}`);
   });
   mainEl.querySelectorAll('[data-confirm-recurring]').forEach(button=>button.onclick=()=>{
     const [cardId,benefitId]=button.dataset.confirmRecurring.split(':'); confirmRecurringSetup(cardId,benefitId,{},new Date());
@@ -1873,25 +1994,18 @@ function bindPromoActions(){
   mainEl.querySelectorAll('[data-review-confirm]').forEach(button=>button.onclick=()=>{
     const record=S.recurringSetups[button.dataset.reviewConfirm]; if(record) confirmRecurringSetup(record.cardId,record.benefitId,{review:true},new Date());
   });
-  mainEl.querySelectorAll('[data-resume-recurring]').forEach(button=>button.onclick=()=>{
-    const section=button.closest('.recurring-section'), peers=[...section.querySelectorAll('[data-resume-recurring]')], index=peers.indexOf(button), next=peers[index+1]||peers[index-1];
-    const mutationNow=new Date(), record=S.recurringSetups[button.dataset.resumeRecurring], returnedTask=record&&buildRadarTasks(mutationNow).all.find(item=>item.card.id===record.cardId&&item.benefitId===record.benefitId);
-    const inReview=section.getAttribute('aria-labelledby')==='recurring-review-heading', fallback=inReview?'recurring-review-heading':'recurring-heading', returnedFocus=returnedTask&&currentFocusForTask(returnedTask,mutationNow);
-    resumeRecurringSetup(button.dataset.resumeRecurring,next?.dataset.focusId||returnedFocus||fallback,button.dataset.focusId||fallback,mutationNow,button.dataset.showHiddenRecurring==='true');
-  });
-  document.getElementById('recurring-manage-toggle')?.addEventListener('click',()=>{ recurringManageOpen=!recurringManageOpen; render(); restoreFocus('recurring-manage-toggle'); });
+  mainEl.querySelectorAll('[data-remove-recurring]').forEach(button=>button.onclick=()=>removeRecurringSetup(button.dataset.removeRecurring,button.dataset.removeContext||'quiet',new Date()));
   document.getElementById('not-shown-toggle')?.addEventListener('click',()=>{notShownOpen=!notShownOpen;render();restoreFocus('not-shown-toggle');});
   document.getElementById('history-toggle')?.addEventListener('click',()=>{radarHistoryOpen=!radarHistoryOpen;render();restoreFocus('history-toggle');});
   document.getElementById('history-more')?.addEventListener('click',()=>{historyLimit+=20;render();restoreFocus(document.getElementById('history-more')?'history-more':'history-toggle');});
 }
 function renderPromos(){
-  if(PROMOS_VIEW==='radar') renderFullRadar(); else if(PROMOS_VIEW==='quarterly') renderFullQuarterly(); else renderPromosOverview();
+  if(PROMOS_VIEW==='radar') renderFullRadar(); else renderPromosOverview();
   bindPromoActions();
 }
-function openPromosSubview(view){
-  if(PROMOS_VIEW===view) return; PROMOS_VIEW=view; TAB='promos';
-  if(view==='radar') beginRadarVisit(new Date());
-  history.pushState({promosView:view},'',location.pathname+location.search); render(); window.scrollTo({top:0,behavior:'auto'});
+function openPromosSubview(filter='all'){
+  if(PROMOS_VIEW==='radar'&&RADAR_FILTER===filter) return; PROMOS_VIEW='radar'; RADAR_FILTER=filter; TAB='promos'; beginRadarVisit(new Date());
+  history.pushState({promosView:'radar',radarFilter:filter},'',location.pathname+location.search); render(); window.scrollTo({top:0,behavior:'auto'});
   requestAnimationFrame(()=>document.getElementById('hdr').focus?.());
 }
 function backFromPromos(){
@@ -1918,10 +2032,10 @@ function renderSettings(){
   let html = `<h2>Point valuations</h2><p class="section-note">Cents per point, used to compare points cards against cash back fairly.</p><div class="panel"><div class="rate-grid">` +
     Object.entries(PROGRAMS).filter(([k])=>k!=='cash').map(([k,p])=>{
       const v = S.cpp[k]!=null?S.cpp[k]:p.cpp;
-      return `<div>${esc(p.name)}</div><input type="text" inputmode="decimal" data-cpp="${k}" value="${v}">`;
+      return `<label class="field-label" for="cpp-${k}">${esc(p.name)} cents per point</label><input id="cpp-${k}" type="text" inputmode="decimal" data-cpp="${k}" value="${v}">`;
     }).join('') + `</div></div>
     <h2>Backup / transfer</h2><div class="panel">
-      <p class="hint">Copy a setup link containing your cards, settings, benefit enrollments, recurring benefit setups, items hidden from My Radar, skipped periods, and current checkmarks. Anyone with the link can read and import this information. Imported recurring benefit setups will not hide monthly reminders until confirmed again in My Radar on the receiving device. Completion history is not included.</p>
+      <p class="hint">Copy a setup link containing your cards, settings, benefit enrollments, recurring charge confirmations, items hidden from Benefit Radar, skipped periods, and current checkmarks. Anyone with the link can read and import this information. Imported recurring charge confirmations will not hide monthly reminders until confirmed again in Benefit Radar on the receiving device. Completion history is not included.</p>
       <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap">
         <button class="pill primary" id="copycfg">🔗 Copy setup link</button>
         <button class="pill" id="reset">Reset app</button></div></div>
@@ -1932,8 +2046,8 @@ function renderSettings(){
     const v=parseFloat(inp.value); if(!isNaN(v)&&v>0){ S.cpp[inp.dataset.cpp]=v; saveState(S); toast('Point valuation saved'); } });
   document.getElementById('copycfg').onclick=()=>copySetupLink();
   document.getElementById('reset').onclick=()=>{
-    if(confirm('Erase all cards, settings, benefit enrollments, recurring benefit setups, checkmarks, items hidden or skipped in My Radar, and completion history from this device?')){
-      S=structuredClone(DEFAULT_STATE); saveState(S); render(); toast('App reset');
+    if(confirm('Erase all cards, settings, benefit enrollments, recurring charge confirmations, checkmarks, items hidden or skipped in Benefit Radar, and completion history from this device?')){
+      S=structuredClone(DEFAULT_STATE); saveState(S); render(); focusPageHeading(); toast('App reset');
     }
   };
 }
@@ -1953,7 +2067,7 @@ function setupUrl(){
   return location.href.split('#')[0]+'#'+encodeSetupState(exportSetupState());
 }
 async function copySetupLink(skipConfirmation=false){
-  if(!skipConfirmation&&!confirm('Create a setup link containing your cards, settings, benefit enrollments, recurring benefit setups, items hidden from My Radar, skipped periods, and current checkmarks? Anyone with the link can read and import this information. Imported recurring benefit setups will not hide monthly reminders until confirmed again in My Radar on the receiving device.')) return;
+  if(!skipConfirmation&&!confirm('Create a setup link containing your cards, settings, benefit enrollments, recurring charge confirmations, items hidden from Benefit Radar, skipped periods, and current checkmarks? Anyone with the link can read and import this information. Imported recurring charge confirmations will not hide monthly reminders until confirmed again in Benefit Radar on the receiving device.')) return;
   let url; try{url=setupUrl();}catch(e){toast(e instanceof SetupLinkError?e.message:'This setup link could not be created.',5000);return;}
   try{ await navigator.clipboard.writeText(url); toast('Setup link copied'); }
   catch(e){ prompt('Copy this setup link:',url); }
@@ -1961,32 +2075,62 @@ async function copySetupLink(skipConfirmation=false){
 Object.assign(window.CardRouterRadar,{validateImportPayload,encodeSetupPayload,encodeSetupState,decodeSetupPayload,validEventIso,validIsoDate,confirmationDateMatchesInstant,periodMatchesCadence,taskStatusLines,completionRecordForTask,exportSetupState});
 
 /* ---------- modal & nav ---------- */
-function openModal(){ document.getElementById('modal').classList.add('open'); }
-function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+let modalReturnFocus=null;
+function setModalBackgroundInert(inert){
+  document.querySelectorAll('.brand, header, #storageWarning, main, nav').forEach(element=>{ element.inert=inert; });
+}
+function openModal(initialFocusSelector,opener){
+  const active=opener||document.activeElement;
+  modalReturnFocus=active&&active!==document.body?{element:active,focusId:active.dataset.focusId||'',id:active.id||''}:null;
+  const modal=document.getElementById('modal'), sheet=document.getElementById('sheet');
+  modal.classList.add('open'); setModalBackgroundInert(true);
+  requestAnimationFrame(()=>{ (initialFocusSelector&&sheet.querySelector(initialFocusSelector)||sheet.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])')||sheet).focus(); });
+}
+function closeModal(restore=true){
+  const modal=document.getElementById('modal'); if(!modal.classList.contains('open')) return;
+  const returnTarget=modalReturnFocus; modalReturnFocus=null; modal.classList.remove('open'); setModalBackgroundInert(false);
+  if(restore!==false&&returnTarget) requestAnimationFrame(()=>{
+    const target=returnTarget.focusId&&document.querySelector(`[data-focus-id="${returnTarget.focusId}"]`)||returnTarget.id&&document.getElementById(returnTarget.id)||returnTarget.element;
+    if(target?.isConnected) target.focus();
+  });
+}
+const navEl=document.querySelector('nav');
+function syncNavInset(){ document.documentElement.style.setProperty('--nav-h',`${Math.ceil(navEl.getBoundingClientRect().height)}px`); }
+if('ResizeObserver' in window) new ResizeObserver(syncNavInset).observe(navEl);
+window.addEventListener('resize',syncNavInset); syncNavInset();
 document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal(); });
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-history.replaceState({promosView:PROMOS_VIEW},'',location.pathname+location.search);
+document.addEventListener('keydown',e=>{
+  const modal=document.getElementById('modal'); if(!modal.classList.contains('open')) return;
+  if(e.key==='Escape'){ e.preventDefault(); closeModal(); return; }
+  if(e.key!=='Tab') return;
+  const focusable=[...document.getElementById('sheet').querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')].filter(element=>!element.hidden);
+  if(!focusable.length){ e.preventDefault(); document.getElementById('sheet').focus(); return; }
+  const first=focusable[0], last=focusable[focusable.length-1];
+  if(e.shiftKey&&document.activeElement===first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey&&document.activeElement===last){ e.preventDefault(); first.focus(); }
+});
+history.replaceState({promosView:PROMOS_VIEW,radarFilter:RADAR_FILTER},'',location.pathname+location.search);
 window.addEventListener('popstate',e=>{
-  PROMOS_VIEW=e.state&&['radar','quarterly'].includes(e.state.promosView)?e.state.promosView:'overview';
-  if(PROMOS_VIEW==='radar') beginRadarVisit(new Date()); else{ recurringReviewSession=null; recurringDiscoveryOpenKey=''; recurringManageOpen=false; }
+  const normalized=normalizePromosHistory(e.state); PROMOS_VIEW=normalized.view; RADAR_FILTER=normalized.filter; beginRadarVisit(new Date());
   TAB='promos'; render(); window.scrollTo({top:0,behavior:'auto'}); requestAnimationFrame(()=>document.getElementById('hdr').focus());
 });
 function refreshIfCalendarChanged(){
   const now=new Date(), currentDayKey=localIsoDate(localDay(now)), currentMonthKey=periodInfo('month',now).key, previousMonthKey=renderedMonthKey;
   if(currentDayKey===renderedDayKey) return;
-  if(TAB==='promos'&&PROMOS_VIEW==='radar') beginRadarVisit(now);
+  if(TAB==='promos'){ beginRadarVisit(now); pruneConfirmedThisVisit(now); }
   const focusTarget=captureRefreshFocus(now); render(); restoreRefreshFocus(focusTarget);
   if(currentMonthKey!==previousMonthKey) toast('A new tracking period started. Review the refreshed items.',5000);
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshIfCalendarChanged();});
 window.addEventListener('pageshow',refreshIfCalendarChanged);
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
-  TAB=b.dataset.tab; PROMOS_VIEW='overview'; history.replaceState({promosView:'overview'},'',location.pathname+location.search);
-  recurringReviewSession=null; recurringDiscoveryOpenKey=''; recurringManageOpen=false;
+  const nextTab=b.dataset.tab; if(TAB==='promos'&&nextTab!=='promos') endPromosVisit();
+  TAB=nextTab; PROMOS_VIEW='overview'; RADAR_FILTER='all'; history.replaceState({promosView:'overview',radarFilter:'all'},'',location.pathname+location.search);
+  recurringDiscoveryOpenKey=''; moreOptionsOpenKey=''; if(TAB==='promos') beginRadarVisit(new Date());
   render(); window.scrollTo({top:0,behavior:'auto'});
 });
 document.getElementById('storageBackup').onclick=()=>copySetupLink();
-if(PROMOS_VIEW==='radar') beginRadarVisit(new Date());
+if(TAB==='promos') beginRadarVisit(new Date());
 render();
 if(startupNotice) setTimeout(()=>toast(startupNotice,3600),0);
 </script>

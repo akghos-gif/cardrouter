@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <link rel="icon" href="data:,">
-<title>My Radar tests</title>
+<title>Benefit Radar tests</title>
 <style>
   body{font:15px/1.5 system-ui,sans-serif;max-width:760px;margin:32px auto;padding:0 18px;color:#172033;background:#f7f8fb}
   h1{font-size:24px}.pass{color:#08704f}.fail{color:#b42318}li{margin:5px 0}
@@ -11,7 +11,7 @@
 </style>
 </head>
 <body>
-<h1>My Radar tests</h1>
+<h1>Benefit Radar tests</h1>
 <p id="summary">Running…</p>
 <ol id="results"></ol>
 <iframe id="app" src="../index.html"></iframe>
@@ -250,28 +250,28 @@ document.getElementById('app').addEventListener('load',async()=>{
   test('Radar subview survives a real page reload',async()=>{
     await withAppState({schemaVersion:2,myCards:['amex_gold']},async(win,doc,frame)=>{
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click();
-      equal(doc.title,'ChooseMyCard · My Radar');
+      equal(doc.title,'ChooseMyCard · Benefit Radar');
       const loaded=new Promise(resolve=>frame.addEventListener('load',resolve,{once:true})); win.location.reload(); await loaded;
-      equal(frame.contentDocument.title,'ChooseMyCard · My Radar');
+      equal(frame.contentDocument.title,'ChooseMyCard · Benefit Radar');
     });
   });
-  test('My Radar and Quarterly actions polish has regression coverage',async()=>{
+  test('Benefit Radar consolidates quarterly categories without a second destination',async()=>{
     const hiddenAt=new Date().toISOString();
-    await withAppState({schemaVersion:2,myCards:['amex_plat'],radarHidden:[{cardId:'amex_plat',benefitId:'uber_cash',hiddenAt}]},async(win,doc)=>{
+    await withAppState({schemaVersion:2,myCards:['amex_plat','discover_it'],radarHidden:[{cardId:'amex_plat',benefitId:'uber_cash',hiddenAt}]},async(win,doc)=>{
       doc.querySelector('nav button[data-tab="promos"]').click();
-      const overviewIcons=[...doc.querySelectorAll('.section-head .title-icon')];
-      equal(overviewIcons.map(icon=>icon.textContent).join(''),'📡📅');
-      assert(overviewIcons.every(icon=>icon.getAttribute('aria-hidden')==='true'),'Overview icons should be decorative');
-      assert(doc.body.textContent.includes('These items also appear in My Radar when they need attention.'),'Quarterly overlap should be explained');
-      assert(doc.getElementById('quarterly-view-all').textContent.includes('Open checklist'),'Quarterly destination should describe its distinct checklist job');
+      const radarIcon=doc.querySelector('.section-head .title-icon'), quarterlyIcon=doc.querySelector('.quarterly-nav .title-icon');
+      equal(radarIcon.textContent,'📡'); equal(quarterlyIcon.textContent,'📅');
+      assert(radarIcon.getAttribute('aria-hidden')==='true'&&quarterlyIcon.getAttribute('aria-hidden')==='true','Overview icons should be decorative');
+      assert(!doc.body.textContent.includes('Quarterly actions'),'The retired duplicate destination should not render');
+      assert(doc.getElementById('quarterly-view-all').textContent.includes('View in Benefit Radar'),'Quarterly row should explain its single-inbox destination');
       doc.getElementById('radar-view-all').click();
-      equal(doc.title,'ChooseMyCard · My Radar'); equal(doc.getElementById('hdrsub').textContent,'what needs attention');
+      equal(doc.title,'ChooseMyCard · Benefit Radar'); equal(doc.getElementById('hdrsub').textContent,'what needs attention');
       equal(doc.querySelector('#hdr .title-icon').textContent,'📡'); equal(doc.querySelector('#hdr .title-icon').getAttribute('aria-hidden'),'true');
       assert(doc.getElementById('not-shown-toggle').textContent.includes('Hidden (1)'),'Hidden disclosure should use the approved label');
       assert(!doc.getElementById('not-shown-toggle').textContent.includes('Not shown'),'Legacy Hidden copy should not return');
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('quarterly-view-all').click();
-      equal(doc.title,'ChooseMyCard · Quarterly actions'); equal(doc.querySelector('#hdr .title-icon').textContent,'📅');
-      equal(doc.querySelector('#hdr .title-icon').getAttribute('aria-hidden'),'true');
+      equal(doc.title,'ChooseMyCard · Benefit Radar'); equal(doc.querySelector('#hdr .title-icon').textContent,'📡');
+      equal(doc.getElementById('quarterly-filter').getAttribute('aria-pressed'),'true'); equal(doc.getElementById('quarterly-filter').textContent,'Show all');
       assert(doc.body.textContent.includes('Status is stored only on this device.'),'Manual tracking should be explained in-product');
     });
   });
@@ -383,16 +383,16 @@ document.getElementById('app').addEventListener('load',async()=>{
   test('audited recurring qualifications preserve direct billing and annual-plan exclusions',()=>{
     const now=new Date(2026,7,27,12), tasks=R.buildRadarTasks({schemaVersion:3,myCards:['amex_plat','csr','biz_plat','bcp']},now).all;
     const digital=tasks.find(item=>item.itemId==='digital_entertainment_credit').meta, peloton=tasks.find(item=>item.itemId==='peloton_credit').meta, wireless=tasks.find(item=>item.itemId==='wireless_service_credit').meta, disney=tasks.find(item=>item.itemId==='disney_bundle_credit').meta;
-    equal(digital.recurringTermsVersion,'2026-08-27-2'); assert(digital.recurringQualifier.includes('The New York Times')&&digital.recurringQualifier.includes('YouTube TV')&&digital.recurringQualifier.includes('third-party billing'));
-    equal(peloton.recurringTermsVersion,'2026-08-27-2'); assert(peloton.recurringQualifier.includes('All-Access')&&peloton.recurringQualifier.includes('Guide')&&peloton.recurringQualifier.includes('App One')&&peloton.recurringQualifier.includes('Strength+')&&peloton.recurringQualifier.includes('in the U.S.')&&peloton.recurringQualifier.includes('app store'));
+    equal(digital.recurringTermsVersion,'2026-08-27-2'); assert(digital.recurringQualifier.includes('The New York Times')&&digital.recurringQualifier.includes('YouTube TV')&&digital.recurringQualifier.includes('app stores')&&digital.recurringQualifier.includes('digital wallets')&&digital.recurringQualifier.includes('third-party billing'));
+    equal(peloton.recurringTermsVersion,'2026-08-27-2'); assert(peloton.recurringQualifier.includes('All-Access')&&peloton.recurringQualifier.includes('Guide')&&peloton.recurringQualifier.includes('App One')&&peloton.recurringQualifier.includes('Strength+')&&peloton.recurringQualifier.includes('in the U.S.')&&peloton.recurringQualifier.includes('card saved on the Peloton account')&&peloton.recurringQualifier.includes('app store'));
     equal(wireless.recurringTermsVersion,'2026-08-27-2'); assert(wireless.recurringQualifier.includes('Google Fi')&&wireless.recurringQualifier.includes('hardware')&&wireless.recurringQualifier.includes('bundled'));
-    equal(disney.recurringTermsVersion,'2026-08-27-2'); assert(disney.recurringQualifier.includes('up to $10 only in the month charged')&&disney.recurringQualifier.includes('cannot be saved as a monthly setup')&&disney.recurringQualifier.toLowerCase().includes('third-party'));
+    equal(disney.recurringTermsVersion,'2026-08-27-2'); assert(disney.recurringQualifier.includes('up to $10 only in the month charged')&&disney.recurringQualifier.includes('can’t be confirmed as a monthly recurring charge')&&disney.recurringQualifier.toLowerCase().includes('third-party'));
     for(const [cardId,benefitId] of [['amex_plat','digital_entertainment_credit'],['csr','peloton_credit'],['biz_plat','wireless_service_credit'],['bcp','disney_bundle_credit']]){
       const confirmedAt='2026-08-27T19:00:00.000Z', state={schemaVersion:3,myCards:[cardId],enrollments:[{cardId,benefitId,enrolledAt:confirmedAt}],recurringSetups:[{cardId,benefitId,confirmedAt,confirmedOn:'2026-08-27',termsVersion:'2026-08-26-1'}]};
       equal(R.recurringSetupStatus(state,cardId,benefitId,now).status,'terms-changed','Prior broad confirmation should require review');
     }
   });
-  test('active recurring setup suppresses only use reminders and never creates completion',()=>{
+  test('active recurring confirmation suppresses only use reminders and never creates completion',()=>{
     const now=new Date(2026,7,27,12), confirmedAt='2026-08-27T19:00:00.000Z', setup={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt,confirmedOn:'2026-08-27',termsVersion:'2026-08-27-2'};
     const state=R.normalizeState({schemaVersion:3,myCards:['amex_plat'],enrollments:[{cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt:confirmedAt}],recurringSetups:[setup]},now), radar=R.buildRadarTasks(state,now);
     const task=radar.all.find(item=>item.itemId==='digital_entertainment_credit');
@@ -419,7 +419,7 @@ document.getElementById('app').addEventListener('load',async()=>{
     assert(R.confirmationDateMatchesInstant('2026-08-26','2026-08-27T00:30:00.000Z'));
     assert(!R.confirmationDateMatchesInstant('2026-08-29','2026-08-27T23:30:00.000Z'));
   });
-  test('recurring setup validation rejects malformed, duplicate, and noneligible records atomically',()=>{
+  test('recurring confirmation validation rejects malformed, duplicate, and noneligible records atomically',()=>{
     const now=new Date(2026,7,27,12), valid={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt:'2026-08-27T19:00:00.000Z',confirmedOn:'2026-08-27',termsVersion:'2026-08-27-2'};
     const invalid=[
       {...valid,unknown:true},
@@ -427,11 +427,11 @@ document.getElementById('app').addEventListener('load',async()=>{
       {...valid,benefitId:'lululemon_credit'},
       {...valid,suspendedAt:'2026-08-27T20:00:00.000Z'},
     ];
-    for(const record of invalid){ let threw=false; try{R.validateImportPayload({schemaVersion:3,recurringSetups:[record]},500,400,now);}catch(error){threw=true;} assert(threw,'Invalid recurring setup must reject import'); }
+    for(const record of invalid){ let threw=false; try{R.validateImportPayload({schemaVersion:3,recurringSetups:[record]},500,400,now);}catch(error){threw=true;} assert(threw,'Invalid recurring confirmation must reject import'); }
     let duplicateRejected=false; try{R.validateImportPayload({schemaVersion:3,recurringSetups:[valid,{...valid}]},700,600,now);}catch(error){duplicateRejected=true;}
     assert(duplicateRejected,'Duplicate recurring identities must reject import');
   });
-  test('imported recurring setups are always suspended until local reconfirmation',()=>{
+  test('imported recurring confirmations are always suspended until local reconfirmation',()=>{
     const now=new Date(2026,7,27,12), setup={cardId:'bcp',benefitId:'disney_bundle_credit',confirmedAt:'2026-08-27T19:00:00.000Z',confirmedOn:'2026-08-27',termsVersion:'2026-08-27-2'};
     const imported=R.normalizeState({schemaVersion:3,myCards:['bcp'],enrollments:[{cardId:'bcp',benefitId:'disney_bundle_credit',enrolledAt:setup.confirmedAt}],recurringSetups:[setup]},now,{fromImport:true}), record=Object.values(imported.recurringSetups)[0];
     equal(record.suspensionReason,'imported'); equal(R.recurringSetupStatus(imported,'bcp','disney_bundle_credit',now).status,'suspended');
@@ -441,60 +441,237 @@ document.getElementById('app').addEventListener('load',async()=>{
     const radar=R.buildRadarTasks({schemaVersion:3,myCards:['biz_plat'],enrollments:[{cardId:'biz_plat',benefitId:'wireless_service_credit',enrolledAt:setup.confirmedAt}],recurringSetups:[setup]},now), matches=radar.unresolved.filter(item=>item.itemId==='wireless_service_credit');
     equal(matches.length,1); equal(matches[0].recurring.status,'terms-changed'); assert(!matches[0].recurringSuppressed);
   });
-  test('My Radar auto-expands only one eligible recurring suggestion per visit',async()=>{
+  test('Benefit Radar never auto-expands or writes recurring prompt preferences',async()=>{
     const now=new Date(), enrolledAt=now.toISOString(), state={schemaVersion:3,myCards:['amex_plat','csr'],enrollments:[
       {cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt},{cardId:'csr',benefitId:'peloton_credit',enrolledAt}
     ]};
     await withAppState(state,async(win,doc)=>{
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
-      equal(doc.querySelectorAll('.recurring-discovery:not([hidden])').length,1);
-      equal(Object.keys(JSON.parse(win.localStorage.getItem('cardrouter')).recurringPromptPrefs).length,1);
-      const panel=doc.querySelector('.recurring-discovery:not([hidden])'), row=panel.closest('.action-row'), disclosure=row.querySelector('[data-recurring-disclosure]');
+      equal(doc.querySelectorAll('.recurring-discovery:not([hidden])').length,0);
+      equal(Object.keys(JSON.parse(win.localStorage.getItem('cardrouter')).recurringPromptPrefs).length,0);
+      const disclosures=[...doc.querySelectorAll('[data-recurring-disclosure]')]; equal(disclosures.length,2);
+      const disclosure=disclosures[0]; disclosure.click(); await afterRender(win);
+      const panel=doc.querySelector('.recurring-discovery:not([hidden])'), row=panel.closest('.action-row'), expanded=row.querySelector('[data-recurring-disclosure]');
       const benefit=row.querySelector('.action-title').textContent.trim(), card=row.querySelector('.action-meta').textContent.split(' · ')[0].trim();
-      assert(disclosure.getAttribute('aria-label').includes(benefit)&&disclosure.getAttribute('aria-label').includes(card),'Disclosure accessible name should identify the benefit and card');
+      assert(expanded.getAttribute('aria-label').includes(benefit)&&expanded.getAttribute('aria-label').includes(card),'Disclosure accessible name should identify the benefit and card');
+      equal(expanded.getAttribute('aria-expanded'),'true'); assert(expanded.getAttribute('aria-controls')===panel.id,'Disclosure should control its provider-specific panel');
       assert(panel.querySelector('[data-confirm-recurring]').getAttribute('aria-label').includes(benefit),'Confirm accessible name should identify the benefit');
       assert(panel.querySelector('[data-dismiss-recurring]').getAttribute('aria-label').includes(card),'Dismiss accessible name should identify the card');
+      equal(Object.keys(JSON.parse(win.localStorage.getItem('cardrouter')).recurringPromptPrefs).length,0);
     });
   });
-  test('Promos overview exposes Peloton subscription setup without duplicating quarterly actions',async()=>{
+  test('Promos overview exposes Peloton recurring-charge setup and retains confirmation in place',async()=>{
     const enrolledAt=new Date().toISOString(), state={schemaVersion:3,myCards:['discover_it','csr'],enrollments:[{cardId:'csr',benefitId:'peloton_credit',enrolledAt}]};
     await withAppState(state,async(win,doc)=>{
       doc.querySelector('nav button[data-tab="promos"]').click(); await afterRender(win);
-      assert(!doc.body.textContent.includes('Your unfinished quarterly actions are shown in My Radar above.'),'Quarterly overview should not render a duplicate-feed empty card');
+      assert(!doc.body.textContent.includes('Quarterly actions'),'Quarterly overview should not render a duplicate destination');
       const pelotonRow=[...doc.querySelectorAll('.action-row')].find(row=>row.querySelector('.action-title')?.textContent.includes('Peloton membership credit'));
       assert(pelotonRow,'Expected Peloton membership credit in the Radar preview');
       assert(pelotonRow.querySelector('.task-check').textContent.includes('Mark used'),'Manual monthly fallback should remain available');
-      const setup=pelotonRow.querySelector('[data-recurring-disclosure]'); equal(setup.textContent.trim(),'Membership billed monthly'); setup.click(); await afterRender(win);
-      const panel=doc.querySelector('.recurring-discovery:not([hidden])'); assert(panel.textContent.includes('directly from Peloton')&&panel.textContent.includes('All-Access'),'Subscription setup should explain direct-billing and membership eligibility');
+      const setup=pelotonRow.querySelector('[data-recurring-disclosure]'); assert(setup.textContent.includes('Confirm recurring charge')&&setup.textContent.includes('eligible membership')); setup.click(); await afterRender(win);
+      const panel=doc.querySelector('.recurring-discovery:not([hidden])'); assert(panel.textContent.includes('directly from Peloton')&&panel.textContent.includes('All-Access'),'Recurring-charge details should explain direct-billing and membership eligibility');
       panel.querySelector('[data-confirm-recurring]').click(); await afterRender(win);
       const saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.keys(saved.recurringSetups).length,1); equal(Object.keys(saved.completions).length,0);
-      equal(doc.activeElement.dataset.focusId,'radar-heading'); assert(![...doc.querySelectorAll('.action-row')].some(row=>row.textContent.includes('Peloton membership credit')),'Confirmed subscription should leave the monthly Radar preview');
+      equal(doc.activeElement.dataset.focusId,'recurring-confirmed-visit-csr:peloton_credit');
+      const retained=[...doc.querySelectorAll('.action-row')].find(row=>row.textContent.includes('Peloton membership credit'));
+      assert(retained&&retained.textContent.includes('Recurring charge confirmed')&&retained.textContent.includes('Remove confirmation'),'Confirmed charge should remain neutrally in its overview slot for the visit');
+      assert(!retained.querySelector('[data-task-check]')&&!retained.querySelector('[data-skip-task]')&&!retained.querySelector('[data-more-options]'),'Retained confirmation should remove task controls');
     });
   });
-  test('confirming a recurring payment hides reminders without checking Mark used',async()=>{
+  test('confirming a recurring charge retains the row for the visit, then moves it to the quiet section',async()=>{
     const now=new Date(), enrolledAt=now.toISOString(), state={schemaVersion:3,myCards:['amex_plat'],enrollments:[{cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt}]};
     await withAppState(state,async(win,doc)=>{
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
+      const disclosure=doc.querySelector('[data-recurring-disclosure]'); disclosure.click(); await afterRender(win);
       doc.querySelector('.recurring-discovery:not([hidden]) [data-confirm-recurring]').click(); await afterRender(win);
-      assert([...doc.querySelectorAll('main h2')].some(h=>h.textContent==='Benefits with recurring payments'));
+      assert(doc.querySelector('[data-focus-id="recurring-confirmed-visit-amex_plat:digital_entertainment_credit"]'),'Expected a visit-retained neutral confirmation');
       const saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.keys(saved.recurringSetups).length,1); equal(Object.keys(saved.completions).length,0);
-      equal(doc.activeElement.dataset.focusId,'recurring-status-amex_plat:digital_entertainment_credit');
+      equal(doc.activeElement.dataset.focusId,'recurring-confirmed-visit-amex_plat:digital_entertainment_credit');
+      doc.querySelector('nav button[data-tab="benefits"]').click(); doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
+      assert([...doc.querySelectorAll('main h2')].some(h=>h.textContent==='Confirmed recurring charges'));
+      assert(doc.querySelector('[data-focus-id="recurring-status-amex_plat:digital_entertainment_credit"]'),'Persistent row should expose confirmation and review dates without a Manage layer');
+      assert(!doc.getElementById('recurring-manage-toggle'),'The removed Manage layer must not return');
     });
   });
-  test('due review confirms in place and resume returns the monthly reminder',async()=>{
+  test('completed monthly benefits hide ordinary confirmation but keep changed terms actionable',async()=>{
+    const now=new Date(), period=R.periodInfo('month',now), confirmedDay=R.addCalendarMonths(new Date(now.getFullYear(),now.getMonth(),now.getDate()),-1);
+    const confirmedAt=new Date(confirmedDay.getFullYear(),confirmedDay.getMonth(),confirmedDay.getDate(),12).toISOString(), confirmedOn=`${confirmedDay.getFullYear()}-${String(confirmedDay.getMonth()+1).padStart(2,'0')}-${String(confirmedDay.getDate()).padStart(2,'0')}`;
+    const cardId='bcp', benefitId='disney_bundle_credit', completion={actionType:'use',cardId,itemId:benefitId,periodKey:period.key,completedAt:now.toISOString()}, enrollment={cardId,benefitId,enrolledAt:confirmedAt};
+    const ordinary=R.buildRadarTasks({schemaVersion:3,myCards:[cardId],enrollments:[enrollment],completions:[completion]},now), ordinaryTask=ordinary.all.find(task=>task.itemId===benefitId);
+    assert(ordinaryTask.done&&!ordinary.unresolved.some(task=>task.key===ordinaryTask.key),'An ordinary completed monthly benefit should not return to attention');
+    const setup={cardId,benefitId,confirmedAt,confirmedOn,termsVersion:'older-terms'}, changedState={schemaVersion:3,myCards:[cardId],enrollments:[enrollment],completions:[completion],recurringSetups:[setup]};
+    const changed=R.buildRadarTasks(changedState,now), changedTask=changed.all.find(task=>task.itemId===benefitId);
+    assert(changedTask.done&&changedTask.recurring.status==='terms-changed'&&changed.unresolved.some(task=>task.key===changedTask.key),'Changed terms should remain actionable independently of completion');
+    await withAppState(changedState,async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
+      const row=[...doc.querySelectorAll('.action-row')].find(item=>item.textContent.includes('Disney streaming credit'));
+      assert(row.querySelector('[data-task-check]').checked&&row.textContent.includes('Benefit terms changed.'),'Changed-terms row should retain its checked use state and warning');
+      assert(row.querySelector('[data-recurring-disclosure]'),'Changed terms should expose reconfirmation');
+    });
+  });
+  test('multiple confirmations retain the original overview order',async()=>{
+    const enrolledAt=new Date().toISOString(), state={schemaVersion:3,myCards:['biz_plat','bcp'],enrollments:[
+      {cardId:'biz_plat',benefitId:'wireless_service_credit',enrolledAt},{cardId:'bcp',benefitId:'disney_bundle_credit',enrolledAt}
+    ]};
+    await withAppState(state,async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
+      for(const key of ['biz_plat:wireless_service_credit','bcp:disney_bundle_credit']){
+        doc.querySelector(`[data-recurring-disclosure*="${key.split(':')[1]}"]`).click(); await afterRender(win);
+        doc.querySelector(`[data-confirm-recurring="${key}"]`).click(); await afterRender(win);
+      }
+      doc.querySelector('nav button[data-tab="promos"]').click(); await afterRender(win);
+      const titles=[...doc.querySelectorAll('main .action-list .action-title')].slice(0,2).map(item=>item.textContent.trim());
+      equal(titles.join('|'),'Wireless service credit|Disney streaming credit','Sequential confirmations should not reverse their original order');
+    });
+  });
+  test('due recurring reviews appear before later overview work',async()=>{
+    const now=new Date(), confirmedDay=R.addCalendarMonths(new Date(now.getFullYear(),now.getMonth(),now.getDate()),-6), confirmedOn=`${confirmedDay.getFullYear()}-${String(confirmedDay.getMonth()+1).padStart(2,'0')}-${String(confirmedDay.getDate()).padStart(2,'0')}`;
+    const confirmedAt=new Date(confirmedDay.getFullYear(),confirmedDay.getMonth(),confirmedDay.getDate(),12).toISOString(), setup={cardId:'biz_plat',benefitId:'wireless_service_credit',confirmedAt,confirmedOn,termsVersion:'2026-08-27-2'};
+    const state={schemaVersion:3,myCards:['biz_plat'],enrollments:[{cardId:'biz_plat',benefitId:'wireless_service_credit',enrolledAt:confirmedAt}],recurringSetups:[setup]};
+    await withAppState(state,async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click(); await afterRender(win);
+      const titles=[...doc.querySelectorAll('main .action-list .action-title')].slice(0,2).map(item=>item.textContent.trim());
+      assert(titles.includes('Wireless service credit'),'A due recurring review should be a visible overview row');
+      assert(!titles.includes('FHR hotel credit'),'The later hotel benefit must not displace a due recurring review');
+      assert(doc.querySelector('[data-review-confirm="biz_plat:wireless_service_credit"]'),'The overview review row should be directly actionable');
+    });
+    const crowdedSetup={cardId:'bcp',benefitId:'disney_bundle_credit',confirmedAt,confirmedOn,termsVersion:'2026-08-27-2'};
+    const crowded={schemaVersion:3,myCards:['discover_it','usb_cashplus','bcp'],enrollments:[{cardId:'bcp',benefitId:'disney_bundle_credit',enrolledAt:confirmedAt}],recurringSetups:[crowdedSetup]};
+    await withAppState(crowded,async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click(); await afterRender(win);
+      const visibleTitles=[...doc.querySelectorAll('main .action-list .action-title')].map(item=>item.textContent.trim());
+      equal(visibleTitles.length,2,'Two higher-priority rows should fill the compact preview');
+      assert(doc.body.textContent.includes('1 recurring charge also needs review'),'An overflowed due review should remain explicit in overview copy');
+    });
+  });
+  test('stale review controls cannot renew suppression after the grace boundary',async()=>{
+    const now=new Date(), confirmedDay=R.addCalendarMonths(new Date(now.getFullYear(),now.getMonth(),now.getDate()),-6), confirmedOn=`${confirmedDay.getFullYear()}-${String(confirmedDay.getMonth()+1).padStart(2,'0')}-${String(confirmedDay.getDate()).padStart(2,'0')}`;
+    const confirmedAt=new Date(confirmedDay.getFullYear(),confirmedDay.getMonth(),confirmedDay.getDate(),12).toISOString(), setup={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt,confirmedOn,termsVersion:'2026-08-27-2'};
+    const state={schemaVersion:3,myCards:['amex_plat'],enrollments:[{cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt:confirmedAt}],recurringSetups:[setup]};
+    await withAppState(state,async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
+      const reviewButton=doc.querySelector('[data-review-confirm]'); assert(reviewButton,'Expected a due review before advancing the clock');
+      const reviewDue=R.addCalendarMonths(confirmedDay,6), graceEnd=new Date(reviewDue); graceEnd.setDate(graceEnd.getDate()+30);
+      const RealDate=win.Date, fixed=graceEnd.getTime();
+      win.Date=class extends RealDate{constructor(...args){super(...(args.length?args:[fixed]));}static now(){return fixed;}};
+      reviewButton.click(); await afterRender(win);
+      const saved=JSON.parse(win.localStorage.getItem('cardrouter')), record=Object.values(saved.recurringSetups)[0];
+      equal(record.confirmedOn,confirmedOn,'A stale review action must not replace the confirmation date');
+      assert(doc.querySelector('[data-recurring-disclosure*="digital_entertainment_credit"]'),'The returned monthly reminder should be restored at the boundary');
+      assert(doc.getElementById('toastmsg').textContent.includes('review window ended'),'The boundary refresh should be announced');
+    });
+  });
+  test('quarterly filter announcements preserve a pending confirmation Undo',async()=>{
+    const enrolledAt=new Date().toISOString(), state={schemaVersion:3,myCards:['amex_plat','discover_it'],enrollments:[{cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt}]};
+    await withAppState(state,async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
+      doc.querySelector('[data-recurring-disclosure]').click(); await afterRender(win); doc.querySelector('[data-confirm-recurring]').click(); await afterRender(win);
+      assert(!doc.getElementById('toastundo').hidden,'Confirmation should offer Undo');
+      doc.getElementById('quarterly-filter').click(); await afterRender(win);
+      assert(!doc.getElementById('toastundo').hidden,'A filter announcement must not remove the pending Undo');
+      assert(doc.getElementById('radar-filter-status').textContent.includes('quarterly'),'The filter result should use its independent live region');
+      doc.getElementById('toastundo').click(); await afterRender(win);
+      equal(Object.keys(JSON.parse(win.localStorage.getItem('cardrouter')).recurringSetups).length,0,'Undo should still reverse the confirmation');
+    });
+  });
+  test('category filters expose state and retain keyboard focus',async()=>{
+    await withAppState({schemaVersion:3,myCards:['amex_plat']},async(win,doc)=>{
+      const dining=doc.querySelector('[data-cat="dining"]'); equal(dining.getAttribute('aria-pressed'),'false'); dining.click(); await afterRender(win);
+      const selected=doc.querySelector('[data-cat="dining"]'); equal(selected.getAttribute('aria-pressed'),'true'); equal(doc.activeElement,selected);
+      doc.querySelector('nav button[data-tab="benefits"]').click(); const streaming=doc.querySelector('[data-bcat="streamcr"]'); streaming.click(); await afterRender(win);
+      const selectedBenefit=doc.querySelector('[data-bcat="streamcr"]'); equal(selectedBenefit.getAttribute('aria-pressed'),'true'); equal(doc.activeElement,selectedBenefit);
+    });
+  });
+  test('rerender navigation restores focus for onboarding, location, empty Radar, and reset',async()=>{
+    await withAppState({schemaVersion:3,myCards:[]},async(win,doc)=>{
+      doc.getElementById('onboard').click(); await afterRender(win); equal(doc.activeElement.id,'add-card-heading');
+      doc.querySelector('nav button[data-tab="promos"]').click(); doc.querySelector('[data-go-cards]').click(); await afterRender(win); equal(doc.activeElement.id,'add-card-heading');
+    });
+    await withAppState({schemaVersion:3,myCards:['amex_plat']},async(win,doc)=>{
+      Object.defineProperty(win.navigator,'geolocation',{configurable:true,value:{getCurrentPosition(success){success({coords:{latitude:1,longitude:1}});}}});
+      win.fetch=async()=>({json:async()=>({type:'restaurant',category:'amenity',name:'Cafe'})});
+      doc.getElementById('locbtn').click(); await new Promise(resolve=>setTimeout(resolve,0)); await afterRender(win);
+      equal(doc.querySelector('[data-cat="dining"]').getAttribute('aria-pressed'),'true'); equal(doc.activeElement.dataset.focusId,'category-dining');
+    });
+    await withAppState({schemaVersion:3,myCards:['amex_plat']},async(win,doc)=>{
+      Object.defineProperty(win.navigator,'geolocation',{configurable:true,value:{getCurrentPosition(success,error){error(new Error('denied'));}}});
+      doc.getElementById('locbtn').click(); await afterRender(win); equal(doc.activeElement.dataset.focusId,'location-guess');
+      win.confirm=()=>true; doc.querySelector('nav button[data-tab="settings"]').click(); doc.getElementById('reset').click(); await afterRender(win); equal(doc.activeElement.id,'hdr');
+    });
+  });
+  test('card editor is a labeled modal with labeled fields and deterministic return focus',async()=>{
+    await withAppState({schemaVersion:3,myCards:['amex_plat']},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="cards"]').click(); const edit=doc.querySelector('[data-edit="amex_plat"]');
+      assert(edit.getAttribute('aria-label').includes('Amex Platinum'),'Card actions should identify their card');
+      edit.click(); await afterRender(win);
+      const sheet=doc.getElementById('sheet'); equal(sheet.getAttribute('role'),'dialog'); equal(sheet.getAttribute('aria-modal'),'true'); assert(doc.querySelector('main').inert,'Background content should be inert while the editor is open');
+      assert(sheet.contains(doc.activeElement)&&doc.activeElement.matches('[data-rk]'),'The first rate field should receive initial focus');
+      assert([...sheet.querySelectorAll('[data-rk]')].every(input=>input.labels&&input.labels.length===1),'Every rate field should have a program-and-category label');
+      doc.dispatchEvent(new win.KeyboardEvent('keydown',{key:'Escape',bubbles:true})); await afterRender(win);
+      assert(!doc.getElementById('modal').classList.contains('open')&&!doc.querySelector('main').inert,'Escape should close the modal and restore the page'); equal(doc.activeElement,edit);
+      doc.querySelector('nav button[data-tab="settings"]').click(); assert([...doc.querySelectorAll('[data-cpp]')].every(input=>input.labels&&input.labels[0].textContent.includes('cents per point')),'Every point valuation should have a contextual label');
+    });
+  });
+  test('due review confirms in place and removal returns the monthly reminder',async()=>{
     const now=new Date(), confirmedDay=R.addCalendarMonths(new Date(now.getFullYear(),now.getMonth(),now.getDate()),-6), confirmedOn=`${confirmedDay.getFullYear()}-${String(confirmedDay.getMonth()+1).padStart(2,'0')}-${String(confirmedDay.getDate()).padStart(2,'0')}`;
     const confirmedAt=new Date(confirmedDay.getFullYear(),confirmedDay.getMonth(),confirmedDay.getDate(),12).toISOString(), setup={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt,confirmedOn,termsVersion:'2026-08-27-2'};
     const state={schemaVersion:3,myCards:['amex_plat'],enrollments:[{cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt:confirmedAt}],recurringSetups:[setup]};
     await withAppState(state,async(win,doc)=>{
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
       assert(doc.getElementById('recurring-review-heading'),'Expected recurring review section');
+      equal(doc.getElementById('recurring-review-heading').textContent,'Review recurring charges');
+      assert(doc.body.textContent.includes('Is this still charged to Amex Platinum every month?'));
       doc.querySelector('[data-review-confirm]').click(); await afterRender(win);
-      equal(doc.activeElement.textContent.trim(),'Confirmed today'); equal(Object.keys(JSON.parse(win.localStorage.getItem('cardrouter')).completions).length,0);
-      assert(doc.getElementById('toastmsg').textContent.includes('1 of 1 reviewed'),'Stable live status should announce review progress');
-      doc.getElementById('promos-back').click(); await afterRender(win); doc.getElementById('radar-view-all').click(); await afterRender(win);
-      doc.getElementById('recurring-manage-toggle').click(); await afterRender(win); doc.querySelector('[data-resume-recurring]').click(); await afterRender(win);
+      assert(doc.activeElement.textContent.trim().startsWith('Recurring charge confirmed today · Next review')); equal(Object.keys(JSON.parse(win.localStorage.getItem('cardrouter')).completions).length,0);
+      assert(doc.getElementById('toastmsg').textContent.includes('Recurring charge confirmed.'),'Live status should announce confirmation and next review');
+      const key='amex_plat:digital_entertainment_credit';
+      doc.querySelector('nav button[data-tab="benefits"]').click(); doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
+      doc.querySelector(`[data-remove-recurring="${key}"]`).click(); await afterRender(win);
       assert(doc.querySelector('[data-task-check*="digital_entertainment_credit"]'),'Monthly use reminder should return');
-      assert(doc.activeElement.dataset.taskCheck.includes('digital_entertainment_credit'),'Focus should move to the returned monthly action');
+      equal(doc.activeElement.dataset.focusId,'recurring-disclosure-amex_plat-digital_entertainment_credit');
+      assert(doc.getElementById('toastmsg').textContent.includes('Confirmation removed. Monthly reminders will resume.'),'Removal should announce its consequence');
+    });
+  });
+  test('quarterly-only mode uses the complete inventory and keeps skipped items completable',async()=>{
+    const now=new Date(), base={myCards:['discover_it','usb_cashplus']}, tasks=R.buildRadarTasks(base,now).all.filter(task=>/^\d{4}-Q[1-4]$/.test(task.periodKey));
+    const discover=tasks.find(task=>task.card.id==='discover_it'), cash=tasks.find(task=>task.card.id==='usb_cashplus'), completion=R.completionRecordForTask(discover,now);
+    const skip={taskKind:cash.kind,cardId:cash.card.id,itemId:cash.itemId,periodKey:cash.periodKey,skippedAt:now.toISOString(),expiresAt:(cash.actionEnd||cash.end).toISOString()};
+    await withAppState({schemaVersion:3,...base,completions:[completion],radarSkips:[skip]},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click(); await afterRender(win);
+      assert(doc.getElementById('quarterly-view-all').textContent.includes('1 of 2 complete'),'Overview counter should use all applicable quarterly categories');
+      doc.getElementById('quarterly-view-all').click(); await afterRender(win);
+      equal(doc.getElementById('quarterly-filter').getAttribute('aria-pressed'),'true');
+      const rows=[...doc.querySelectorAll('.action-list .action-row')]; equal(rows.length,2); assert(rows[0].textContent.includes('Cash+ categories'),'Incomplete skipped item should sort before completed work'); assert(rows[1].textContent.includes('Discover categories'),'Completed quarterly item should sort last');
+      const skippedCheck=rows[0].querySelector('[data-task-check]'); assert(rows[0].querySelector('[data-unskip-task]')&&skippedCheck&&!skippedCheck.disabled,'Skipped quarterly item should remain visible and completable');
+      skippedCheck.checked=true; skippedCheck.dispatchEvent(new win.Event('change',{bubbles:true})); await afterRender(win);
+      assert(doc.querySelector('.progress-line strong').textContent.includes('2 of 2 complete'),'Progress should update from the shared completion state');
+      const saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.keys(saved.radarSkips).length,0,'Completing a skipped category should clear its period skip');
+      doc.getElementById('quarterly-filter').click(); await afterRender(win);
+      const completedHeading=[...doc.querySelectorAll('h2')].find(heading=>heading.textContent==='Recently completed');
+      assert(completedHeading&&completedHeading.nextElementSibling.textContent.includes('Cash+ categories'),'Completed skipped work should move to Recently completed in the all-items view');
+    });
+  });
+  test('quarterly history normalizes to the Benefit Radar filter and filter changes replace state',async()=>{
+    await withAppState({schemaVersion:3,myCards:['discover_it']},async(win,doc,frame)=>{
+      win.history.replaceState({promosView:'quarterly'},'',win.location.pathname+win.location.search);
+      const loaded=new Promise(resolve=>frame.addEventListener('load',resolve,{once:true})); win.location.reload(); await loaded;
+      doc=frame.contentDocument; equal(doc.title,'ChooseMyCard · Benefit Radar'); equal(doc.getElementById('quarterly-filter').getAttribute('aria-pressed'),'true');
+      equal(frame.contentWindow.history.state.promosView,'radar'); equal(frame.contentWindow.history.state.radarFilter,'quarterly');
+      const length=frame.contentWindow.history.length; doc.getElementById('quarterly-filter').click(); await afterRender(frame.contentWindow);
+      equal(frame.contentWindow.history.length,length); equal(frame.contentWindow.history.state.radarFilter,'all');
+    });
+  });
+  test('recurring removal Undo restores visit state, while leaving Promos ends the visit',async()=>{
+    const now=new Date(), enrolledAt=now.toISOString(), state={schemaVersion:3,myCards:['amex_plat'],enrollments:[{cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt}]};
+    await withAppState(state,async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
+      doc.querySelector('[data-recurring-disclosure]').click(); await afterRender(win); doc.querySelector('[data-confirm-recurring]').click(); await afterRender(win);
+      const key='amex_plat:digital_entertainment_credit'; doc.querySelector(`[data-remove-recurring="${key}"]`).click(); await afterRender(win);
+      doc.getElementById('toastundo').click(); await afterRender(win);
+      assert(doc.querySelector(`[data-focus-id="recurring-confirmed-visit-${key}"]`),'Undo should restore the retained confirmation state'); equal(doc.activeElement.dataset.focusId,`recurring-confirmed-visit-${key}`);
+      doc.querySelector('nav button[data-tab="benefits"]').click(); await afterRender(win); assert(!doc.getElementById('toast').classList.contains('show'),'Leaving Promos should clear interactive Undo');
+      doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
+      assert(!doc.querySelector(`[data-focus-id="recurring-confirmed-visit-${key}"]`),'A new Promos visit should not retain the old task slot'); assert(doc.querySelector(`[data-focus-id="recurring-status-${key}"]`),'Persisted confirmation should move to Confirmed recurring charges');
     });
   });
   test('a stale open tab never overwrites newer saved schema data',async()=>{
@@ -504,7 +681,7 @@ document.getElementById('app').addEventListener('load',async()=>{
       equal(win.localStorage.getItem('cardrouter'),JSON.stringify(newer)); assert(!doc.getElementById('storageWarning').hidden,'Expected newer-data storage warning');
     });
   });
-  test('removing a card or enrollment suspends its recurring setup until reconfirmed',async()=>{
+  test('removing a card or enrollment suspends its recurring confirmation until reconfirmed',async()=>{
     const now=new Date(), confirmedAt=now.toISOString(), confirmedOn=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`, setup={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt,confirmedOn,termsVersion:'2026-08-27-2'};
     const state={schemaVersion:3,myCards:['amex_plat'],enrollments:[{cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt:confirmedAt}],recurringSetups:[setup]};
     await withAppState(state,async(win,doc)=>{
@@ -520,36 +697,41 @@ document.getElementById('app').addEventListener('load',async()=>{
     const state={schemaVersion:3,myCards:['biz_plat'],enrollments:[{cardId:'biz_plat',benefitId:'wireless_service_credit',enrolledAt:confirmedAt}],recurringSetups:[setup]};
     await withAppState(state,async(win,doc)=>{
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
+      const more=doc.querySelector('[data-more-options*="wireless_service_credit"]'); more.click(); await afterRender(win);
+      equal(doc.querySelector('[data-more-options*="wireless_service_credit"]').getAttribute('aria-expanded'),'true');
+      assert(doc.body.textContent.includes('Stops all reminders for this benefit until you restore it from Hidden.'));
       doc.querySelector('[data-hide-task*="wireless_service_credit"]').click(); await afterRender(win);
       let saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.values(saved.recurringSetups)[0].suspensionReason,'hidden');
       doc.getElementById('not-shown-toggle').click(); doc.querySelector('[data-restore-task*="wireless_service_credit"]').click(); await afterRender(win);
       const rows=[...doc.querySelectorAll('[data-task-check*="wireless_service_credit"]')]; equal(rows.length,1); saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.values(saved.recurringSetups)[0].suspensionReason,'hidden');
+      assert(doc.querySelector('[data-recurring-disclosure*="wireless_service_credit"]'),'Restoring should require a fresh recurring-charge confirmation');
     });
   });
-  test('a hidden recurring setup can show in My Radar and resume without a false success state',async()=>{
+  test('hidden recurring confirmation restoration never silently reactivates suppression',async()=>{
     const now=new Date(), confirmedAt=now.toISOString(), confirmedOn=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`, setup={cardId:'biz_plat',benefitId:'wireless_service_credit',confirmedAt,confirmedOn,termsVersion:'older-terms'};
     const state={schemaVersion:3,myCards:['biz_plat'],enrollments:[{cardId:'biz_plat',benefitId:'wireless_service_credit',enrolledAt:confirmedAt}],recurringSetups:[setup]};
     await withAppState(state,async(win,doc)=>{
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
-      doc.querySelector('[data-hide-task*="wireless_service_credit"]').click(); await afterRender(win);
-      assert(doc.querySelector('.recurring-section .section-note').textContent.includes('No saved setup is currently hiding monthly reminders'));
-      doc.getElementById('recurring-manage-toggle').click(); await afterRender(win);
-      const action=doc.querySelector('[data-resume-recurring]'); equal(action.textContent.trim(),'Show in My Radar and resume'); action.click(); await afterRender(win);
-      const saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.keys(saved.radarHidden).length,0); equal(Object.keys(saved.recurringSetups).length,0);
-      assert(doc.querySelector('[data-task-check*="wireless_service_credit"]'),'The monthly reminder should be visible after the action succeeds');
-      assert(doc.activeElement.dataset.taskCheck.includes('wireless_service_credit'),'Focus should move to the returned hidden action');
+      doc.querySelector('[data-more-options*="wireless_service_credit"]').click(); doc.querySelector('[data-hide-task*="wireless_service_credit"]').click(); await afterRender(win);
+      assert(!doc.querySelector('[data-recurring-row]'),'Suspended confirmations should not be presented as active');
+      doc.getElementById('not-shown-toggle').click(); doc.querySelector('[data-restore-task*="wireless_service_credit"]').click(); await afterRender(win);
+      const saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.keys(saved.radarHidden).length,0); equal(Object.keys(saved.recurringSetups).length,1);
+      assert(doc.querySelector('[data-task-check*="wireless_service_credit"]'),'The monthly reminder should be visible after restoration');
+      assert(doc.querySelector('[data-recurring-disclosure*="wireless_service_credit"]'),'A fresh confirmation should be offered explicitly');
     });
   });
-  test('current hidden state controls recovery even when import overwrote the suspension reason',async()=>{
+  test('imported hidden setup returns as an unsuppressed task and can be reconfirmed locally',async()=>{
     const now=new Date(), confirmedAt=now.toISOString(), confirmedOn=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     const setup={cardId:'bcp',benefitId:'disney_bundle_credit',confirmedAt,confirmedOn,termsVersion:'2026-08-27-2',suspendedAt:confirmedAt,suspensionReason:'imported'};
     const state={schemaVersion:3,myCards:['bcp'],enrollments:[{cardId:'bcp',benefitId:'disney_bundle_credit',enrolledAt:confirmedAt}],radarHidden:[{cardId:'bcp',benefitId:'disney_bundle_credit',hiddenAt:confirmedAt}],recurringSetups:[setup]};
     await withAppState(state,async(win,doc)=>{
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
-      doc.getElementById('recurring-manage-toggle').click(); await afterRender(win);
-      const action=doc.querySelector('[data-resume-recurring]'); equal(action.textContent.trim(),'Show in My Radar and resume'); action.click(); await afterRender(win);
-      const saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.keys(saved.radarHidden).length,0); equal(Object.keys(saved.recurringSetups).length,0);
-      assert(doc.activeElement.dataset.taskCheck.includes('disney_bundle_credit'),'Focus should move to the imported setup\'s returned task');
+      doc.getElementById('not-shown-toggle').click(); doc.querySelector('[data-restore-task*="disney_bundle_credit"]').click(); await afterRender(win);
+      let saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.keys(saved.radarHidden).length,0); equal(Object.values(saved.recurringSetups)[0].suspensionReason,'imported');
+      const disclosure=doc.querySelector('[data-recurring-disclosure*="disney_bundle_credit"]'); assert(disclosure,'Imported setup should return as a normal monthly task'); disclosure.click(); await afterRender(win);
+      doc.querySelector('[data-confirm-recurring="bcp:disney_bundle_credit"]').click(); await afterRender(win);
+      saved=JSON.parse(win.localStorage.getItem('cardrouter')); assert(!Object.values(saved.recurringSetups)[0].suspensionReason,'Local reconfirmation should clear import suspension');
+      assert(doc.querySelector('[data-focus-id="recurring-confirmed-visit-bcp:disney_bundle_credit"]'),'Reconfirmation should retain a neutral visit state');
     });
   });
 
@@ -561,7 +743,7 @@ document.getElementById('app').addEventListener('load',async()=>{
     list.appendChild(li);
   }
   const summary=document.getElementById('summary'); summary.textContent=`${passed} of ${tests.length} passed`; summary.className=passed===tests.length?'pass':'fail';
-  document.title=`${passed} of ${tests.length} My Radar tests passed`;
+  document.title=`${passed} of ${tests.length} Benefit Radar tests passed`;
 });
 </script>
 </body>

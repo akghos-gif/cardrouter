@@ -1,35 +1,44 @@
-# Recurring Benefit Setups
+# Benefit Radar Consolidation and Recurring Charge Confirmation
 
-**Status: Implemented, verified, and independently reviewed**
+**Status: Finalized, implemented, verified, and independently reviewed**
 
-Implement user-confirmed recurring benefit setups inside the existing My Radar page. The feature suppresses only routine monthly use reminders, never enrollment or completion, and asks the user to reconfirm each setup every six months.
+Benefit Radar is the single urgency-first action inbox in Promos. The former Quarterly Actions destination has been removed, while quarterly categories remain available as a complete filtered inventory. Eligible monthly benefits use an explicit, reversible recurring-charge confirmation instead of reminder-oriented setup language.
 
-## State and business rules
+## Benefit Radar
 
-- Allow only Amex Platinum Digital Entertainment, Sapphire Reserve Peloton, Business Platinum Wireless, and eligible monthly direct billing for Blue Cash Preferred Disney streaming. Each confirmation must satisfy its provider-specific direct-billing terms. Peloton must use one of the named qualifying memberships and be purchased in the U.S.; annual Disney streaming subscriptions earn up to $10 only in the purchase month and do not qualify for reminder suppression.
-- Store recurring setup confirmations separately from completions. Preserve both the confirmation instant and the user's local confirmation date.
-- Review each setup after six local calendar months. Monthly use reminders remain suppressed for 30 calendar days after review becomes due, then return if the user does not reconfirm.
-- Removing a card, removing enrollment, hiding a benefit, importing a setup, or changing relevant terms prevents silent reactivation.
-- Never mark a benefit used automatically or add recurring confirmations to completion history.
+- Use **Benefit Radar** in page titles, visible labels, accessible names, help text, tests, and documentation.
+- Order the full inbox as Priority, Due soon, Review recurring charges, Later, Recently completed, Confirmed recurring charges, then Hidden and completion history.
+- Keep cadence in task metadata without splitting the main inbox into monthly, quarterly, or annual groups.
+- Show a distinct **Quarterly categories** navigation row on the Promos overview only when applicable.
+- Use the stateful **Quarterly only** / **Show all** filter in Benefit Radar. The filtered inventory includes incomplete, completed, skipped, closed, and temporarily unavailable current-quarter categories; incomplete work follows urgency ordering and completed work sorts last.
+- Keep skipped quarterly categories visible and completable in quarterly-only mode.
+- Keep **Download quarterly reminders** as a real download button on the overview and at the bottom of Benefit Radar.
 
-## Persistence
+## Recurring charge confirmation
 
-- Use schema v3 while continuing to accept and migrate v1 and v2.
-- Keep the existing `v2.` setup-link encoding envelope.
-- Export recurring setup records but import them as suspended until locally reconfirmed.
-- Keep prompt presentation preferences device-local and out of setup links.
-- Preserve unsupported newer local state, including when an older tab attempts to save.
+- Allow only Amex Platinum Digital Entertainment, Sapphire Reserve Peloton, Business Platinum Wireless, and eligible monthly direct billing for Blue Cash Preferred Disney streaming. Each uses provider-specific qualification copy and its existing terms version.
+- Present **Confirm recurring charge** as a full-width disclosure below the task footer. A terms mismatch uses **Review recurring charge**. Nothing auto-expands and no new prompt-presentation preference is written.
+- Confirmation suppresses only routine monthly use reminders. It never completes the benefit, changes enrollment, or creates history.
+- Retain a neutral **Recurring charge confirmed** row in its original overview slot or urgency group for the current Promos visit. It shows the review date and a direct **Remove confirmation** action.
+- End visit-scoped state on reload or when leaving Promos. Later visits show active records in the flat **Confirmed recurring charges** section, with confirmation date, review date, terms, and removal visible on every row.
+- Review due records appear under **Review recurring charges** with **Yes, still recurring**, **Remove confirmation**, and the exact reminder-return date.
+- Removal and confirmation use the existing reversible mutation mechanism. Undo restores persisted state plus visit-scoped confirmation and review state only when the Promos visit token still matches.
+- Card removal, enrollment removal, hiding, import, and terms changes continue to prevent silent reactivation.
 
-## My Radar experience
+## Secondary actions and navigation
 
-- Offer one auto-expanded inline recurring-payment suggestion at a time in full My Radar. Eligible rows in the Promos preview expose the same control only when the user opens it.
-- Show active confirmations in **Benefits with recurring payments**, with **Manage benefit setups** revealing terms, inactive records, and resume controls.
-- Show due confirmations after Priority and Due Soon actions but before Later items under **Confirm recurring benefit setups**.
-- Keep external links top-right, keep `Mark used` separate, and never create another route, modal, or individual benefit page.
+- Use interval-specific skip labels such as **Skip August**, **Skip Q3**, **Skip Jan–Jun**, **Skip Jul–Dec**, and **Skip 2026**.
+- Put **Hide from Benefit Radar** under a native **More options** disclosure and explain that it stops all reminders until restored from Hidden.
+- Normalize legacy `{promosView:"quarterly"}` history to Benefit Radar with the quarterly filter active. Overview links push history; in-Radar filter changes replace the current entry; tab navigation resets to overview/all.
+- Keep schema v3, recurring record formats, the `v2.` setup-link envelope, timing, import suspension, terms-version handling, and stale-tab protection unchanged.
 
-## Verification and handoff
+## Accessibility and verification
 
-- The dependency-free browser harness passes 54 of 54 checks covering schema, timing, lifecycle, validation, import, focus, and UI states.
-- The 320px, 390×844, and desktop layouts were verified in light and dark modes with no console errors or horizontal overflow.
-- Independent engineering, product, accessibility, and copy reviews report no remaining P0-P2 findings.
-- Keep the implementation on `codex/credit-radar`. Do not push or merge before user approval.
+- Recurring and More options disclosures synchronize `aria-expanded` and `aria-controls`; the quarterly filter uses `aria-pressed` and a polite result-count announcement.
+- Benefit-and-card action names are unique, decorative chevrons are hidden from assistive technology, controls retain 44×44 minimum targets, and focus moves deterministically after confirmation, cancellation, removal, review, hiding, filter changes, and Undo.
+- Responsive controls stack at narrow widths and high text zoom, and the Undo control is not removed while focused.
+- The dependency-free browser harness passes 65 of 65 checks covering persistence, timing, full quarterly inventory, history compatibility, disclosure semantics, confirmation and removal, Undo, visit boundaries, suspension, focus, modal behavior, and copy-critical UI states.
+- Browser verification passes at 320px, 390×844, desktop, 200% zoom, and light and dark color schemes without horizontal overflow or console errors.
+- Independent engineering, product, accessibility, and copy reviews pass with no remaining P0–P2 findings.
+
+Keep the work on `codex/credit-radar`. Preserve `PRODUCT.md`; do not push or merge before user approval.
