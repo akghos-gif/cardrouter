@@ -106,6 +106,8 @@
   a{color:var(--accent)}
   button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
     outline:3px solid var(--accent); outline-offset:2px}
+  .recurring-status:focus-visible,.confirmed-status:focus-visible,.recurring-head h2:focus-visible{
+    outline:3px solid var(--accent); outline-offset:3px; border-radius:4px}
   .storage-warning{max-width:532px; margin:0 auto 10px; padding:10px 14px; border:1px solid var(--warn); border-radius:12px;
     color:var(--ink); background:color-mix(in srgb, var(--warn) 8%, var(--card)); font-size:13px; line-height:1.4}
   .storage-warning button{border:0; background:none; color:var(--accent); font:inherit; font-weight:700; min-height:44px; padding:7px 4px; cursor:pointer}
@@ -134,6 +136,8 @@
     font:inherit; font-size:12.5px; font-weight:650; cursor:pointer}
   .action-links .manage-action{color:var(--muted); text-decoration:none; font-weight:600}
   .action-links .manage-action:hover{text-decoration:underline; text-underline-offset:2px}
+  button.manage-action{border:0; background:none; color:var(--muted); min-height:44px; padding:8px 0; font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; text-align:left}
+  button.manage-action:hover{text-decoration:underline; text-underline-offset:2px}
   .task-checks{display:flex; flex:none; flex-direction:column; align-items:flex-end}
   .task-check{display:flex; align-items:center; gap:7px; max-width:138px; min-height:44px; font-size:12.5px; line-height:1.25;
     font-weight:650; cursor:pointer}
@@ -154,6 +158,27 @@
   .reminder-row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 0 2px}
   .reminder-row .hint{margin:0}
   .not-shown-list{border:1px solid var(--line); border-radius:12px; padding:0 12px; background:var(--card)}
+  .recurring-section{margin:20px 4px 4px}
+  .recurring-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px}
+  .recurring-head h2{margin:0}
+  .section-action{border:0; background:none; color:var(--accent); min-height:44px; padding:8px 0; font:inherit;
+    font-size:12.5px; font-weight:700; cursor:pointer; text-align:right}
+  .recurring-list{border-top:1px solid var(--line); margin-top:7px}
+  .recurring-row{padding:12px 0; border-bottom:1px solid var(--line)}
+  .recurring-row h3{font-size:14.5px; line-height:1.3; margin:0}
+  .recurring-status{font-size:12.5px; color:var(--muted); line-height:1.4; margin-top:3px}
+  .recurring-status.needs-review{color:var(--warn); font-weight:750}
+  .recurring-manage{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-top:4px}
+  .recurring-discovery{margin:8px -2px 1px; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--bg)}
+  .recurring-discovery-title{font-size:13.5px; font-weight:750; line-height:1.35}
+  .recurring-discovery-copy,.review-note,.review-fallback{font-size:12.5px; line-height:1.45; margin:5px 0 0; color:var(--muted)}
+  .review-fallback{color:var(--ink); font-weight:650}
+  .choice-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+  .choice-row .pill{font-size:12.5px}
+  .recurring-count{font-size:12px; color:var(--warn); font-weight:750}
+  .review-confirm{white-space:nowrap}
+  .confirmed-status{display:inline-flex; align-items:center; min-height:44px; color:var(--good); font-size:12.5px; font-weight:750}
+  .terms-changed{color:var(--warn); font-weight:750}
   @media (max-width:420px){
     .action-topline{gap:8px}
     .action-topline .issuer-action{font-size:12px}
@@ -161,6 +186,9 @@
     .task-check{max-width:none; width:max-content}
     .action-links{margin-top:3px}
     .reminder-row{align-items:flex-start; flex-direction:column}
+    .recurring-head{align-items:flex-start}
+    .recurring-manage{align-items:flex-start; flex-direction:column}
+    .review-confirm{white-space:normal}
   }
   @media (prefers-reduced-motion:reduce){
     *, *::before, *::after{scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important}
@@ -543,6 +571,7 @@ const RADAR_BENEFITS = [
     prerequisiteLabel:'Add card to Uber', markPrerequisiteLabel:'Mark card added', prerequisiteDoneLabel:'Card added', prerequisiteToast:'Marked card added',
     link:'https://global.americanexpress.com/card-benefits/detail/uber-rides-with-platinum/platinum'},
   {cardId:'amex_plat', benefitId:'digital_entertainment_credit', cadence:'month', amount:'$25', requiresEnrollment:true,
+    recurringEligible:true, recurringTermsVersion:'2026-08-26-1', recurringQualifier:'Confirm only if an eligible entertainment payment is charged to this card every month.',
     link:'https://global.americanexpress.com/card-benefits/detail/digital-entertainment/platinum'},
   {cardId:'amex_plat', benefitId:'lululemon_credit', cadence:'quarter', amount:'$75', requiresEnrollment:true,
     link:'https://global.americanexpress.com/card-benefits/detail/lululemon-credit/platinum'},
@@ -551,6 +580,7 @@ const RADAR_BENEFITS = [
   {cardId:'csr', benefitId:'stubhub_viagogo_credit', cadence:'half', amount:'$150', requiresEnrollment:true,
     link:'https://www.chase.com/personal/credit-cards/education/rewards-benefits/how-to-use-the-%24300-stubhub-credit-with-chase-sapphire-reserve'},
   {cardId:'csr', benefitId:'peloton_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
+    recurringEligible:true, recurringTermsVersion:'2026-08-26-1', recurringQualifier:'Confirm only if an eligible Peloton payment is charged to this card every month.',
     link:'https://www.onepeloton.com/chase-sapphire-reserve'},
   {cardId:'csp', benefitId:'doordash_promo_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
     link:'https://www.doordash.com/en/dashpass/partner/chase/preferred'},
@@ -568,20 +598,25 @@ const RADAR_BENEFITS = [
   {cardId:'biz_plat', benefitId:'indeed_credit', cadence:'quarter', amount:'$90', requiresEnrollment:true,
     link:'https://global.americanexpress.com/card-benefits/detail/indeed-benefit/business-platinum'},
   {cardId:'biz_plat', benefitId:'wireless_service_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
+    recurringEligible:true, recurringTermsVersion:'2026-08-26-1', recurringQualifier:'Confirm only if an eligible U.S. wireless payment is charged to this card every month.',
     link:'https://global.americanexpress.com/card-benefits/detail/wireless-credit/business-platinum'},
   {cardId:'biz_gold', benefitId:'flexible_business_credit', cadence:'month', amount:'$20', requiresEnrollment:true,
     detailBefore:'FedEx through Oct 1, 2026; Grubhub and U.S. office supply stores continue', detailAfter:'Grubhub and U.S. office supply stores', detailChangesOn:'2026-10-02',
     link:'https://global.americanexpress.com/card-benefits/detail/240-flexible-business-credit/business-gold'},
   {cardId:'bcp', benefitId:'disney_bundle_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
+    recurringEligible:true, recurringTermsVersion:'2026-08-26-1', recurringQualifier:'Confirm only for eligible monthly Disney streaming billed directly to this card.',
     link:'https://global.americanexpress.com/card-benefits/detail/disney-streaming-credit/blue-cash-preferred'},
 ].map(x=>({...x, sourceVerifiedAt:RADAR_CATALOG_VERSION}));
 const RADAR_BENEFIT_MAP = Object.fromEntries(RADAR_BENEFITS.map(x=>[x.cardId+':'+x.benefitId,x]));
 
 /* ---------- state ---------- */
 /* Each device keeps its own setup (browser storage). A setup link (#hash) preloads a lineup. */
-const DEFAULT_STATE = {schemaVersion:2, myCards:[], overrides:{}, cpp:{}, custom:[], enrollments:{}, completions:{}, radarHidden:{}, radarSkips:{}};
+const CURRENT_SCHEMA_VERSION = 3;
+const DEFAULT_STATE = {schemaVersion:CURRENT_SCHEMA_VERSION, myCards:[], overrides:{}, cpp:{}, custom:[], enrollments:{}, completions:{}, radarHidden:{}, radarSkips:{}, recurringSetups:{}, recurringPromptPrefs:{}};
 const IDENT_RE = /^[A-Za-z0-9_-]{1,64}$/;
 const PERIOD_RE = /^\d{4}-(?:(?:0[1-9]|1[0-2])|Q[1-4]|H[12]|Y)$/;
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const RECURRING_SUSPENSION_REASONS = new Set(['card-removed','enrollment-removed','hidden','imported']);
 const SETUP_MAX_ENCODED = 32768, SETUP_MAX_DECODED = 24576;
 let mem = null, storagePersistent = true, preserveStoredState = false, startupNotice = '', storageWarningReason = 'unavailable';
 
@@ -599,11 +634,22 @@ function recordsOf(v){ return Array.isArray(v) ? v : plainObject(v) ? Object.val
 function canonicalEnrollmentKey(cardId,benefitId){ return `enroll:${cardId}:${benefitId}`; }
 function canonicalTaskKey(kind,cardId,itemId,periodKey){ return `${kind}:${cardId}:${itemId}:${periodKey}`; }
 function canonicalHiddenKey(cardId,benefitId){ return `${cardId}:${benefitId}`; }
+function canonicalRecurringKey(cardId,benefitId){ return `${cardId}:${benefitId}`; }
 function localDay(d){ return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
 function calendarDays(a,b){ return Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate())-Date.UTC(a.getFullYear(),a.getMonth(),a.getDate()))/86400000); }
 function minusCalendarMonths(date,months){
   const targetMonth=date.getMonth()-months, last=new Date(date.getFullYear(),targetMonth+1,0).getDate();
   return new Date(date.getFullYear(),targetMonth,Math.min(date.getDate(),last));
+}
+function addCalendarMonths(date,months){
+  const targetMonth=date.getMonth()+months, last=new Date(date.getFullYear(),targetMonth+1,0).getDate();
+  return new Date(date.getFullYear(),targetMonth,Math.min(date.getDate(),last));
+}
+function validIsoDate(value){ const d=localDateFromIsoDate(value); return !!d&&ISO_DATE_RE.test(value); }
+function confirmationDateMatchesInstant(confirmedOn,confirmedAt){
+  if(!validIsoDate(confirmedOn)||!validIso(confirmedAt)) return false;
+  const instant=new Date(confirmedAt), utcDay=new Date(instant.getUTCFullYear(),instant.getUTCMonth(),instant.getUTCDate());
+  return Math.abs(calendarDays(localDateFromIsoDate(confirmedOn),utcDay))<=1;
 }
 function periodInfo(cadence,now){
   const d=localDay(now), y=d.getFullYear(), m=d.getMonth();
@@ -693,7 +739,7 @@ function migrateLegacyCustomIds(raw){
   const mapId=id=>remap.get(id)||id;
   if(Array.isArray(migrated.myCards)) migrated.myCards=migrated.myCards.map(mapId);
   if(plainObject(migrated.overrides)) migrated.overrides=Object.fromEntries(Object.entries(migrated.overrides).map(([id,rates])=>[mapId(id),rates]));
-  for(const key of ['enrollments','completions','radarHidden','radarSkips']){
+  for(const key of ['enrollments','completions','radarHidden','radarSkips','recurringSetups','recurringPromptPrefs']){
     const records=migrated[key];
     if(Array.isArray(records)) migrated[key]=records.map(record=>plainObject(record)?{...record,cardId:mapId(record.cardId)}:record);
     else if(plainObject(records)) migrated[key]=Object.fromEntries(Object.entries(records).map(([recordKey,record])=>[recordKey,plainObject(record)?{...record,cardId:mapId(record.cardId)}:record]));
@@ -751,6 +797,27 @@ function normalizeState(raw,now=new Date(),options={}){
     if(options.fromImport&&periodKey!==currentPeriodForTask(r.taskKind,cardId,itemId,now)) continue;
     out.radarSkips[canonicalTaskKey(r.taskKind,cardId,itemId,periodKey)]={taskKind:r.taskKind,cardId,itemId,periodKey,skippedAt:r.skippedAt,expiresAt:r.expiresAt};
   }
+  for(const r of recordsOf(raw.recurringSetups).slice(0,500)){
+    if(!plainObject(r)) continue;
+    const cardId=cleanId(r.cardId), benefitId=cleanId(r.benefitId), meta=RADAR_BENEFIT_MAP[cardId+':'+benefitId];
+    const confirmedAt=validEventIso(r.confirmedAt,now)?r.confirmedAt:'', confirmedOn=validIsoDate(r.confirmedOn)?r.confirmedOn:'';
+    const termsVersion=cleanText(r.termsVersion,64), hasSuspendedAt=r.suspendedAt!=null, hasReason=r.suspensionReason!=null;
+    let suspendedAt=hasSuspendedAt&&validEventIso(r.suspendedAt,now)?r.suspendedAt:'', suspensionReason=cleanText(r.suspensionReason,40);
+    if(!cardId||!benefitId||!meta?.recurringEligible||!confirmedAt||!confirmedOn||!confirmationDateMatchesInstant(confirmedOn,confirmedAt)||!termsVersion) continue;
+    if(hasSuspendedAt!==hasReason||(hasSuspendedAt&&(!suspendedAt||!RECURRING_SUSPENSION_REASONS.has(suspensionReason)||new Date(suspendedAt)<new Date(confirmedAt)))) continue;
+    if(options.fromImport){ suspendedAt=now.toISOString(); suspensionReason='imported'; }
+    const record={cardId,benefitId,confirmedAt,confirmedOn,termsVersion};
+    if(suspendedAt){ record.suspendedAt=suspendedAt; record.suspensionReason=suspensionReason; }
+    out.recurringSetups[canonicalRecurringKey(cardId,benefitId)]=record;
+  }
+  if(!options.fromImport) for(const r of recordsOf(raw.recurringPromptPrefs).slice(0,500)){
+    if(!plainObject(r)) continue;
+    const cardId=cleanId(r.cardId), benefitId=cleanId(r.benefitId), meta=RADAR_BENEFIT_MAP[cardId+':'+benefitId];
+    const shownAt=validEventIso(r.shownAt,now)?r.shownAt:'', dismissedAt=r.dismissedAt==null?'':validEventIso(r.dismissedAt,now)?r.dismissedAt:'';
+    if(!cardId||!benefitId||!meta?.recurringEligible||r.termsVersion!==meta.recurringTermsVersion||!shownAt||(r.dismissedAt!=null&&!dismissedAt)||dismissedAt&&new Date(dismissedAt)<new Date(shownAt)) continue;
+    const record={cardId,benefitId,termsVersion:meta.recurringTermsVersion,shownAt}; if(dismissedAt) record.dismissedAt=dismissedAt;
+    out.recurringPromptPrefs[canonicalRecurringKey(cardId,benefitId)]=record;
+  }
   if(plainObject(raw.activations)) for(const [legacyKey,value] of Object.entries(raw.activations)){
     if(!value) continue; const m=legacyKey.match(/^(\d{4}-Q[1-4]):(freedom_flex|discover_it)$/); if(!m) continue;
     if(options.fromImport&&m[1]!==currentQuarter(now)) continue;
@@ -791,13 +858,13 @@ function validateRateMap(value){
   }
 }
 function validateImportShape(raw,now=new Date()){
-  assertAllowedKeys(raw,['schemaVersion','catalogVersion','myCards','overrides','cpp','custom','coachDone','activations','enrollments','completions','radarHidden','radarSkips']);
+  assertAllowedKeys(raw,['schemaVersion','catalogVersion','myCards','overrides','cpp','custom','coachDone','activations','enrollments','completions','radarHidden','radarSkips','recurringSetups']);
   if(raw.catalogVersion!=null&&typeof raw.catalogVersion!=='string') invalidSetupData();
   if(raw.coachDone!=null&&typeof raw.coachDone!=='boolean') invalidSetupData();
   if(raw.myCards!=null&&(!Array.isArray(raw.myCards)||raw.myCards.some(id=>!validSetupId(id)))) invalidSetupData();
   if(raw.custom!=null&&!Array.isArray(raw.custom)) invalidSetupData();
   for(const key of ['overrides','cpp','activations']) if(raw[key]!=null&&!plainObject(raw[key])) invalidSetupData();
-  for(const key of ['enrollments','completions','radarHidden','radarSkips']) if(raw[key]!=null&&!Array.isArray(raw[key])&&!plainObject(raw[key])) invalidSetupData();
+  for(const key of ['enrollments','completions','radarHidden','radarSkips','recurringSetups']) if(raw[key]!=null&&!Array.isArray(raw[key])&&!plainObject(raw[key])) invalidSetupData();
   if(Array.isArray(raw.custom)) for(const card of raw.custom){
     assertAllowedKeys(card,['id','name','issuer','program','rates','notes']);
     if(!validSetupId(card.id)||typeof card.name!=='string'||!card.name.trim()||!validSetupId(card.program)||!PROGRAMS[card.program]||!validOptionalText(card.issuer)||!validOptionalText(card.notes)) invalidSetupData();
@@ -822,6 +889,13 @@ function validateImportShape(raw,now=new Date()){
     const completionTimeValid=record.completedAt===null||(typeof record.completedAt==='string'&&validEventIso(record.completedAt,now));
     if(!['activate','select','use'].includes(record.actionType)||!validSetupId(record.cardId)||!validSetupId(itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validCompletionIdentity(record.actionType,record.cardId,itemId,record.periodKey,{fromImport:true})||!completionTimeValid||(record.completedAt===null&&!(action&&record.actionType==='activate'))||(record.legacyUndated!=null&&typeof record.legacyUndated!=='boolean')||(record.attestedBy!=null&&record.attestedBy!==expectedAttestedBy)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
   }
+  const recurringKeys=new Set();
+  for(const record of recordsOf(raw.recurringSetups)){
+    assertAllowedKeys(record,['cardId','benefitId','confirmedAt','confirmedOn','termsVersion','suspendedAt','suspensionReason']);
+    const key=canonicalRecurringKey(record.cardId,record.benefitId), meta=RADAR_BENEFIT_MAP[key], hasSuspendedAt=record.suspendedAt!=null, hasReason=record.suspensionReason!=null;
+    if(recurringKeys.has(key)||!validSetupId(record.cardId)||!validSetupId(record.benefitId)||!meta?.recurringEligible||typeof record.confirmedAt!=='string'||!validEventIso(record.confirmedAt,now)||typeof record.confirmedOn!=='string'||!confirmationDateMatchesInstant(record.confirmedOn,record.confirmedAt)||typeof record.termsVersion!=='string'||!record.termsVersion||record.termsVersion.length>64||hasSuspendedAt!==hasReason||(hasSuspendedAt&&(!validEventIso(record.suspendedAt,now)||!RECURRING_SUSPENSION_REASONS.has(record.suspensionReason)||new Date(record.suspendedAt)<new Date(record.confirmedAt)))) invalidSetupData();
+    recurringKeys.add(key);
+  }
   for(const record of recordsOf(raw.radarHidden)){
     assertAllowedKeys(record,['cardId','benefitId','hiddenAt']);
     if(!validSetupId(record.cardId)||!validSetupId(record.benefitId)||!RADAR_BENEFIT_MAP[record.cardId+':'+record.benefitId]||typeof record.hiddenAt!=='string'||!validEventIso(record.hiddenAt,now)) invalidSetupData();
@@ -835,14 +909,14 @@ function validateImportShape(raw,now=new Date()){
 function validateImportPayload(raw,encodedLength,decodedBytes,now=new Date()){
   if(encodedLength>SETUP_MAX_ENCODED||decodedBytes>SETUP_MAX_DECODED) throw new SetupLinkError('Setup link is too large');
   const version=raw&&raw.schemaVersion==null?1:raw&&raw.schemaVersion;
-  if(!plainObject(raw)||!Number.isInteger(version)||![1,2].includes(version)) throw new SetupLinkError('Setup link version is not supported');
+  if(!plainObject(raw)||!Number.isInteger(version)||![1,2,3].includes(version)) throw new SetupLinkError('Setup link version is not supported');
   const candidate=version===1?migrateLegacyCustomIds(raw):raw;
   inspectImportValue(candidate,0,{n:0});
   validateImportShape(candidate,now);
   if((candidate.myCards||[]).length>50||(candidate.custom||[]).length>25) throw new SetupLinkError('Setup link contains too many cards');
   if(plainObject(candidate.overrides)&&Object.keys(candidate.overrides).length>50) throw new SetupLinkError('This setup link contains too many custom rate overrides.');
   if(plainObject(candidate.cpp)&&Object.keys(candidate.cpp).length>25) throw new SetupLinkError('This setup link contains too many point valuations.');
-  const recordCount=['enrollments','completions','radarHidden','radarSkips'].reduce((n,k)=>n+recordsOf(candidate[k]).length,0);
+  const recordCount=['enrollments','completions','radarHidden','radarSkips','recurringSetups'].reduce((n,k)=>n+recordsOf(candidate[k]).length,0);
   if(recordCount>500) throw new SetupLinkError('This setup link contains too much saved activity.');
   return candidate;
 }
@@ -864,7 +938,8 @@ function encodeSetupState(raw){
 }
 function stateHasData(s){
   return s.myCards.length||s.custom.length||Object.keys(s.overrides).length||Object.keys(s.cpp).length||
-    Object.keys(s.enrollments).length||Object.keys(s.completions).length||Object.keys(s.radarHidden).length||Object.keys(s.radarSkips).length;
+    Object.keys(s.enrollments).length||Object.keys(s.completions).length||Object.keys(s.radarHidden).length||Object.keys(s.radarSkips).length||
+    Object.keys(s.recurringSetups).length||Object.keys(s.recurringPromptPrefs).length;
 }
 function stripSetupHash(){ history.replaceState(history.state,'',location.pathname+location.search); }
 function loadState(){
@@ -873,7 +948,7 @@ function loadState(){
     const saved=localStorage.getItem('cardrouter');
     if(saved){
       const raw=JSON.parse(saved), version=raw&&raw.schemaVersion==null?1:raw&&raw.schemaVersion;
-      if(!Number.isInteger(version)||![1,2].includes(version)){
+      if(!Number.isInteger(version)||![1,2,3].includes(version)){
         preserveStoredState=true; storagePersistent=false; storageWarningReason='newer';
         startupNotice='Newer saved data was left unchanged';
         const session=sessionStorage.getItem('cardrouter-session'); if(session) local=normalizeState(JSON.parse(session));
@@ -892,10 +967,10 @@ function loadState(){
       const decoded=decodeSetupPayload(encoded), bytes=new TextEncoder().encode(decoded).length, raw=JSON.parse(decoded), importNow=new Date();
       const validated=validateImportPayload(raw,encoded.length,bytes,importNow);
       const imported=normalizeState(validated,importNow,{fromImport:true});
-      if(stateHasData(local)&&!confirm('Replace this device\'s cards, settings, benefit enrollments, items hidden from My Radar, skipped periods, and current checkmarks with this setup link?')){
+      if(stateHasData(local)&&!confirm('Replace this device\'s cards, settings, benefit enrollments, recurring benefit setups, items hidden from My Radar, skipped periods, and current checkmarks with this setup link? Imported recurring benefit setups will not hide monthly reminders until you confirm them again in My Radar on this device.')){
         startupNotice='Setup import canceled'; return local;
       }
-      startupNotice='Setup imported'; return imported;
+      startupNotice=Object.keys(imported.recurringSetups).length?'Setup imported · confirm recurring benefit setups in My Radar':'Setup imported'; return imported;
     }catch(e){ startupNotice=e instanceof SetupLinkError?e.message:'This setup link could not be imported.'; }
   }
   return local;
@@ -907,6 +982,12 @@ function updateStorageWarning(){
 }
 function saveState(s,now=new Date()){
   const normalized=normalizeState(s,now); S=normalized; mem=normalized;
+  if(!preserveStoredState) try{
+    const existing=localStorage.getItem('cardrouter');
+    if(existing){ const parsed=JSON.parse(existing), version=parsed&&parsed.schemaVersion==null?1:parsed&&parsed.schemaVersion;
+      if(Number.isInteger(version)&&version>CURRENT_SCHEMA_VERSION){ preserveStoredState=true; storageWarningReason='newer'; }
+    }
+  }catch(ignore){}
   if(preserveStoredState){
     try{sessionStorage.setItem('cardrouter-session',JSON.stringify(normalized));}catch(ignore){}
     storagePersistent=false; storageWarningReason='newer'; updateStorageWarning(); return normalized;
@@ -950,14 +1031,18 @@ function toast(msg,ms,undoFn){
   t._h=setTimeout(()=>{pendingUndo=null; undo.hidden=true; t.classList.remove('show');},ms||2600);
 }
 function mutateWithUndo(message,mutator,focusId,undoFocusId=focusId,mutationNow=new Date()){
-  const before=structuredClone(S); mutator(); saveState(S,mutationNow); render(); restoreFocus(focusId);
-  toast(message,5000,()=>{ S=before; saveState(S); render(); restoreFocus(undoFocusId); toast('Change undone'); });
+  const before=structuredClone(S), reviewBefore=recurringReviewSession?{keys:[...recurringReviewSession.keys],confirmed:[...recurringReviewSession.confirmed]}:null;
+  mutator(); saveState(S,mutationNow); render(); restoreFocus(focusId);
+  toast(message,5000,()=>{ S=before; recurringReviewSession=reviewBefore?{keys:[...reviewBefore.keys],confirmed:new Set(reviewBefore.confirmed)}:null; saveState(S); render(); restoreFocus(undoFocusId); toast('Change undone'); });
 }
 function restoreFocus(focusId){
   requestAnimationFrame(()=>{
     const exact=focusId&&document.querySelector(`[data-focus-id="${focusId}"]`);
-    const fallback=document.getElementById('radar-view-all')||document.querySelector('main button, main a');
-    (exact||fallback)?.focus({preventScroll:true});
+    const target=exact||document.getElementById('radar-view-all')||document.querySelector('main button, main a');
+    if(!target) return;
+    target.focus({preventScroll:true});
+    const rect=target.getBoundingClientRect();
+    if(rect.top<12||rect.bottom>window.innerHeight-12) target.scrollIntoView({block:'center'});
   });
 }
 function captureRefreshFocus(now){
@@ -970,7 +1055,7 @@ function captureRefreshFocus(now){
       return {type:'taskAction',attribute,taskKey:focusId.replace(/^task-/,''),focusId};
     }
   }
-  for(const attribute of ['data-show-radar','data-benefit-enroll','data-benefit-use','data-bcat']){
+  for(const attribute of ['data-show-radar','data-benefit-enroll','data-benefit-use','data-bcat','data-recurring-disclosure','data-review-confirm','data-resume-recurring']){
     if(active.hasAttribute(attribute)) return {type:'attribute',attribute,value:active.getAttribute(attribute)};
   }
   if(active.id) return {type:'id',value:active.id};
@@ -1019,8 +1104,49 @@ function displayDate(value){
   if(!value) return ''; const d=value instanceof Date?value:new Date(value); if(isNaN(d)) return '';
   return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
 }
+function displayCalendarDate(value,now=new Date()){
+  const d=value instanceof Date?value:localDateFromIsoDate(value); if(!d||isNaN(d)) return '';
+  return d.toLocaleDateString(undefined,{month:'short',day:'numeric',...(d.getFullYear()!==now.getFullYear()?{year:'numeric'}:{})});
+}
 function completionFor(kind,cardId,itemId,periodKey,state=S){ return state.completions[canonicalTaskKey(kind,cardId,itemId,periodKey)]||null; }
 function enrollmentFor(cardId,benefitId,state=S){ return state.enrollments[canonicalEnrollmentKey(cardId,benefitId)]||null; }
+function recurringSetupFor(cardId,benefitId,state=S){ return state.recurringSetups[canonicalRecurringKey(cardId,benefitId)]||null; }
+function recurringDates(record){
+  const confirmed=record&&localDateFromIsoDate(record.confirmedOn); if(!confirmed) return null;
+  const reviewDue=addCalendarMonths(confirmed,6), graceEnd=addCalendarDays(reviewDue,30);
+  return {reviewDue,graceEnd};
+}
+function recurringSetupStatus(cardId,benefitId,state=S,now=new Date()){
+  const key=canonicalRecurringKey(cardId,benefitId), meta=RADAR_BENEFIT_MAP[key], record=state.recurringSetups[key]||null;
+  if(!meta?.recurringEligible) return {status:'ineligible',key,meta,record:null};
+  if(!record) return {status:'none',key,meta,record:null};
+  const dates=recurringDates(record), base={key,meta,record,...dates};
+  if(!state.myCards.includes(cardId)) return {...base,status:'suspended'};
+  if(record.suspendedAt) return {...base,status:'suspended'};
+  if(record.termsVersion!==meta.recurringTermsVersion) return {...base,status:'terms-changed'};
+  if(meta.requiresEnrollment&&!enrollmentFor(cardId,benefitId,state)) return {...base,status:'suspended'};
+  if(state.radarHidden[canonicalHiddenKey(cardId,benefitId)]) return {...base,status:'suspended'};
+  const today=localDay(now);
+  if(today>=dates.graceEnd) return {...base,status:'expired'};
+  if(today>=dates.reviewDue) return {...base,status:'review-due'};
+  return {...base,status:'active'};
+}
+function recurringSetupsForState(state=S,now=new Date()){
+  return Object.values(state.recurringSetups).map(record=>{
+    const card=getCardFor(record.cardId,state), benefit=benefitById(record.cardId,record.benefitId), status=recurringSetupStatus(record.cardId,record.benefitId,state,now);
+    return {...status,card,benefit};
+  }).filter(item=>item.meta?.recurringEligible&&item.card&&item.benefit);
+}
+function suspendRecurringSetup(cardId,benefitId,reason,mutationNow=new Date()){
+  const key=canonicalRecurringKey(cardId,benefitId), record=S.recurringSetups[key];
+  if(record&&RECURRING_SUSPENSION_REASONS.has(reason)){ record.suspendedAt=mutationNow.toISOString(); record.suspensionReason=reason; }
+}
+function setRecurringPromptPreference(cardId,benefitId,{dismissed=false}={},mutationNow=new Date()){
+  const key=canonicalRecurringKey(cardId,benefitId), meta=RADAR_BENEFIT_MAP[key]; if(!meta?.recurringEligible) return;
+  const existing=S.recurringPromptPrefs[key], shownAt=existing&&existing.termsVersion===meta.recurringTermsVersion?existing.shownAt:mutationNow.toISOString();
+  const record={cardId,benefitId,termsVersion:meta.recurringTermsVersion,shownAt}; if(dismissed) record.dismissedAt=mutationNow.toISOString();
+  S.recurringPromptPrefs[key]=record;
+}
 function benefitAmount(meta,now){ return meta.decemberAmount&&now.getMonth()===11?meta.decemberAmount:meta.amount; }
 function benefitDetail(meta,benefit,now){
   if(meta.detailChangesOn){ const change=localDateFromIsoDate(meta.detailChangesOn); return now<change?meta.detailBefore:meta.detailAfter; }
@@ -1061,6 +1187,7 @@ function buildBenefitTasks(now=new Date(),state=S){
     const enrolled=enrollmentFor(meta.cardId,meta.benefitId,state), needsEnrollment=meta.requiresEnrollment&&!enrolled;
     const kind=needsEnrollment?'enroll-task':'use', key=canonicalTaskKey(kind,meta.cardId,meta.benefitId,period.key);
     const record=kind==='use'?state.completions[key]:null, daysLeft=Math.max(0,calendarDays(localDay(now),period.end)-1);
+    const recurring=recurringSetupStatus(meta.cardId,meta.benefitId,state,now), recurringSuppressed=kind==='use'&&['active','review-due'].includes(recurring.status);
     return {key,kind,actionType:kind==='use'?'use':'enroll',itemId:meta.benefitId,benefitId:meta.benefitId,periodKey:period.key,
       end:period.end,card,benefit,meta,title:benefit.name,amount:benefitAmount(meta,now),
       link:meta.link,externalLabel:'Open benefit',done:!!record,completedAt:record&&record.completedAt,
@@ -1068,7 +1195,7 @@ function buildBenefitTasks(now=new Date(),state=S){
       prerequisiteLabel:meta.prerequisiteLabel||'Enroll', prerequisiteDoneLabel:meta.prerequisiteDoneLabel||'Enrolled',
       prerequisiteToast:meta.prerequisiteToast||'Marked enrolled',
       markLabel:needsEnrollment?(meta.markPrerequisiteLabel||'Mark enrolled'):'Mark used', detail:benefitDetail(meta,benefit,now),
-      hidden:!!state.radarHidden[canonicalHiddenKey(meta.cardId,meta.benefitId)],skipped:!!state.radarSkips[key],
+      hidden:!!state.radarHidden[canonicalHiddenKey(meta.cardId,meta.benefitId)],skipped:!!state.radarSkips[key],recurring,recurringSuppressed,
       cardOrder:cardOrder.get(meta.cardId)||0};
   }).filter(Boolean);
 }
@@ -1080,8 +1207,9 @@ function compareRadarTasks(a,b,state=S){
 function buildRadarTasks(now=new Date(),state=S){
   const all=[...buildQuarterlyTasks(now,state),...buildBenefitTasks(now,state)].sort((a,b)=>compareRadarTasks(a,b,state));
   const suppressed=all.filter(t=>(t.hidden||t.skipped)&&!t.closed&&!t.unavailable);
-  const active=all.filter(t=>!t.hidden&&!t.skipped&&!t.closed&&!t.unavailable&&taskRetentionVisible(t,now));
-  return {all,active,suppressed,unresolved:active.filter(t=>!t.done)};
+  const recurring=all.filter(t=>t.recurringSuppressed&&!t.hidden&&!t.skipped&&!t.closed&&!t.unavailable);
+  const active=all.filter(t=>!t.recurringSuppressed&&!t.hidden&&!t.skipped&&!t.closed&&!t.unavailable&&taskRetentionVisible(t,now));
+  return {all,active,suppressed,recurring,unresolved:active.filter(t=>!t.done)};
 }
 function taskSummary(task){
   if(!task) return '';
@@ -1119,7 +1247,7 @@ function setTaskChecked(task,checked,focusId,mutationNow=new Date()){
     if(task.actionType==='enroll'){
       const key=canonicalEnrollmentKey(task.card.id,task.benefitId);
       if(checked){ S.enrollments[key]={cardId:task.card.id,benefitId:task.benefitId,enrolledAt:mutationNow.toISOString(),labelSnapshot:task.title,cardNameSnapshot:task.card.name}; delete S.radarSkips[task.key]; }
-      else delete S.enrollments[key];
+      else{ delete S.enrollments[key]; suspendRecurringSetup(task.card.id,task.benefitId,'enrollment-removed',mutationNow); }
     }else if(checked) S.completions[task.key]=completionRecordForTask(task,mutationNow);
     else delete S.completions[task.key];
   },nextFocus,focusId||task.key,mutationNow);
@@ -1132,7 +1260,7 @@ function setBenefitEnrollment(cardId,benefitId,checked,focusId,periodKey,mutatio
     if(checked){
       S.enrollments[key]={cardId,benefitId,enrolledAt:mutationNow.toISOString(),labelSnapshot:benefit.name,cardNameSnapshot:card.name};
       delete S.radarSkips[canonicalTaskKey('enroll-task',cardId,benefitId,periodKey)];
-    }else delete S.enrollments[key];
+    }else{ delete S.enrollments[key]; suspendRecurringSetup(cardId,benefitId,'enrollment-removed',mutationNow); }
   },focusId,focusId,mutationNow);
 }
 function skipTask(task,mutationNow=new Date()){
@@ -1147,6 +1275,7 @@ function hideBenefitTask(task){
   const key=canonicalHiddenKey(task.card.id,task.benefitId);
   mutateWithUndo('Hidden from My Radar',()=>{
     S.radarHidden[key]={cardId:task.card.id,benefitId:task.benefitId,hiddenAt:new Date().toISOString()};
+    suspendRecurringSetup(task.card.id,task.benefitId,'hidden');
   },'not-shown-toggle',`task-${task.key}`);
 }
 function restoreBenefit(cardId,benefitId,focusId,undoFocusId=focusId){
@@ -1176,8 +1305,10 @@ function completionHistory(now=new Date()){
   return events.sort((a,b)=>new Date(b.sortAt)-new Date(a.sortAt)||a.label.localeCompare(b.label));
 }
 
-window.CardRouterRadar={normalizeState,periodInfo,periodEndFromKey,calendarDays,minusCalendarMonths,canonicalTaskKey,actionEndFor,
+window.CardRouterRadar={normalizeState,periodInfo,periodEndFromKey,calendarDays,minusCalendarMonths,addCalendarMonths,canonicalTaskKey,canonicalRecurringKey,actionEndFor,
   buildRadarTasks:(state,now=new Date())=>buildRadarTasks(now,normalizeState(state,now)),
+  recurringSetupStatus:(state,cardId,benefitId,now=new Date())=>recurringSetupStatus(cardId,benefitId,normalizeState(state,now),now),
+  recurringSetupsForState:(state,now=new Date())=>recurringSetupsForState(normalizeState(state,now),now),
   rankForState:(state,catId,now=new Date())=>rankCardsForState(normalizeState(state,now),catId,now)};
 
 /* Effective % return for card on category. */
@@ -1225,6 +1356,7 @@ function rankFor(catId){
 const mainEl = document.getElementById('main');
 const initialPromosView=history.state&&['radar','quarterly'].includes(history.state.promosView)?history.state.promosView:'overview';
 let TAB=initialPromosView==='overview'?'which':'promos', selectedCat=null, PROMOS_VIEW=initialPromosView, radarHistoryOpen=false, notShownOpen=false, historyLimit=20;
+let recurringManageOpen=false, recurringDiscoveryOpenKey='', recurringReviewSession=null;
 let renderedDayKey=localIsoDate(localDay(new Date())), renderedMonthKey=periodInfo('month',new Date()).key;
 
 function render(){
@@ -1345,7 +1477,11 @@ function renderCards(){
   mainEl.innerHTML = html;
 
   mainEl.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{ S.myCards.push(b.dataset.add); saveState(S); render(); coachWhichTab(); });
-  mainEl.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ S.myCards=S.myCards.filter(x=>x!==b.dataset.del); saveState(S); render(); });
+  mainEl.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
+    const mutationNow=new Date(), cardId=b.dataset.del;
+    for(const record of Object.values(S.recurringSetups)) if(record.cardId===cardId) suspendRecurringSetup(record.cardId,record.benefitId,'card-removed',mutationNow);
+    S.myCards=S.myCards.filter(x=>x!==cardId); saveState(S,mutationNow); render();
+  });
   mainEl.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{ move(b.dataset.up,-1); });
   mainEl.querySelectorAll('[data-down]').forEach(b=>b.onclick=()=>{ move(b.dataset.down,1); });
   mainEl.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit));
@@ -1479,6 +1615,7 @@ function renderBenefits(){
 function taskStatusLines(task){
   if(task.done) return [];
   const lines=[];
+  if(task.recurring?.status==='terms-changed') lines.push({text:'Benefit terms changed. Confirm this payment setup again.',urgent:true});
   if(task.nonRetroactive) lines.push({text:'Not retroactive',urgent:true});
   if(task.closed) lines.push({text:`Deadline passed: ${displayDate(periodLastDate(task.actionEnd))}`,urgent:true});
   else if(task.unavailable) lines.push({text:'Current categories unavailable. Check the issuer before activating.',urgent:true});
@@ -1491,8 +1628,21 @@ function taskStatusLines(task){
   }else if(task.actionType==='use') lines.push({text:task.daysLeft===0?'Expires today':`Expires in ${task.daysLeft} days`,urgent:task.daysLeft<=7});
   return lines;
 }
-function renderTaskRow(task,{manage=false}={}){
+function recurringDiscoveryParts(task){
+  if(task.actionType!=='use'||!task.meta?.recurringEligible||['active','review-due'].includes(task.recurring?.status)) return {button:'',panel:''};
+  const open=recurringDiscoveryOpenKey===task.key, panelId=`recurring-discovery-${task.card.id}-${task.benefitId}`;
+  const label=task.recurring?.status==='terms-changed'?'Review payment setup':task.recurring?.status==='none'?'Payment repeats monthly':'Confirm payment setup';
+  const question=task.recurring?.status==='terms-changed'?'Is an eligible monthly payment still set up on this card?':'Is an eligible monthly payment already set up on this card?';
+  const button=`<button class="manage-action" data-recurring-disclosure="${task.key}" data-focus-id="recurring-disclosure-${task.card.id}-${task.benefitId}" aria-expanded="${open}" aria-controls="${panelId}" aria-label="${esc(`${label} for ${task.title}, ${task.card.name}`)}">${esc(label)}</button>`;
+  const panel=`<div class="recurring-discovery" id="${panelId}" ${open?'':'hidden'}><div class="recurring-discovery-title">${esc(question)}</div>
+      <p class="recurring-discovery-copy">${esc(task.meta.recurringQualifier)} We’ll hide monthly reminders and ask you to confirm again in six months. ChooseMyCard can’t verify the payment or statement credit.</p>
+      <div class="choice-row"><button class="pill primary" data-confirm-recurring="${task.card.id}:${task.benefitId}" aria-label="Confirm recurring payment for ${esc(task.title)}, ${esc(task.card.name)}">Confirm recurring payment</button><button class="pill" data-dismiss-recurring="${task.card.id}:${task.benefitId}" data-task-key="${task.key}" aria-label="Keep monthly reminders for ${esc(task.title)}, ${esc(task.card.name)}">Keep monthly reminders</button></div>
+    </div>`;
+  return {button,panel};
+}
+function renderTaskRow(task,{manage=false,allowRecurring=false}={}){
   const statuses=taskStatusLines(task), disabled=task.unavailable;
+  const recurringDiscovery=allowRecurring?recurringDiscoveryParts(task):{button:'',panel:''};
   const closedDate=task.actionEnd&&displayDate(periodLastDate(task.actionEnd));
   const closedMark=task.actionType==='select'?`I selected by ${closedDate}`:`I activated by ${closedDate}`;
   const checkboxText=task.done?completedLabel(task):task.unavailable?'Unavailable':task.closed?closedMark:task.markLabel;
@@ -1507,18 +1657,22 @@ function renderTaskRow(task,{manage=false}={}){
     <div class="action-footer"><div class="action-links">
       ${manage&&!task.done&&!task.closed&&!disabled?`<button class="manage-action" data-skip-task="${task.key}" aria-label="Skip ${esc(task.title)} for this period, ${esc(task.card.name)}">Skip this period</button>`:''}
       ${manage&&task.benefitId?`<button class="manage-action" data-hide-task="${task.key}" aria-label="Hide ${esc(task.title)} from My Radar, ${esc(task.card.name)}">Hide this benefit</button>`:''}
-    </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-task-state="${task.closed?'closed':task.unavailable?'unavailable':'open'}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div></div>`;
+      ${recurringDiscovery.button}
+    </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-task-state="${task.closed?'closed':task.unavailable?'unavailable':'open'}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div>${recurringDiscovery.panel}</div>`;
 }
-function radarOverviewState(radar){
+function radarOverviewState(radar,now=new Date()){
+  const reviewCount=recurringSetupsForState(S,now).filter(item=>item.status==='review-due').length;
   if(!S.myCards.length) return {copy:'Add cards to start My Radar',action:'cards'};
   if(!radar.all.length) return {copy:'My Radar does not currently track actions for your cards.'};
+  if(!radar.unresolved.length&&reviewCount) return {copy:`${reviewCount} benefit setup${reviewCount===1?'':'s'} need${reviewCount===1?'s':''} confirmation.`};
   if(!radar.unresolved.length&&radar.suppressed.some(t=>!t.done)) return {copy:'All unfinished items are hidden or skipped.'};
   if(!radar.unresolved.length) return {copy:'Nothing needs your attention'};
   return {copy:taskSummary(radar.unresolved[0])};
 }
 function renderPromosOverview(){
   const now=new Date(), q=currentQuarter(now), days=quarterEndsInDays(now), radar=buildRadarTasks(now), preview=radar.unresolved.slice(0,2);
-  const state=radarOverviewState(radar), qTasks=buildQuarterlyTasks(now), qDone=qTasks.filter(t=>t.done).length;
+  const state=radarOverviewState(radar,now), qTasks=buildQuarterlyTasks(now), qDone=qTasks.filter(t=>t.done).length;
+  const reviewCount=recurringSetupsForState(S,now).filter(item=>item.status==='review-due').length;
   const qRows=qTasks.filter(t=>!preview.some(p=>p.key===t.key)).slice(0,2);
   const qSubtitle=`${q.replace('-',' ')} category checklist`;
   let html=`<div class="quarter-banner">${q.replace('-',' ')} · ${days} days left in the quarter</div>
@@ -1528,6 +1682,7 @@ function renderPromosOverview(){
   if(state.action==='cards') html+=`<div class="action-list"><div class="quiet-state"><button class="pill" data-go-cards>Add cards</button></div></div>`;
   else if(preview.length) html+=`<div class="action-list">${preview.map(t=>renderTaskRow(t)).join('')}</div>`;
   const more=Math.max(0,radar.unresolved.length-preview.length); if(more) html+=`<div class="section-note" style="text-align:right">${more} more item${more===1?'':'s'}</div>`;
+  if(reviewCount&&radar.unresolved.length) html+=`<div class="section-note" style="text-align:right">${reviewCount} benefit setup${reviewCount===1?'':'s'} also need${reviewCount===1?'s':''} confirmation</div>`;
   html+=`<div class="section-head"><h2><span class="title-icon" aria-hidden="true">📅</span>Quarterly actions</h2><button class="section-link" id="quarterly-view-all" aria-label="View all quarterly actions">View all <span aria-hidden="true">›</span></button></div>
     <p class="section-note">Your complete category checklist. These items also appear in My Radar when they need attention.</p>
     <div class="progress-line"><span>${esc(qSubtitle)}</span>${qTasks.length?`<strong>${qDone} of ${qTasks.length} complete</strong>`:''}</div>`;
@@ -1565,18 +1720,71 @@ function renderHistory(){
   }
   return html+'</div>';
 }
+function beginRadarVisit(now=new Date()){
+  recurringManageOpen=false; recurringDiscoveryOpenKey='';
+  const due=recurringSetupsForState(S,now).filter(item=>item.status==='review-due'&&!S.radarHidden[canonicalHiddenKey(item.record.cardId,item.record.benefitId)]);
+  recurringReviewSession={keys:due.map(item=>item.key),confirmed:new Set()};
+  const candidate=buildRadarTasks(now).unresolved.find(task=>task.actionType==='use'&&task.meta?.recurringEligible&&['none','terms-changed'].includes(task.recurring?.status)&&!S.recurringPromptPrefs[canonicalRecurringKey(task.card.id,task.benefitId)]);
+  if(candidate){
+    setRecurringPromptPreference(candidate.card.id,candidate.benefitId,{},now); saveState(S,now); recurringDiscoveryOpenKey=candidate.key;
+  }
+}
+function recurringItemValue(item,now=new Date()){ return `Up to ${benefitAmount(item.meta,now)}/mo`; }
+function inactiveRecurringLabel(item){
+  if(item.status==='terms-changed') return 'Terms changed · Monthly reminders resumed';
+  if(item.status==='expired') return 'Review missed · Monthly reminders resumed';
+  if(item.record.suspensionReason==='imported') return 'Imported setup · Confirm again in My Radar';
+  if(item.record.suspensionReason==='card-removed') return 'Card was removed · Confirm again';
+  if(item.record.suspensionReason==='enrollment-removed') return 'Enrollment was removed · Confirm again';
+  if(item.record.suspensionReason==='hidden') return 'Hidden from My Radar · Confirm after restoring';
+  return 'Needs confirmation';
+}
+function renderRecurringQuiet(now=new Date()){
+  const all=recurringSetupsForState(S,now).filter(item=>S.myCards.includes(item.record.cardId));
+  const sessionKeys=new Set(recurringReviewSession?.keys||[]);
+  const active=all.filter(item=>item.status==='active'&&!sessionKeys.has(item.key));
+  const inactive=all.filter(item=>['expired','suspended','terms-changed'].includes(item.status));
+  if(!active.length&&!inactive.length) return '';
+  const nextReview=active.map(item=>item.reviewDue).sort((a,b)=>a-b)[0];
+  const summary=active.length?`${active.length} benefit${active.length===1?'':'s'} · Hidden from monthly reminders · Next review ${displayCalendarDate(nextReview,now)}`:'No saved setup is currently hiding monthly reminders.';
+  const defaultRows=active.map(item=>`<article class="recurring-row" data-recurring-row="${item.key}"><h3>${esc(item.benefit.name)}</h3><div class="action-meta">${esc(item.card.name)} · ${esc(recurringItemValue(item,now))}</div><div class="recurring-status" tabindex="-1" data-focus-id="recurring-status-${item.key}">Monthly payment set up · You confirmed ${displayCalendarDate(item.record.confirmedOn,now)}</div></article>`).join('');
+  const manageRows=recurringManageOpen?[...active,...inactive].map(item=>{
+    const isActive=item.status==='active', status=isActive?`Monthly payment set up · Next review ${displayCalendarDate(item.reviewDue,now)}`:inactiveRecurringLabel(item);
+    const showHidden=!!S.radarHidden[canonicalHiddenKey(item.record.cardId,item.record.benefitId)], actionLabel=showHidden?'Show in My Radar and resume':'Resume monthly reminders';
+    return `<article class="recurring-row" data-recurring-row="${item.key}"><div class="action-topline"><h3 class="action-title">${esc(item.benefit.name)}</h3><a class="issuer-action" href="${item.meta.link}" target="_blank" rel="noopener noreferrer" aria-label="Check terms for ${esc(item.benefit.name)}, ${esc(item.card.name)}, opens in a new tab">Check terms <span aria-hidden="true">↗</span></a></div><div class="action-meta">${esc(item.card.name)} · ${esc(recurringItemValue(item,now))}</div><div class="recurring-status ${isActive?'':'needs-review'}">${esc(status)}</div><div class="recurring-manage"><span class="action-meta">Confirmed ${displayCalendarDate(item.record.confirmedOn,now)}</span><button class="manage-action" data-resume-recurring="${item.key}" data-show-hidden-recurring="${showHidden}" data-focus-id="recurring-resume-${item.key}" aria-label="${actionLabel} for ${esc(item.benefit.name)}, ${esc(item.card.name)}">${actionLabel}</button></div></article>`;
+  }).join(''):defaultRows;
+  return `<section class="recurring-section" aria-labelledby="recurring-heading"><div class="recurring-head"><h2 id="recurring-heading" tabindex="-1" data-focus-id="recurring-heading">Benefits with recurring payments</h2><button class="section-action" id="recurring-manage-toggle" data-focus-id="recurring-manage-toggle" aria-expanded="${recurringManageOpen}" aria-controls="recurring-setup-list">${recurringManageOpen?'Done':'Manage benefit setups'}</button></div><p class="section-note">${esc(summary)}</p><div class="recurring-list" id="recurring-setup-list">${manageRows}</div></section>`;
+}
+function renderRecurringReview(now=new Date()){
+  if(!recurringReviewSession) recurringReviewSession={keys:recurringSetupsForState(S,now).filter(item=>item.status==='review-due').map(item=>item.key),confirmed:new Set()};
+  const itemMap=new Map(recurringSetupsForState(S,now).map(item=>[item.key,item]));
+  recurringReviewSession.keys=recurringReviewSession.keys.filter(key=>recurringReviewSession.confirmed.has(key)||itemMap.get(key)?.status==='review-due');
+  const keys=recurringReviewSession.keys; if(!keys.length) return '';
+  const confirmedCount=keys.filter(key=>recurringReviewSession.confirmed.has(key)).length;
+  const rows=keys.map(key=>{
+    const item=itemMap.get(key); if(!item) return '';
+    const confirmed=recurringReviewSession.confirmed.has(key);
+    if(confirmed) return `<article class="action-row completed"><div class="action-topline"><h3 class="action-title">${esc(item.benefit.name)}</h3></div><div class="action-meta">${esc(item.card.name)} · ${esc(recurringItemValue(item,now))}</div><div class="confirmed-status" tabindex="-1" data-focus-id="recurring-confirmed-${key}">Confirmed today</div></article>`;
+    return `<article class="action-row"><div class="action-topline"><h3 class="action-title">${esc(item.benefit.name)}</h3><a class="issuer-action" href="${item.meta.link}" target="_blank" rel="noopener noreferrer" aria-label="Check terms for ${esc(item.benefit.name)}, ${esc(item.card.name)}, opens in a new tab">Check terms <span aria-hidden="true">↗</span></a></div><div class="action-meta">${esc(item.card.name)} · ${esc(recurringItemValue(item,now))}</div><div class="action-meta">Setup last confirmed by you ${displayCalendarDate(item.record.confirmedOn,now)}</div><div class="review-fallback">Monthly reminders resume ${displayCalendarDate(item.graceEnd,now)} if not confirmed.</div><div class="action-footer"><button class="manage-action" data-resume-recurring="${key}" data-focus-id="recurring-resume-${key}" aria-label="Resume monthly reminders for ${esc(item.benefit.name)}, ${esc(item.card.name)}">Resume monthly reminders</button><button class="pill review-confirm" data-review-confirm="${key}" data-focus-id="recurring-review-confirm-${key}" aria-label="Confirm ${esc(item.benefit.name)} is still billed to ${esc(item.card.name)}">Still billed to this card</button></div></article>`;
+  }).join('');
+  return `<section class="recurring-section" aria-labelledby="recurring-review-heading"><div class="recurring-head"><h2 id="recurring-review-heading" tabindex="-1" data-focus-id="recurring-review-heading">Confirm recurring benefit setups</h2><span class="recurring-count">Review due</span></div><p class="review-note">Check that each eligible payment is still billed to this card. ChooseMyCard can’t verify payments or statement credits.</p><div class="progress-line"><span>Review every 6 months</span><strong>${confirmedCount} of ${keys.length} reviewed</strong></div><div class="action-list">${rows}</div></section>`;
+}
 function renderFullRadar(){
-  const radar=buildRadarTasks(new Date()), state=radarOverviewState(radar), groups=[['act','Priority actions'],['soon','Due soon'],['later','Later']];
+  const now=new Date(), radar=buildRadarTasks(now), state=radarOverviewState(radar,now), groups=[['act','Priority actions'],['soon','Due soon']];
   let html=`<button class="back-btn" id="promos-back"><span aria-hidden="true">‹</span> Promos</button>
     <p class="section-note">Check items off after you complete them on the issuer or partner site. Status is stored only on this device.</p>`;
-  if(!radar.active.length) html+=`<div class="action-list"><div class="quiet-state"><strong>${esc(state.copy)}</strong>${state.action==='cards'?'<div style="margin-top:10px"><button class="pill" data-go-cards>Add cards</button></div>':''}</div></div>`;
-  else if(!radar.unresolved.length) html+=`<div class="action-list"><div class="quiet-state"><strong>Nothing needs your attention</strong></div></div>`;
+  const reviewDue=recurringSetupsForState(S,now).some(item=>item.status==='review-due');
+  if(!radar.active.length&&!reviewDue) html+=`<div class="action-list"><div class="quiet-state"><strong>${esc(state.copy)}</strong>${state.action==='cards'?'<div style="margin-top:10px"><button class="pill" data-go-cards>Add cards</button></div>':''}</div></div>`;
+  else if(!radar.unresolved.length&&!reviewDue) html+=`<div class="action-list"><div class="quiet-state"><strong>Nothing needs your attention</strong></div></div>`;
   for(const [id,label] of groups){
     const tasks=radar.active.filter(t=>!t.done&&t.group===id); if(!tasks.length) continue;
-    html+=`<h2>${label}</h2><div class="action-list">${tasks.map(t=>renderTaskRow(t,{manage:true})).join('')}</div>`;
+    html+=`<h2>${label}</h2><div class="action-list">${tasks.map(t=>renderTaskRow(t,{manage:true,allowRecurring:true})).join('')}</div>`;
   }
+  html+=renderRecurringReview(now);
+  const later=radar.active.filter(t=>!t.done&&t.group==='later'); if(later.length) html+=`<h2>Later</h2><div class="action-list">${later.map(t=>renderTaskRow(t,{manage:true,allowRecurring:true})).join('')}</div>`;
+  html+=renderRecurringQuiet(now);
   const completed=radar.active.filter(t=>t.done);
-  if(completed.length) html+=`<h2>Recently completed</h2><div class="action-list">${completed.map(t=>renderTaskRow(t,{manage:true})).join('')}</div>`;
+  if(completed.length) html+=`<h2>Recently completed</h2><div class="action-list">${completed.map(t=>renderTaskRow(t,{manage:true,allowRecurring:true})).join('')}</div>`;
   html+=renderNotShown(radar.suppressed)+renderHistory();
   mainEl.innerHTML=html;
 }
@@ -1601,6 +1809,26 @@ function findCurrentTaskOrRefresh(key,now=new Date()){
   const task=findCurrentTask(key,now); if(task) return task;
   refreshForPeriodChange(currentFocusForTaskKey(key,now)); return null;
 }
+function confirmRecurringSetup(cardId,benefitId,{review=false}={},mutationNow=new Date()){
+  const key=canonicalRecurringKey(cardId,benefitId), meta=RADAR_BENEFIT_MAP[key]; if(!meta?.recurringEligible) return;
+  const focusId=review?`recurring-confirmed-${key}`:`recurring-status-${key}`;
+  const total=recurringReviewSession?.keys.length||0, alreadyConfirmed=recurringReviewSession?.confirmed.has(key), reviewed=review?Math.min(total,(recurringReviewSession?.confirmed.size||0)+(alreadyConfirmed?0:1)):0;
+  const message=review&&total?`Benefit setup confirmed · ${reviewed} of ${total} reviewed`:'Benefit setup confirmed';
+  mutateWithUndo(message,()=>{
+    S.recurringSetups[key]={cardId,benefitId,confirmedAt:mutationNow.toISOString(),confirmedOn:localIsoDate(localDay(mutationNow)),termsVersion:meta.recurringTermsVersion};
+    delete S.recurringPromptPrefs[key];
+    if(review&&recurringReviewSession?.keys.includes(key)) recurringReviewSession.confirmed.add(key);
+    recurringDiscoveryOpenKey='';
+  },focusId,review?`recurring-review-confirm-${key}`:`recurring-disclosure-${cardId}-${benefitId}`,mutationNow);
+}
+function resumeRecurringSetup(key,focusId,undoFocusId,mutationNow=new Date(),showHidden=false){
+  const record=S.recurringSetups[key]; if(!record) return;
+  mutateWithUndo(showHidden?'Shown in My Radar · monthly reminders resumed':'Monthly reminders resumed',()=>{
+    delete S.recurringSetups[key]; setRecurringPromptPreference(record.cardId,record.benefitId,{dismissed:true},mutationNow);
+    if(showHidden) delete S.radarHidden[canonicalHiddenKey(record.cardId,record.benefitId)];
+    if(recurringReviewSession){ recurringReviewSession.keys=recurringReviewSession.keys.filter(item=>item!==key); recurringReviewSession.confirmed.delete(key); }
+  },focusId,undoFocusId,mutationNow);
+}
 function bindPromoActions(){
   document.getElementById('radar-view-all')?.addEventListener('click',()=>openPromosSubview('radar'));
   document.getElementById('quarterly-view-all')?.addEventListener('click',()=>openPromosSubview('quarterly'));
@@ -1618,6 +1846,29 @@ function bindPromoActions(){
   mainEl.querySelectorAll('[data-unskip-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.unskipTask,mutationNow);if(task)unskipTask(task);});
   mainEl.querySelectorAll('[data-restore-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.restoreTask,mutationNow);if(task)restoreBenefit(task.card.id,task.benefitId,`task-${task.key}`,'not-shown-toggle');});
   mainEl.querySelectorAll('[data-show-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.showTask,mutationNow);if(task)showTaskInRadar(task);});
+  mainEl.querySelectorAll('[data-recurring-disclosure]').forEach(button=>button.onclick=()=>{
+    const task=findCurrentTask(button.dataset.recurringDisclosure); if(!task) return;
+    const opening=recurringDiscoveryOpenKey!==task.key; recurringDiscoveryOpenKey=opening?task.key:'';
+    if(opening){ const now=new Date(); setRecurringPromptPreference(task.card.id,task.benefitId,{},now); saveState(S,now); }
+    render(); restoreFocus(`recurring-disclosure-${task.card.id}-${task.benefitId}`);
+  });
+  mainEl.querySelectorAll('[data-dismiss-recurring]').forEach(button=>button.onclick=()=>{
+    const [cardId,benefitId]=button.dataset.dismissRecurring.split(':'), now=new Date();
+    setRecurringPromptPreference(cardId,benefitId,{dismissed:true},now); recurringDiscoveryOpenKey=''; saveState(S,now); render(); restoreFocus(`recurring-disclosure-${cardId}-${benefitId}`); toast('Monthly reminders kept');
+  });
+  mainEl.querySelectorAll('[data-confirm-recurring]').forEach(button=>button.onclick=()=>{
+    const [cardId,benefitId]=button.dataset.confirmRecurring.split(':'); confirmRecurringSetup(cardId,benefitId,{},new Date());
+  });
+  mainEl.querySelectorAll('[data-review-confirm]').forEach(button=>button.onclick=()=>{
+    const record=S.recurringSetups[button.dataset.reviewConfirm]; if(record) confirmRecurringSetup(record.cardId,record.benefitId,{review:true},new Date());
+  });
+  mainEl.querySelectorAll('[data-resume-recurring]').forEach(button=>button.onclick=()=>{
+    const section=button.closest('.recurring-section'), peers=[...section.querySelectorAll('[data-resume-recurring]')], index=peers.indexOf(button), next=peers[index+1]||peers[index-1];
+    const mutationNow=new Date(), record=S.recurringSetups[button.dataset.resumeRecurring], returnedTask=record&&buildRadarTasks(mutationNow).all.find(item=>item.card.id===record.cardId&&item.benefitId===record.benefitId);
+    const inReview=section.getAttribute('aria-labelledby')==='recurring-review-heading', fallback=inReview?'recurring-review-heading':'recurring-heading', returnedFocus=returnedTask&&currentFocusForTask(returnedTask,mutationNow);
+    resumeRecurringSetup(button.dataset.resumeRecurring,next?.dataset.focusId||returnedFocus||fallback,button.dataset.focusId||fallback,mutationNow,button.dataset.showHiddenRecurring==='true');
+  });
+  document.getElementById('recurring-manage-toggle')?.addEventListener('click',()=>{ recurringManageOpen=!recurringManageOpen; render(); restoreFocus('recurring-manage-toggle'); });
   document.getElementById('not-shown-toggle')?.addEventListener('click',()=>{notShownOpen=!notShownOpen;render();restoreFocus('not-shown-toggle');});
   document.getElementById('history-toggle')?.addEventListener('click',()=>{radarHistoryOpen=!radarHistoryOpen;render();restoreFocus('history-toggle');});
   document.getElementById('history-more')?.addEventListener('click',()=>{historyLimit+=20;render();restoreFocus(document.getElementById('history-more')?'history-more':'history-toggle');});
@@ -1628,6 +1879,7 @@ function renderPromos(){
 }
 function openPromosSubview(view){
   if(PROMOS_VIEW===view) return; PROMOS_VIEW=view; TAB='promos';
+  if(view==='radar') beginRadarVisit(new Date());
   history.pushState({promosView:view},'',location.pathname+location.search); render(); window.scrollTo({top:0,behavior:'auto'});
   requestAnimationFrame(()=>document.getElementById('hdr').focus?.());
 }
@@ -1658,7 +1910,7 @@ function renderSettings(){
       return `<div>${esc(p.name)}</div><input type="text" inputmode="decimal" data-cpp="${k}" value="${v}">`;
     }).join('') + `</div></div>
     <h2>Backup / transfer</h2><div class="panel">
-      <p class="hint">Copy a setup link containing your cards, settings, benefit enrollments, items hidden from My Radar, skipped periods, and current checkmarks. Anyone with the link can read and import this information. Completion history is not included.</p>
+      <p class="hint">Copy a setup link containing your cards, settings, benefit enrollments, recurring benefit setups, items hidden from My Radar, skipped periods, and current checkmarks. Anyone with the link can read and import this information. Imported recurring benefit setups will not hide monthly reminders until confirmed again in My Radar on the receiving device. Completion history is not included.</p>
       <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap">
         <button class="pill primary" id="copycfg">🔗 Copy setup link</button>
         <button class="pill" id="reset">Reset app</button></div></div>
@@ -1669,7 +1921,7 @@ function renderSettings(){
     const v=parseFloat(inp.value); if(!isNaN(v)&&v>0){ S.cpp[inp.dataset.cpp]=v; saveState(S); toast('Point valuation saved'); } });
   document.getElementById('copycfg').onclick=()=>copySetupLink();
   document.getElementById('reset').onclick=()=>{
-    if(confirm('Erase all cards, settings, benefit enrollments, checkmarks, items hidden or skipped in My Radar, and completion history from this device?')){
+    if(confirm('Erase all cards, settings, benefit enrollments, recurring benefit setups, checkmarks, items hidden or skipped in My Radar, and completion history from this device?')){
       S=structuredClone(DEFAULT_STATE); saveState(S); render(); toast('App reset');
     }
   };
@@ -1680,21 +1932,22 @@ function currentPeriodForRecord(record,now){
 }
 function exportSetupState(now=new Date()){
   const stripSnapshots=r=>{const {labelSnapshot,cardNameSnapshot,...rest}=r;return rest;};
-  return {schemaVersion:2,catalogVersion:RADAR_CATALOG_VERSION,myCards:[...S.myCards],overrides:structuredClone(S.overrides),cpp:structuredClone(S.cpp),
+  const recurringSetups=Object.values(S.recurringSetups).filter(r=>S.myCards.includes(r.cardId)&&RADAR_BENEFIT_MAP[r.cardId+':'+r.benefitId]?.recurringEligible).map(r=>({...r}));
+  return {schemaVersion:CURRENT_SCHEMA_VERSION,catalogVersion:RADAR_CATALOG_VERSION,myCards:[...S.myCards],overrides:structuredClone(S.overrides),cpp:structuredClone(S.cpp),
     custom:structuredClone(S.custom),coachDone:!!S.coachDone,enrollments:Object.values(S.enrollments).map(stripSnapshots),
     completions:Object.values(S.completions).filter(r=>currentPeriodForRecord(r,now)).map(stripSnapshots),
-    radarHidden:Object.values(S.radarHidden).map(r=>({...r})),radarSkips:Object.values(S.radarSkips).filter(r=>new Date(r.expiresAt)>now&&r.periodKey===currentPeriodForTask(r.taskKind,r.cardId,r.itemId,now)).map(r=>({...r}))};
+    radarHidden:Object.values(S.radarHidden).map(r=>({...r})),radarSkips:Object.values(S.radarSkips).filter(r=>new Date(r.expiresAt)>now&&r.periodKey===currentPeriodForTask(r.taskKind,r.cardId,r.itemId,now)).map(r=>({...r})),recurringSetups};
 }
 function setupUrl(){
   return location.href.split('#')[0]+'#'+encodeSetupState(exportSetupState());
 }
 async function copySetupLink(skipConfirmation=false){
-  if(!skipConfirmation&&!confirm('Create a setup link containing your cards, settings, benefit enrollments, items hidden from My Radar, skipped periods, and current checkmarks? Anyone with the link can read and import this information.')) return;
+  if(!skipConfirmation&&!confirm('Create a setup link containing your cards, settings, benefit enrollments, recurring benefit setups, items hidden from My Radar, skipped periods, and current checkmarks? Anyone with the link can read and import this information. Imported recurring benefit setups will not hide monthly reminders until confirmed again in My Radar on the receiving device.')) return;
   let url; try{url=setupUrl();}catch(e){toast(e instanceof SetupLinkError?e.message:'This setup link could not be created.',5000);return;}
   try{ await navigator.clipboard.writeText(url); toast('Setup link copied'); }
   catch(e){ prompt('Copy this setup link:',url); }
 }
-Object.assign(window.CardRouterRadar,{validateImportPayload,encodeSetupPayload,encodeSetupState,decodeSetupPayload,validEventIso,periodMatchesCadence,taskStatusLines,completionRecordForTask});
+Object.assign(window.CardRouterRadar,{validateImportPayload,encodeSetupPayload,encodeSetupState,decodeSetupPayload,validEventIso,validIsoDate,confirmationDateMatchesInstant,periodMatchesCadence,taskStatusLines,completionRecordForTask,exportSetupState});
 
 /* ---------- modal & nav ---------- */
 function openModal(){ document.getElementById('modal').classList.add('open'); }
@@ -1704,11 +1957,13 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 history.replaceState({promosView:PROMOS_VIEW},'',location.pathname+location.search);
 window.addEventListener('popstate',e=>{
   PROMOS_VIEW=e.state&&['radar','quarterly'].includes(e.state.promosView)?e.state.promosView:'overview';
+  if(PROMOS_VIEW==='radar') beginRadarVisit(new Date()); else{ recurringReviewSession=null; recurringDiscoveryOpenKey=''; recurringManageOpen=false; }
   TAB='promos'; render(); window.scrollTo({top:0,behavior:'auto'}); requestAnimationFrame(()=>document.getElementById('hdr').focus());
 });
 function refreshIfCalendarChanged(){
   const now=new Date(), currentDayKey=localIsoDate(localDay(now)), currentMonthKey=periodInfo('month',now).key, previousMonthKey=renderedMonthKey;
   if(currentDayKey===renderedDayKey) return;
+  if(TAB==='promos'&&PROMOS_VIEW==='radar') beginRadarVisit(now);
   const focusTarget=captureRefreshFocus(now); render(); restoreRefreshFocus(focusTarget);
   if(currentMonthKey!==previousMonthKey) toast('A new tracking period started. Review the refreshed items.',5000);
 }
@@ -1716,9 +1971,11 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 window.addEventListener('pageshow',refreshIfCalendarChanged);
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   TAB=b.dataset.tab; PROMOS_VIEW='overview'; history.replaceState({promosView:'overview'},'',location.pathname+location.search);
+  recurringReviewSession=null; recurringDiscoveryOpenKey=''; recurringManageOpen=false;
   render(); window.scrollTo({top:0,behavior:'auto'});
 });
 document.getElementById('storageBackup').onclick=()=>copySetupLink();
+if(PROMOS_VIEW==='radar') beginRadarVisit(new Date());
 render();
 if(startupNotice) setTimeout(()=>toast(startupNotice,3600),0);
 </script>

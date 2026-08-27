@@ -13,11 +13,12 @@ Tap a purchase category — dining, groceries, gas, flights, hotels, and more �
 - **Rotating 5% categories:** the current quarter's Chase Freedom Flex and Discover it categories are built in. Cards that need activation show an "activation required" warning until you check them off in Promos. When rates tie, activated rotating categories rank ahead of unactivated ones.
 - **My Radar:** the Promos tab puts non-retroactive actions first, then orders quarterly category actions and verified calendar-based card credits by deadline. Quarterly actions is the complete category checklist; items also appear in My Radar when they need attention. Open My Radar for the full list, mark actions complete, skip a period, hide benefits you do not use, and show hidden or skipped items again from the inline "Hidden" section.
 - **Shared completion status:** activation, enrollment, and benefit-use checkboxes stay synchronized across My Radar, Quarterly Actions, Benefits, and card recommendations. A completion remains in the main My Radar list until the period ends or for up to 30 days, whichever comes first. It then remains in completion history for up to 24 months.
+- **Recurring benefit setups:** for four eligible monthly card benefits, confirm that a qualifying payment is already billed to the card. My Radar hides that benefit's routine monthly reminders without marking it used, then asks you to confirm the setup again after six months. If you do not confirm within 30 days, monthly reminders return.
 - **Priority tie-break** — when two cards earn the same, your hand-set card order decides (drag your true favorite to the top).
 - **Location guessing** — optionally let the app read your location and guess the category from the nearest merchant (via OpenStreetMap; no API key, no tracking).
 - **Everything is editable** — issuers change rules constantly. Tap ✎ on any card to override its rates, add custom cards, or adjust point valuations in Settings.
 - **Quarterly reminders:** download a generic `.ics` calendar file with four recurring reminders and no card or activity data.
-- **Per-device setups and setup links:** each person's setup lives in their own browser. A setup link carries cards, settings, benefit enrollments, items hidden from My Radar, skipped periods, and current checkmarks. Completion history is omitted.
+- **Per-device setups and setup links:** each person's setup lives in their own browser. A setup link carries cards, settings, benefit enrollments, recurring benefit setups, items hidden from My Radar, skipped periods, and current checkmarks. Imported recurring benefit setups do not hide monthly reminders until confirmed again in My Radar on the receiving device; completion history is omitted.
 
 ## Install on iPhone
 
@@ -56,6 +57,8 @@ Opening a setup link asks before replacing a setup already on that device. The l
 
 **My Radar coverage.** My Radar intentionally tracks only benefits with issuer-verified terms, a clear calendar reset, and a working issuer or partner page for the action. Other perks remain available in Benefits without becoming recurring tasks. Benefit terms were checked in August 2026 and can still change.
 
+**Benefits with recurring payments.** The app can remember when you confirm an eligible monthly payment is already billed to the benefit's card. This suppresses only the monthly reminder. It does not mark the benefit used, verify a charge or statement credit, or replace enrollment. You confirm each setup again every six months; terms changes, card or enrollment removal, and setup imports require confirmation again.
+
 **Quarterly upkeep (5 minutes, 4× a year).** At each quarter's start: activate rotating categories (Promos tab links), re-check the new categories are reflected (see below), and re-pick US Bank Cash+ choices if you hold it.
 
 ## Maintaining the rules data
@@ -82,7 +85,7 @@ Valid category ids: `dining, groceries, gas, flights, hotels, transit, streaming
 ## Privacy
 
 - No account, no server, no analytics, no cookies. The app is one static HTML file.
-- Your card *selections* (never card numbers — the app doesn't know them) are stored in your browser's local storage on your device only.
+- Your card *selections* and benefit setup confirmations (never card numbers — the app doesn't know them) are stored in your browser's local storage on your device only.
 - The only network calls are: (a) loading the page itself, and (b) one reverse-geocoding request to OpenStreetMap **only when you tap the location button**, sending coordinates and nothing else.
 - The hosted file is public if you use GitHub Pages, but it contains only the generic card database — nothing about you.
 
@@ -90,7 +93,7 @@ Valid category ids: `dining, groceries, gas, flights, hotels, transit, streaming
 
 - It recommends; it doesn't route. You still tap the card yourself.
 - No logged-in promo scraping (Amex Offers, Chase Offers) — those live behind issuer logins, and automating them is fragile and against issuer terms. The Promos tab reminds you where to look; MaxRewards Gold automates it commercially if you want that.
-- My Radar completion is manual. It cannot verify issuer activation, enrollment, selection, or statement-credit usage.
+- My Radar completion and recurring-payment confirmation are manual. It cannot verify issuer activation, enrollment, selection, charges, or statement-credit usage.
 - No spend-cap tracking.
 - Location guessing is a guess — OpenStreetMap data quality varies by area.
 - Clearing Safari website data wipes your setup — keep a setup link as backup.
