@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <link rel="icon" href="data:,">
-<title>Credit Radar tests</title>
+<title>My Radar tests</title>
 <style>
   body{font:15px/1.5 system-ui,sans-serif;max-width:760px;margin:32px auto;padding:0 18px;color:#172033;background:#f7f8fb}
   h1{font-size:24px}.pass{color:#08704f}.fail{color:#b42318}li{margin:5px 0}
@@ -11,7 +11,7 @@
 </style>
 </head>
 <body>
-<h1>Credit Radar tests</h1>
+<h1>My Radar tests</h1>
 <p id="summary">Running…</p>
 <ol id="results"></ol>
 <iframe id="app" src="../index.html"></iframe>
@@ -67,10 +67,12 @@ document.getElementById('app').addEventListener('load',async()=>{
     equal(Object.keys(twice.completions).length,1);
     equal(once.completions[Object.keys(once.completions)[0]].completedAt,null);
   });
-  test('Radar derives the exact held-card task set and prioritizes non-retroactive work',()=>{
-    const now=new Date(2026,7,26,12), state=R.normalizeState({myCards:['amex_gold','discover_it']},now), radar=R.buildRadarTasks(state,now);
-    equal(radar.all.length,5); equal(radar.all[0].itemId,'discover_5pct');
-    assert(radar.all.slice(1).every(t=>t.kind==='enroll-task'),'Gold credits should begin with enrollment');
+  test('Radar prioritizes non-retroactive work, then deadlines across task types',()=>{
+    const now=new Date(2026,7,26,12), state=R.normalizeState({myCards:['amex_gold','discover_it','freedom_flex']},now), radar=R.buildRadarTasks(state,now);
+    const diningIndex=radar.all.findIndex(t=>t.itemId==='dining_credit'), freedomIndex=radar.all.findIndex(t=>t.itemId==='freedom_flex_5x');
+    equal(radar.all.length,6); equal(radar.all[0].itemId,'discover_5pct');
+    assert(diningIndex>0&&diningIndex<freedomIndex,'An August benefit should precede a non-retroactive false September action');
+    equal(radar.all[0].group,'act'); equal(radar.all[freedomIndex].group,'soon');
   });
   test('quarterly skips suppress Radar without removing quarterly inventory',()=>{
     const now=new Date(2026,7,26,12), period='2026-Q3', key='activate:freedom_flex:freedom_flex_5x:'+period;
@@ -229,6 +231,25 @@ document.getElementById('app').addEventListener('load',async()=>{
       equal(frame.contentDocument.title,'ChooseMyCard · My Radar');
     });
   });
+  test('My Radar and Quarterly actions polish has regression coverage',async()=>{
+    const hiddenAt=new Date().toISOString();
+    await withAppState({schemaVersion:2,myCards:['amex_plat'],radarHidden:[{cardId:'amex_plat',benefitId:'uber_cash',hiddenAt}]},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click();
+      const overviewIcons=[...doc.querySelectorAll('.section-head .title-icon')];
+      equal(overviewIcons.map(icon=>icon.textContent).join(''),'📡📅');
+      assert(overviewIcons.every(icon=>icon.getAttribute('aria-hidden')==='true'),'Overview icons should be decorative');
+      assert(doc.body.textContent.includes('These items also appear in My Radar when they need attention.'),'Quarterly overlap should be explained');
+      doc.getElementById('radar-view-all').click();
+      equal(doc.title,'ChooseMyCard · My Radar'); equal(doc.getElementById('hdrsub').textContent,'what needs attention');
+      equal(doc.querySelector('#hdr .title-icon').textContent,'📡'); equal(doc.querySelector('#hdr .title-icon').getAttribute('aria-hidden'),'true');
+      assert(doc.getElementById('not-shown-toggle').textContent.includes('Hidden (1)'),'Hidden disclosure should use the approved label');
+      assert(!doc.getElementById('not-shown-toggle').textContent.includes('Not shown'),'Legacy Hidden copy should not return');
+      doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('quarterly-view-all').click();
+      equal(doc.title,'ChooseMyCard · Quarterly actions'); equal(doc.querySelector('#hdr .title-icon').textContent,'📅');
+      equal(doc.querySelector('#hdr .title-icon').getAttribute('aria-hidden'),'true');
+      assert(doc.body.textContent.includes('Status is stored only on this device.'),'Manual tracking should be explained in-product');
+    });
+  });
   test('stale Benefits enrollment refreshes without writing old-period state',async()=>{
     await withAppState({schemaVersion:2,myCards:['amex_gold']},async(win,doc)=>{
       doc.querySelector('nav button[data-tab="benefits"]').click(); doc.querySelector('[data-bcat="diningcr"]').click();
@@ -288,7 +309,7 @@ document.getElementById('app').addEventListener('load',async()=>{
     list.appendChild(li);
   }
   const summary=document.getElementById('summary'); summary.textContent=`${passed} of ${tests.length} passed`; summary.className=passed===tests.length?'pass':'fail';
-  document.title=`${passed} of ${tests.length} Radar tests passed`;
+  document.title=`${passed} of ${tests.length} My Radar tests passed`;
 });
 </script>
 </body>

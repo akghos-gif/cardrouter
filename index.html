@@ -111,7 +111,7 @@
   .storage-warning button{border:0; background:none; color:var(--accent); font:inherit; font-weight:700; min-height:44px; padding:7px 4px; cursor:pointer}
   .section-head{display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin:16px 4px 6px}
   .section-head h2{margin:0}
-  .title-icon{display:inline-block; margin-right:6px; font-size:.9em; line-height:1; vertical-align:-.04em}
+  .title-icon{display:inline-block; width:1.15em; margin-right:6px; text-align:center; font-size:1em; line-height:1; vertical-align:-.04em}
   .section-head .section-link{border:0; background:none; color:var(--accent); font:inherit; font-size:13px; font-weight:700;
     padding:9px 2px; min-height:44px; cursor:pointer; white-space:nowrap}
   .radar-summary{font-size:14px; line-height:1.4; margin:0 4px 9px}
@@ -1038,11 +1038,12 @@ function buildQuarterlyTasks(now=new Date(),state=S){
     const actionEnd=actionEndFor(a,period);
     const info=rot&&rot[a.cardId], unavailable=a.cardId!=='usb_cashplus'&&!info;
     const detail=a.cardId==='usb_cashplus'?'Choose two 5% categories and one 2% category':info?`5%: ${info.label}`:'';
-    const closed=!record&&localDay(now)>=actionEnd;
+    const closed=!record&&localDay(now)>=actionEnd, daysLeft=Math.max(0,calendarDays(localDay(now),actionEnd)-1);
     return {key,kind:a.actionType,actionType:a.actionType,itemId:a.id,periodKey:period.key,end:period.end,actionEnd,closed,card,title:a.name,
       detail,unavailable,link:a.link,externalLabel:(record||closed)?(a.reviewLabel||'Review benefit'):a.externalLabel,reviewLabel:a.reviewLabel,
       nonRetroactive:a.nonRetroactive,affectsRanking:a.affectsRanking,skipped:!!state.radarSkips[key],
-      done:!!record,completedAt:record&&record.completedAt,attestedBy:record&&record.attestedBy,group:'act',daysLeft:Math.max(0,calendarDays(localDay(now),actionEnd)-1),
+      done:!!record,completedAt:record&&record.completedAt,attestedBy:record&&record.attestedBy,
+      group:a.nonRetroactive?'act':daysLeft<=30?'soon':'later',daysLeft,
       markLabel:a.actionType==='select'?'Mark selected':'Mark activated'};
   });
 }
@@ -1067,7 +1068,7 @@ function buildBenefitTasks(now=new Date(),state=S){
 }
 function compareRadarTasks(a,b,state=S){
   const aHardDeadline=!a.done&&a.actionEnd&&a.actionEnd<a.end&&a.daysLeft<=7, bHardDeadline=!b.done&&b.actionEnd&&b.actionEnd<b.end&&b.daysLeft<=7;
-  return Number(a.done)-Number(b.done)||Number(bHardDeadline)-Number(aHardDeadline)||Number(!!b.nonRetroactive)-Number(!!a.nonRetroactive)||a.daysLeft-b.daysLeft||
+  return Number(a.done)-Number(b.done)||Number(!!b.nonRetroactive)-Number(!!a.nonRetroactive)||Number(bHardDeadline)-Number(aHardDeadline)||a.daysLeft-b.daysLeft||
     state.myCards.indexOf(a.card.id)-state.myCards.indexOf(b.card.id)||a.title.localeCompare(b.title)||a.key.localeCompare(b.key);
 }
 function buildRadarTasks(now=new Date(),state=S){
@@ -1232,7 +1233,7 @@ function render(){
   if(TAB==='cards'){ hdr.textContent='My cards'; sub.textContent='priority order breaks ties'; renderCards(); }
   if(TAB==='benefits'){ hdr.textContent='Benefits'; sub.textContent='what your cards give you'; renderBenefits(); }
   if(TAB==='promos'){
-    if(PROMOS_VIEW==='radar'){ hdr.innerHTML='<span class="title-icon" aria-hidden="true">📡</span>My Radar'; sub.textContent='actions across your cards'; }
+    if(PROMOS_VIEW==='radar'){ hdr.innerHTML='<span class="title-icon" aria-hidden="true">📡</span>My Radar'; sub.textContent='what needs attention'; }
     else if(PROMOS_VIEW==='quarterly'){ hdr.innerHTML='<span class="title-icon" aria-hidden="true">📅</span>Quarterly actions'; sub.textContent=currentQuarter().replace('-',' '); }
     else { hdr.textContent='Promos & activations'; sub.textContent=currentQuarter().replace('-',' '); }
     renderPromos();
@@ -1433,14 +1434,14 @@ function renderBenefits(){
           <div class="action-title">${esc(b.name)}</div>
           <div class="action-meta">${esc(b.card.name)}${b.value?' · '+esc(b.value):''}${b.note?' · '+esc(b.note):''}</div>
           <div class="action-links"><a class="issuer-action" href="${meta.link}" target="_blank" rel="noopener noreferrer" aria-label="${linkLabel} for ${esc(b.name)}, ${esc(b.card.name)}, on issuer or partner site, opens in a new tab">${linkLabel} <span aria-hidden="true">↗</span></a>
-          ${hidden?`<button class="manage-action" data-show-radar="${b.card.id}:${b.id}" data-restore-focus="${restoreFocusId}" data-focus-id="show-${b.card.id}-${b.id}" aria-label="Track ${esc(b.name)} in My Radar, ${esc(b.card.name)}">Track in My Radar</button>`:''}</div>
+          ${hidden?`<button class="manage-action" data-show-radar="${b.card.id}:${b.id}" data-restore-focus="${restoreFocusId}" data-focus-id="show-${b.card.id}-${b.id}" aria-label="Show ${esc(b.name)} in My Radar, ${esc(b.card.name)}">Show in My Radar</button>`:''}</div>
         </div><div>
           ${meta.requiresEnrollment?`<label class="task-check"><input type="checkbox" data-benefit-enroll="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="enroll-${b.card.id}-${b.id}" aria-label="${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark} for ${esc(b.name)}, ${esc(b.card.name)}" ${enrolled?'checked':''}>${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark}</label>`:''}
           ${(!meta.requiresEnrollment||enrolled)?`<label class="task-check"><input type="checkbox" data-benefit-use="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="use-${b.card.id}-${b.id}" aria-label="${used?'Used '+displayDate(used.completedAt):'Mark used'} for ${esc(b.name)}, ${esc(b.card.name)}" ${used?'checked':''}>${used?'Used '+displayDate(used.completedAt):'Mark used'}</label>`:''}
         </div></div>`;
       }).join('') +
       `</div>
-      <p class="hint" style="margin:8px 4px">Complete any required setup in the issuer or partner app or website before using the benefit.</p>`;
+      <p class="hint" style="margin:8px 4px">Check items off after you complete them on the issuer or partner site. Status is stored only on this device.</p>`;
   } else {
     html += `<p class="hint" style="margin:6px 4px">Tap a category to see which cards cover it and which perks need setup.</p>`;
   }
@@ -1508,16 +1509,18 @@ function renderPromosOverview(){
   const qSubtitle=`${q.replace('-',' ')} category checklist`;
   let html=`<div class="quarter-banner">${q.replace('-',' ')} · ${days} days left in the quarter</div>
     <div class="section-head"><h2 id="radar-heading"><span class="title-icon" aria-hidden="true">📡</span>My Radar</h2><button class="section-link" id="radar-view-all" aria-label="View all My Radar items">View all <span aria-hidden="true">›</span></button></div>
-    <p class="section-note">Priority actions across your cards</p>
+    <p class="section-note">Benefits and quarterly categories that need attention</p>
     <p class="radar-summary"><strong>${esc(state.copy)}</strong></p>`;
   if(state.action==='cards') html+=`<div class="action-list"><div class="quiet-state"><button class="pill" data-go-cards>Add cards</button></div></div>`;
   else if(preview.length) html+=`<div class="action-list">${preview.map(t=>renderTaskRow(t)).join('')}</div>`;
   const more=Math.max(0,radar.unresolved.length-preview.length); if(more) html+=`<div class="section-note" style="text-align:right">${more} more item${more===1?'':'s'}</div>`;
   html+=`<div class="section-head"><h2><span class="title-icon" aria-hidden="true">📅</span>Quarterly actions</h2><button class="section-link" id="quarterly-view-all" aria-label="View all quarterly actions">View all <span aria-hidden="true">›</span></button></div>
+    <p class="section-note">Your complete category checklist. These items also appear in My Radar when they need attention.</p>
     <div class="progress-line"><span>${esc(qSubtitle)}</span>${qTasks.length?`<strong>${qDone} of ${qTasks.length} complete</strong>`:''}</div>`;
   if(qRows.length) html+=`<div class="action-list">${qRows.map(t=>renderTaskRow(t)).join('')}</div>`;
   else html+=`<div class="action-list"><div class="quiet-state">${qTasks.length?'Your unfinished quarterly actions are shown in My Radar above.':'No quarterly actions for your cards.'}</div></div>`;
-  html+=`<div class="panel"><div class="reminder-row"><p class="hint">Add reminders for the first day of each quarter.</p>
+  html+=`<p class="section-note" style="margin-top:12px">Check items off after you complete them on the issuer or partner site. Status is stored only on this device.</p>
+    <div class="panel"><div class="reminder-row"><p class="hint">Add reminders for the first day of each quarter.</p>
     <button class="pill" id="ics">📅 Download calendar reminders</button></div></div>`;
   mainEl.innerHTML=html;
 }
@@ -1526,7 +1529,7 @@ function renderNotShown(tasks){
   let html=`<div class="disclosure"><button id="not-shown-toggle" data-focus-id="not-shown-toggle" aria-expanded="${notShownOpen}" aria-controls="not-shown-content">
     <span>Hidden (${tasks.length})</span><span aria-hidden="true">${notShownOpen?'⌃':'⌄'}</span></button>`;
   if(notShownOpen) html+=`<div id="not-shown-content" class="not-shown-list">${tasks.map(t=>`<div class="history-row"><div><strong>${esc(t.title)}</strong>
-    <div class="action-meta">${esc(t.card.name)} · ${[t.hidden?'Hidden':'',t.skipped?'Skipped this period':''].filter(Boolean).join(' · ')}</div></div>
+    <div class="action-meta">${esc(t.card.name)}${t.skipped?' · Skipped this period':''}</div></div>
     <div class="action-links">${t.skipped&&t.hidden?`<button class="manage-action" data-show-task="${t.key}" aria-label="Show ${esc(t.title)} in My Radar, ${esc(t.card.name)}">Show in My Radar</button>`:
       `${t.skipped?`<button class="manage-action" data-unskip-task="${t.key}" aria-label="Show ${esc(t.title)} this period, ${esc(t.card.name)}">Show this period</button>`:''}${t.hidden?`<button class="manage-action" data-restore-task="${t.key}" aria-label="Show ${esc(t.title)} in My Radar, ${esc(t.card.name)}">Show in My Radar</button>`:''}`}</div></div>`).join('')}</div>`;
   return html+'</div>';
@@ -1549,8 +1552,9 @@ function renderHistory(){
   return html+'</div>';
 }
 function renderFullRadar(){
-  const radar=buildRadarTasks(new Date()), state=radarOverviewState(radar), groups=[['act','Current actions'],['soon','Due soon'],['later','Later']];
-  let html=`<button class="back-btn" id="promos-back"><span aria-hidden="true">‹</span> Promos</button>`;
+  const radar=buildRadarTasks(new Date()), state=radarOverviewState(radar), groups=[['act','Priority actions'],['soon','Due soon'],['later','Later']];
+  let html=`<button class="back-btn" id="promos-back"><span aria-hidden="true">‹</span> Promos</button>
+    <p class="section-note">Check items off after you complete them on the issuer or partner site. Status is stored only on this device.</p>`;
   if(!radar.active.length) html+=`<div class="action-list"><div class="quiet-state"><strong>${esc(state.copy)}</strong>${state.action==='cards'?'<div style="margin-top:10px"><button class="pill" data-go-cards>Add cards</button></div>':''}</div></div>`;
   else if(!radar.unresolved.length) html+=`<div class="action-list"><div class="quiet-state"><strong>Nothing needs your attention</strong></div></div>`;
   for(const [id,label] of groups){
@@ -1565,6 +1569,7 @@ function renderFullRadar(){
 function renderFullQuarterly(){
   const tasks=buildQuarterlyTasks(new Date()), done=tasks.filter(t=>t.done).length;
   let html=`<button class="back-btn" id="promos-back"><span aria-hidden="true">‹</span> Promos</button>
+    <p class="section-note">Check items off after you complete them on the issuer site. Status is stored only on this device.</p>
     <div class="progress-line"><span>${currentQuarter().replace('-',' ')} category checklist</span>${tasks.length?`<strong>${done} of ${tasks.length} complete</strong>`:''}</div>`;
   html+=tasks.length?`<div class="action-list">${tasks.map(t=>renderTaskRow(t)).join('')}</div>`:
     '<div class="action-list"><div class="quiet-state">No quarterly actions for your cards.</div></div>';
