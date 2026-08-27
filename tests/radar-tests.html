@@ -250,6 +250,35 @@ document.getElementById('app').addEventListener('load',async()=>{
       assert(doc.body.textContent.includes('Status is stored only on this device.'),'Manual tracking should be explained in-product');
     });
   });
+  test('external action links stay at the top right of action cards',async()=>{
+    await withAppState({schemaVersion:2,myCards:['usb_cashplus','amex_plat']},async(win,doc,frame)=>{
+      doc.querySelector('nav button[data-tab="promos"]').click();
+      const promoRow=doc.querySelector('.action-row');
+      assert(promoRow.querySelector('.action-topline > .issuer-action'),'Promos link should be in the card topline');
+      assert(promoRow.querySelector('.action-footer > .task-check'),'Promos checkbox should remain in the footer');
+      assert(!promoRow.querySelector('.action-links .issuer-action'),'External link should not return to the secondary-actions area');
+      frame.style.width='320px'; await afterRender(win);
+      const promoLink=promoRow.querySelector('.issuer-action'), promoLinkRect=promoLink.getBoundingClientRect(), promoRowRect=promoRow.getBoundingClientRect();
+      assert(promoLinkRect.height>=44,'Promos external link should keep a 44px touch target at phone width');
+      assert(promoLinkRect.right<=promoRowRect.right,'Promos external link should remain inside the card at phone width');
+      assert(doc.documentElement.scrollWidth<=win.innerWidth,'Phone layout should not overflow horizontally');
+      doc.getElementById('radar-view-all').click();
+      const skip=doc.querySelector('[data-skip-task]'), skippedKey=skip.dataset.skipTask;
+      skip.click(); await afterRender(win);
+      assert(JSON.parse(win.localStorage.getItem('cardrouter')).radarSkips[skippedKey],'Skip should persist after the footer restructuring');
+      const hide=doc.querySelector('[data-hide-task]');
+      assert(hide,'Expected another benefit action that can be hidden'); hide.click(); await afterRender(win);
+      assert(Object.keys(JSON.parse(win.localStorage.getItem('cardrouter')).radarHidden).length===1,'Hide should persist after the footer restructuring');
+      doc.querySelector('nav button[data-tab="benefits"]').click(); doc.querySelector('[data-bcat="rideshare"]').click();
+      const benefitRow=doc.querySelector('.action-row');
+      assert(benefitRow.querySelector('.action-topline > .issuer-action'),'Benefits link should be in the card topline');
+      assert(benefitRow.querySelector('.action-footer .task-checks'),'Benefits checkboxes should remain in the footer');
+      doc.querySelector('[data-bcat="lounges"]').click();
+      const fallbackRow=[...doc.querySelectorAll('.action-row')].find(row=>row.textContent.includes('Priority Pass Select'));
+      assert(fallbackRow&&fallbackRow.querySelector('.action-topline > .issuer-action'),'Non-Radar Benefits links should use the same top-right card treatment');
+      assert(fallbackRow.querySelector('.issuer-action').getBoundingClientRect().height>=44,'Non-Radar Benefits links should keep a 44px touch target');
+    });
+  });
   test('stale Benefits enrollment refreshes without writing old-period state',async()=>{
     await withAppState({schemaVersion:2,myCards:['amex_gold']},async(win,doc)=>{
       doc.querySelector('nav button[data-tab="benefits"]').click(); doc.querySelector('[data-bcat="diningcr"]').click();

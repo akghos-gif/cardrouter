@@ -117,19 +117,24 @@
   .radar-summary{font-size:14px; line-height:1.4; margin:0 4px 9px}
   .radar-summary strong{font-weight:750}
   .action-list{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); margin:8px 0}
-  .action-row{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; padding:13px 14px;
-    border-bottom:1px solid var(--line)}
+  .action-row{display:block; padding:13px 14px; border-bottom:1px solid var(--line)}
   .action-row:last-child{border-bottom:0}
   .action-row.completed{background:color-mix(in srgb, var(--good) 4%, var(--card))}
+  .action-topline{display:flex; align-items:flex-start; gap:12px; min-width:0}
+  .action-topline .action-title{flex:1; min-width:0}
   .action-title{font-size:14.5px; font-weight:680; line-height:1.3}
   .action-meta{font-size:12.5px; color:var(--muted); line-height:1.4; margin-top:3px}
   .action-meta.urgent{color:var(--warn); font-weight:750}
-  .action-links{display:flex; gap:13px; align-items:center; flex-wrap:wrap; margin-top:7px}
+  .issuer-action{display:inline-flex; align-items:flex-start; justify-content:flex-end; flex:none; min-height:44px; padding:1px 0 9px;
+    color:var(--accent); font:inherit; font-size:12.5px; font-weight:650; line-height:1.3; text-align:right; text-decoration:underline;
+    text-underline-offset:2px; white-space:nowrap}
+  .action-footer{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-top:2px; min-width:0}
+  .action-links{display:flex; gap:13px; align-items:center; flex:1; flex-wrap:wrap; margin-top:7px}
   .action-links a, .action-links button{display:inline-flex; align-items:center; border:0; background:none; padding:9px 0; min-height:44px;
     font:inherit; font-size:12.5px; font-weight:650; cursor:pointer}
-  .action-links .issuer-action{color:var(--accent); text-decoration:underline; text-underline-offset:2px}
   .action-links .manage-action{color:var(--muted); text-decoration:none; font-weight:600}
   .action-links .manage-action:hover{text-decoration:underline; text-underline-offset:2px}
+  .task-checks{display:flex; flex:none; flex-direction:column; align-items:flex-end}
   .task-check{display:flex; align-items:center; gap:7px; max-width:138px; min-height:44px; font-size:12.5px; line-height:1.25;
     font-weight:650; cursor:pointer}
   .task-check input{flex:none; width:20px; height:20px}
@@ -150,9 +155,11 @@
   .reminder-row .hint{margin:0}
   .not-shown-list{border:1px solid var(--line); border-radius:12px; padding:0 12px; background:var(--card)}
   @media (max-width:420px){
-    .action-row{grid-template-columns:1fr; gap:5px}
+    .action-topline{gap:8px}
+    .action-topline .issuer-action{font-size:12px}
+    .action-footer{flex-wrap:wrap}
     .task-check{max-width:none; width:max-content}
-    .action-links{margin-top:5px}
+    .action-links{margin-top:3px}
     .reminder-row{align-items:flex-start; flex-direction:column}
   }
   @media (prefers-reduced-motion:reduce){
@@ -1421,24 +1428,31 @@ function renderBenefits(){
     html += `<h2>${bc.em} ${bc.name}</h2><div class="panel">` +
       rows.map(b=>{
         const meta=b.id&&RADAR_BENEFIT_MAP[b.card.id+':'+b.id];
-        if(!meta) return `<div class="row"><div class="grow">
-          <div class="title">${esc(b.name)} ${b.enroll?'<span class="badge warn">enrollment required</span>':'<span class="badge good">automatic</span>'}</div>
-          <div class="sub2">${esc(b.card.name)}${b.note?' · '+esc(b.note):''}</div>
-          ${(b.enroll&&(b.link||ENROLL_LINKS[b.card.id]))?`<div class="sub2"><a href="${b.link||ENROLL_LINKS[b.card.id]}" target="_blank" rel="noopener noreferrer" aria-label="Activate ${esc(b.name)} on issuer or partner site, opens in a new tab">Activate <span aria-hidden="true">↗</span></a></div>`:''}
-        </div>${b.value?`<div class="rc-rate" style="font-size:13.5px">${esc(b.value)}</div>`:''}</div>`;
+        if(!meta){
+          const activationLink=b.enroll&&(b.link||ENROLL_LINKS[b.card.id]);
+          if(activationLink) return `<div class="action-row">
+            <div class="action-topline"><div class="action-title">${esc(b.name)} <span class="badge warn">enrollment required</span></div>
+              <a class="issuer-action" href="${activationLink}" target="_blank" rel="noopener noreferrer" aria-label="Activate ${esc(b.name)} on issuer or partner site, opens in a new tab">Activate <span aria-hidden="true">↗</span></a></div>
+            <div class="action-meta">${esc(b.card.name)}${b.value?' · '+esc(b.value):''}${b.note?' · '+esc(b.note):''}</div>
+          </div>`;
+          return `<div class="row"><div class="grow">
+            <div class="title">${esc(b.name)} <span class="badge good">automatic</span></div>
+            <div class="sub2">${esc(b.card.name)}${b.note?' · '+esc(b.note):''}</div>
+          </div>${b.value?`<div class="rc-rate" style="font-size:13.5px">${esc(b.value)}</div>`:''}</div>`;
+        }
         const enrolled=enrollmentFor(b.card.id,b.id), p=periodInfo(meta.cadence,renderNow), useKey=canonicalTaskKey('use',b.card.id,b.id,p.key), used=S.completions[useKey];
         const hidden=!!S.radarHidden[canonicalHiddenKey(b.card.id,b.id)], linkLabel='Open benefit';
         const prerequisiteMark=meta.markPrerequisiteLabel||'Mark enrolled', prerequisiteDone=meta.prerequisiteDoneLabel||'Enrolled';
         const restoreFocusId=meta.requiresEnrollment&&!enrolled?`enroll-${b.card.id}-${b.id}`:`use-${b.card.id}-${b.id}`;
-        return `<div class="action-row"><div>
-          <div class="action-title">${esc(b.name)}</div>
+        return `<div class="action-row">
+          <div class="action-topline"><div class="action-title">${esc(b.name)}</div>
+            <a class="issuer-action" href="${meta.link}" target="_blank" rel="noopener noreferrer" aria-label="${linkLabel} for ${esc(b.name)}, ${esc(b.card.name)}, on issuer or partner site, opens in a new tab">${linkLabel} <span aria-hidden="true">↗</span></a></div>
           <div class="action-meta">${esc(b.card.name)}${b.value?' · '+esc(b.value):''}${b.note?' · '+esc(b.note):''}</div>
-          <div class="action-links"><a class="issuer-action" href="${meta.link}" target="_blank" rel="noopener noreferrer" aria-label="${linkLabel} for ${esc(b.name)}, ${esc(b.card.name)}, on issuer or partner site, opens in a new tab">${linkLabel} <span aria-hidden="true">↗</span></a>
-          ${hidden?`<button class="manage-action" data-show-radar="${b.card.id}:${b.id}" data-restore-focus="${restoreFocusId}" data-focus-id="show-${b.card.id}-${b.id}" aria-label="Show ${esc(b.name)} in My Radar, ${esc(b.card.name)}">Show in My Radar</button>`:''}</div>
-        </div><div>
-          ${meta.requiresEnrollment?`<label class="task-check"><input type="checkbox" data-benefit-enroll="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="enroll-${b.card.id}-${b.id}" aria-label="${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark} for ${esc(b.name)}, ${esc(b.card.name)}" ${enrolled?'checked':''}>${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark}</label>`:''}
-          ${(!meta.requiresEnrollment||enrolled)?`<label class="task-check"><input type="checkbox" data-benefit-use="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="use-${b.card.id}-${b.id}" aria-label="${used?'Used '+displayDate(used.completedAt):'Mark used'} for ${esc(b.name)}, ${esc(b.card.name)}" ${used?'checked':''}>${used?'Used '+displayDate(used.completedAt):'Mark used'}</label>`:''}
-        </div></div>`;
+          <div class="action-footer"><div class="action-links">${hidden?`<button class="manage-action" data-show-radar="${b.card.id}:${b.id}" data-restore-focus="${restoreFocusId}" data-focus-id="show-${b.card.id}-${b.id}" aria-label="Show ${esc(b.name)} in My Radar, ${esc(b.card.name)}">Show in My Radar</button>`:''}</div>
+            <div class="task-checks">
+              ${meta.requiresEnrollment?`<label class="task-check"><input type="checkbox" data-benefit-enroll="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="enroll-${b.card.id}-${b.id}" aria-label="${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark} for ${esc(b.name)}, ${esc(b.card.name)}" ${enrolled?'checked':''}>${enrolled?prerequisiteDone+' '+displayDate(enrolled.enrolledAt):prerequisiteMark}</label>`:''}
+              ${(!meta.requiresEnrollment||enrolled)?`<label class="task-check"><input type="checkbox" data-benefit-use="${b.card.id}:${b.id}" data-period-key="${p.key}" data-focus-id="use-${b.card.id}-${b.id}" aria-label="${used?'Used '+displayDate(used.completedAt):'Mark used'} for ${esc(b.name)}, ${esc(b.card.name)}" ${used?'checked':''}>${used?'Used '+displayDate(used.completedAt):'Mark used'}</label>`:''}
+            </div></div></div>`;
       }).join('') +
       `</div>
       <p class="hint" style="margin:8px 4px">Check items off after you complete them on the issuer or partner site. Status is stored only on this device.</p>`;
@@ -1484,16 +1498,16 @@ function renderTaskRow(task,{manage=false}={}){
   const checkboxText=task.done?completedLabel(task):task.unavailable?'Unavailable':task.closed?closedMark:task.markLabel;
   const checkboxAria=checkboxText;
   const setupDone=task.meta&&task.meta.prerequisiteDoneLabel||'Enrolled';
-  return `<div class="action-row ${task.done?'completed':''}"><div>
-    <div class="action-title">${esc(task.title)}</div>
+  return `<div class="action-row ${task.done?'completed':''}">
+    <div class="action-topline"><div class="action-title">${esc(task.title)}</div>
+      <a class="issuer-action" href="${task.link}" target="_blank" rel="noopener noreferrer" aria-label="${esc(task.externalLabel)} for ${esc(task.title)}, ${esc(task.card.name)}, on issuer or partner site, opens in a new tab">${esc(task.externalLabel)} <span aria-hidden="true">↗</span></a></div>
     <div class="action-meta">${esc(task.card.name)}${task.detail?' · '+esc(task.detail):''}</div>
     ${task.enrolled&&task.actionType==='use'?`<div class="action-meta">${esc(setupDone)} ${displayDate(task.enrolled.enrolledAt)}</div>`:''}
     ${statuses.map(status=>`<div class="action-meta ${status.urgent?'urgent':''}">${esc(status.text)}</div>`).join('')}
-    <div class="action-links"><a class="issuer-action" href="${task.link}" target="_blank" rel="noopener noreferrer" aria-label="${esc(task.externalLabel)} for ${esc(task.title)}, ${esc(task.card.name)}, on issuer or partner site, opens in a new tab">${esc(task.externalLabel)} <span aria-hidden="true">↗</span></a>
+    <div class="action-footer"><div class="action-links">
       ${manage&&!task.done&&!task.closed&&!disabled?`<button class="manage-action" data-skip-task="${task.key}" aria-label="Skip ${esc(task.title)} for this period, ${esc(task.card.name)}">Skip this period</button>`:''}
       ${manage&&task.benefitId?`<button class="manage-action" data-hide-task="${task.key}" aria-label="Hide ${esc(task.title)} from My Radar, ${esc(task.card.name)}">Hide this benefit</button>`:''}
-    </div>
-  </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-task-state="${task.closed?'closed':task.unavailable?'unavailable':'open'}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div>`;
+    </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-task-state="${task.closed?'closed':task.unavailable?'unavailable':'open'}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div></div>`;
 }
 function radarOverviewState(radar){
   if(!S.myCards.length) return {copy:'Add cards to start My Radar',action:'cards'};
