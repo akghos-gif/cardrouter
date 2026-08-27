@@ -380,8 +380,20 @@ document.getElementById('app').addEventListener('load',async()=>{
     const eligible=R.buildRadarTasks({myCards:cards,enrollments},now).all.filter(task=>task.meta&&task.meta.recurringEligible).map(task=>`${task.card.id}:${task.benefitId}`).sort();
     equal(eligible.length,4); equal(eligible.join(','),'amex_plat:digital_entertainment_credit,bcp:disney_bundle_credit,biz_plat:wireless_service_credit,csr:peloton_credit');
   });
+  test('audited recurring qualifications preserve direct billing and annual-plan exclusions',()=>{
+    const now=new Date(2026,7,27,12), tasks=R.buildRadarTasks({schemaVersion:3,myCards:['amex_plat','csr','biz_plat','bcp']},now).all;
+    const digital=tasks.find(item=>item.itemId==='digital_entertainment_credit').meta, peloton=tasks.find(item=>item.itemId==='peloton_credit').meta, wireless=tasks.find(item=>item.itemId==='wireless_service_credit').meta, disney=tasks.find(item=>item.itemId==='disney_bundle_credit').meta;
+    equal(digital.recurringTermsVersion,'2026-08-27-2'); assert(digital.recurringQualifier.includes('The New York Times')&&digital.recurringQualifier.includes('YouTube TV')&&digital.recurringQualifier.includes('third-party billing'));
+    equal(peloton.recurringTermsVersion,'2026-08-27-2'); assert(peloton.recurringQualifier.includes('All-Access')&&peloton.recurringQualifier.includes('Guide')&&peloton.recurringQualifier.includes('App One')&&peloton.recurringQualifier.includes('Strength+')&&peloton.recurringQualifier.includes('in the U.S.')&&peloton.recurringQualifier.includes('app store'));
+    equal(wireless.recurringTermsVersion,'2026-08-27-2'); assert(wireless.recurringQualifier.includes('Google Fi')&&wireless.recurringQualifier.includes('hardware')&&wireless.recurringQualifier.includes('bundled'));
+    equal(disney.recurringTermsVersion,'2026-08-27-2'); assert(disney.recurringQualifier.includes('up to $10 only in the month charged')&&disney.recurringQualifier.includes('cannot be saved as a monthly setup')&&disney.recurringQualifier.toLowerCase().includes('third-party'));
+    for(const [cardId,benefitId] of [['amex_plat','digital_entertainment_credit'],['csr','peloton_credit'],['biz_plat','wireless_service_credit'],['bcp','disney_bundle_credit']]){
+      const confirmedAt='2026-08-27T19:00:00.000Z', state={schemaVersion:3,myCards:[cardId],enrollments:[{cardId,benefitId,enrolledAt:confirmedAt}],recurringSetups:[{cardId,benefitId,confirmedAt,confirmedOn:'2026-08-27',termsVersion:'2026-08-26-1'}]};
+      equal(R.recurringSetupStatus(state,cardId,benefitId,now).status,'terms-changed','Prior broad confirmation should require review');
+    }
+  });
   test('active recurring setup suppresses only use reminders and never creates completion',()=>{
-    const now=new Date(2026,7,27,12), confirmedAt='2026-08-27T19:00:00.000Z', setup={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt,confirmedOn:'2026-08-27',termsVersion:'2026-08-26-1'};
+    const now=new Date(2026,7,27,12), confirmedAt='2026-08-27T19:00:00.000Z', setup={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt,confirmedOn:'2026-08-27',termsVersion:'2026-08-27-2'};
     const state=R.normalizeState({schemaVersion:3,myCards:['amex_plat'],enrollments:[{cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt:confirmedAt}],recurringSetups:[setup]},now), radar=R.buildRadarTasks(state,now);
     const task=radar.all.find(item=>item.itemId==='digital_entertainment_credit');
     assert(task.recurringSuppressed,'Expected monthly use reminder to be suppressed');
@@ -394,7 +406,7 @@ document.getElementById('app').addEventListener('load',async()=>{
     equal(task.actionType,'enroll'); assert(!task.recurringSuppressed,'Enrollment cannot be suppressed');
   });
   test('recurring review dates clamp month ends and expire at the exact grace boundary',()=>{
-    const setup={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt:'2026-08-31T19:00:00.000Z',confirmedOn:'2026-08-31',termsVersion:'2026-08-26-1'}, base={schemaVersion:3,myCards:['amex_plat'],enrollments:[{cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt:'2026-08-31T19:00:00.000Z'}],recurringSetups:[setup]};
+    const setup={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt:'2026-08-31T19:00:00.000Z',confirmedOn:'2026-08-31',termsVersion:'2026-08-27-2'}, base={schemaVersion:3,myCards:['amex_plat'],enrollments:[{cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt:'2026-08-31T19:00:00.000Z'}],recurringSetups:[setup]};
     const feb27=R.recurringSetupStatus(base,'amex_plat','digital_entertainment_credit',new Date(2027,1,27,12));
     const feb28=R.recurringSetupStatus(base,'amex_plat','digital_entertainment_credit',new Date(2027,1,28,12));
     const mar29=R.recurringSetupStatus(base,'amex_plat','digital_entertainment_credit',new Date(2027,2,29,12));
@@ -408,7 +420,7 @@ document.getElementById('app').addEventListener('load',async()=>{
     assert(!R.confirmationDateMatchesInstant('2026-08-29','2026-08-27T23:30:00.000Z'));
   });
   test('recurring setup validation rejects malformed, duplicate, and noneligible records atomically',()=>{
-    const now=new Date(2026,7,27,12), valid={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt:'2026-08-27T19:00:00.000Z',confirmedOn:'2026-08-27',termsVersion:'2026-08-26-1'};
+    const now=new Date(2026,7,27,12), valid={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt:'2026-08-27T19:00:00.000Z',confirmedOn:'2026-08-27',termsVersion:'2026-08-27-2'};
     const invalid=[
       {...valid,unknown:true},
       {...valid,confirmedOn:'2026-08-30'},
@@ -420,7 +432,7 @@ document.getElementById('app').addEventListener('load',async()=>{
     assert(duplicateRejected,'Duplicate recurring identities must reject import');
   });
   test('imported recurring setups are always suspended until local reconfirmation',()=>{
-    const now=new Date(2026,7,27,12), setup={cardId:'bcp',benefitId:'disney_bundle_credit',confirmedAt:'2026-08-27T19:00:00.000Z',confirmedOn:'2026-08-27',termsVersion:'2026-08-26-1'};
+    const now=new Date(2026,7,27,12), setup={cardId:'bcp',benefitId:'disney_bundle_credit',confirmedAt:'2026-08-27T19:00:00.000Z',confirmedOn:'2026-08-27',termsVersion:'2026-08-27-2'};
     const imported=R.normalizeState({schemaVersion:3,myCards:['bcp'],enrollments:[{cardId:'bcp',benefitId:'disney_bundle_credit',enrolledAt:setup.confirmedAt}],recurringSetups:[setup]},now,{fromImport:true}), record=Object.values(imported.recurringSetups)[0];
     equal(record.suspensionReason,'imported'); equal(R.recurringSetupStatus(imported,'bcp','disney_bundle_credit',now).status,'suspended');
   });
@@ -453,7 +465,7 @@ document.getElementById('app').addEventListener('load',async()=>{
       assert(pelotonRow,'Expected Peloton membership credit in the Radar preview');
       assert(pelotonRow.querySelector('.task-check').textContent.includes('Mark used'),'Manual monthly fallback should remain available');
       const setup=pelotonRow.querySelector('[data-recurring-disclosure]'); equal(setup.textContent.trim(),'Membership billed monthly'); setup.click(); await afterRender(win);
-      const panel=doc.querySelector('.recurring-discovery:not([hidden])'); assert(panel.textContent.includes('billed directly by Peloton'),'Subscription setup should explain direct-billing eligibility');
+      const panel=doc.querySelector('.recurring-discovery:not([hidden])'); assert(panel.textContent.includes('directly from Peloton')&&panel.textContent.includes('All-Access'),'Subscription setup should explain direct-billing and membership eligibility');
       panel.querySelector('[data-confirm-recurring]').click(); await afterRender(win);
       const saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.keys(saved.recurringSetups).length,1); equal(Object.keys(saved.completions).length,0);
       equal(doc.activeElement.dataset.focusId,'radar-heading'); assert(![...doc.querySelectorAll('.action-row')].some(row=>row.textContent.includes('Peloton membership credit')),'Confirmed subscription should leave the monthly Radar preview');
@@ -471,7 +483,7 @@ document.getElementById('app').addEventListener('load',async()=>{
   });
   test('due review confirms in place and resume returns the monthly reminder',async()=>{
     const now=new Date(), confirmedDay=R.addCalendarMonths(new Date(now.getFullYear(),now.getMonth(),now.getDate()),-6), confirmedOn=`${confirmedDay.getFullYear()}-${String(confirmedDay.getMonth()+1).padStart(2,'0')}-${String(confirmedDay.getDate()).padStart(2,'0')}`;
-    const confirmedAt=new Date(confirmedDay.getFullYear(),confirmedDay.getMonth(),confirmedDay.getDate(),12).toISOString(), setup={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt,confirmedOn,termsVersion:'2026-08-26-1'};
+    const confirmedAt=new Date(confirmedDay.getFullYear(),confirmedDay.getMonth(),confirmedDay.getDate(),12).toISOString(), setup={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt,confirmedOn,termsVersion:'2026-08-27-2'};
     const state={schemaVersion:3,myCards:['amex_plat'],enrollments:[{cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt:confirmedAt}],recurringSetups:[setup]};
     await withAppState(state,async(win,doc)=>{
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
@@ -493,7 +505,7 @@ document.getElementById('app').addEventListener('load',async()=>{
     });
   });
   test('removing a card or enrollment suspends its recurring setup until reconfirmed',async()=>{
-    const now=new Date(), confirmedAt=now.toISOString(), confirmedOn=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`, setup={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt,confirmedOn,termsVersion:'2026-08-26-1'};
+    const now=new Date(), confirmedAt=now.toISOString(), confirmedOn=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`, setup={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt,confirmedOn,termsVersion:'2026-08-27-2'};
     const state={schemaVersion:3,myCards:['amex_plat'],enrollments:[{cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt:confirmedAt}],recurringSetups:[setup]};
     await withAppState(state,async(win,doc)=>{
       doc.querySelector('nav button[data-tab="cards"]').click(); doc.querySelector('[data-del="amex_plat"]').click(); await afterRender(win);
@@ -530,7 +542,7 @@ document.getElementById('app').addEventListener('load',async()=>{
   });
   test('current hidden state controls recovery even when import overwrote the suspension reason',async()=>{
     const now=new Date(), confirmedAt=now.toISOString(), confirmedOn=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-    const setup={cardId:'bcp',benefitId:'disney_bundle_credit',confirmedAt,confirmedOn,termsVersion:'2026-08-26-1',suspendedAt:confirmedAt,suspensionReason:'imported'};
+    const setup={cardId:'bcp',benefitId:'disney_bundle_credit',confirmedAt,confirmedOn,termsVersion:'2026-08-27-2',suspendedAt:confirmedAt,suspensionReason:'imported'};
     const state={schemaVersion:3,myCards:['bcp'],enrollments:[{cardId:'bcp',benefitId:'disney_bundle_credit',enrolledAt:confirmedAt}],radarHidden:[{cardId:'bcp',benefitId:'disney_bundle_credit',hiddenAt:confirmedAt}],recurringSetups:[setup]};
     await withAppState(state,async(win,doc)=>{
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
