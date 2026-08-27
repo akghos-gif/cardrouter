@@ -440,7 +440,8 @@ const BENEFITS = {
   ],
   venture_x: [
     {cat:'lounges', name:'Capital One Lounges', value:'', enroll:false, note:'guest policy changed 2/2026 — guests may cost extra'},
-    {cat:'lounges', name:'Priority Pass + Plaza Premium', value:'', enroll:true, note:'enroll in your C1 account'},
+    {cat:'lounges', name:'Priority Pass', value:'', enroll:true, note:'enroll in your Capital One account',
+      link:'https://www.capitalone.com/learn-grow/more-than-money/all-about-priority-pass-and-venture-x/', linkLabel:'How to activate', linkAriaPrefix:'Learn how to activate'},
     {cat:'security', name:'Global Entry / TSA PreCheck credit', value:'$120 every 4 yrs', enroll:false, note:''},
     {cat:'travelcr', name:'Capital One Travel credit', value:'$300/yr', enroll:false, note:'portal bookings only'},
     {cat:'status', name:'10,000 anniversary miles + Hertz President\'s Circle', value:'~$100/yr', enroll:true, note:'Hertz status needs enrollment'},
@@ -470,11 +471,11 @@ const BENEFITS = {
     {cat:'protect', name:'Purchase protection, return protection', value:'', enroll:false, note:''},
   ],
   freedom_flex: [
-    {cat:'diningcr', name:'DashPass', value:'complimentary', enroll:true, note:'activate by 12/2027'},
+    {cat:'diningcr', name:'DashPass', value:'complimentary', enroll:true, note:'activate by 12/2027', link:'https://www.doordash.com/en/dashpass/partner/chase/freedom'},
     {cat:'protect', name:'Cell phone protection', value:'up to $800/claim', enroll:false, note:'pay your phone bill with the card'},
   ],
   cfu: [
-    {cat:'diningcr', name:'DashPass', value:'complimentary', enroll:true, note:'activate by 12/2027'},
+    {cat:'diningcr', name:'DashPass', value:'complimentary', enroll:true, note:'activate by 12/2027', link:'https://www.doordash.com/en/dashpass/partner/chase/freedom'},
     {cat:'protect', name:'Purchase protection, extended warranty', value:'', enroll:false, note:''},
   ],
   strata_premier: [
@@ -492,18 +493,16 @@ const BENEFITS = {
   ],
 };
 
-/* Where "enrollment required" perks get switched on (issuer benefit hubs; login required). */
-const ENROLL_LINKS = {
-  amex_plat:'https://global.americanexpress.com/card-benefits',
-  amex_gold:'https://global.americanexpress.com/card-benefits',
-  biz_plat:'https://global.americanexpress.com/card-benefits',
-  biz_gold:'https://global.americanexpress.com/card-benefits',
-  bcp:'https://global.americanexpress.com/card-benefits',
-  csr:'https://account.chase.com/sapphire/reserve/benefits',
-  csp:'https://account.chase.com/sapphire/preferred/benefits',
-  freedom_flex:'https://www.doordash.com/chase',
-  cfu:'https://www.doordash.com/chase',
-  venture_x:'https://www.capitalone.com/signin',
+/* Card-level fallbacks when an issuer does not expose a stable item deep link. */
+const ENROLL_DESTINATIONS = {
+  amex_plat:{url:'https://global.americanexpress.com/card-benefits',label:'Open benefit hub',ariaPrefix:'Open the American Express benefit hub for'},
+  amex_gold:{url:'https://global.americanexpress.com/card-benefits',label:'Open benefit hub',ariaPrefix:'Open the American Express benefit hub for'},
+  biz_plat:{url:'https://global.americanexpress.com/card-benefits',label:'Open benefit hub',ariaPrefix:'Open the American Express benefit hub for'},
+  biz_gold:{url:'https://global.americanexpress.com/card-benefits',label:'Open benefit hub',ariaPrefix:'Open the American Express benefit hub for'},
+  bcp:{url:'https://global.americanexpress.com/card-benefits',label:'Open benefit hub',ariaPrefix:'Open the American Express benefit hub for'},
+  csr:{url:'https://account.chase.com/sapphire/reserve/benefits',label:'Open benefit hub',ariaPrefix:'Open the Chase benefit hub for'},
+  csp:{url:'https://account.chase.com/sapphire/preferred/benefits',label:'Open benefit hub',ariaPrefix:'Open the Chase benefit hub for'},
+  venture_x:{url:'https://www.capitalone.com/signin',label:'Sign in to Capital One',ariaPrefix:'Sign in to Capital One, then find',ariaSuffix:' enrollment'},
 };
 
 const PROGRAMS = {
@@ -537,16 +536,16 @@ const QUARTERLY_ACTIONS = [
 ];
 const RADAR_BENEFITS = [
   {cardId:'amex_plat', benefitId:'fhr_hotel_credit', cadence:'half', amount:'$300', requiresEnrollment:false,
-    link:'https://www.americanexpress.com/en-us/account/get-started/platinum/benefits-overview'},
+    link:'https://global.americanexpress.com/card-benefits/detail/hotel-credit/platinum'},
   {cardId:'amex_plat', benefitId:'resy_dining_credit', cadence:'quarter', amount:'$100', requiresEnrollment:true,
-    link:'https://www.americanexpress.com/en-us/account/get-started/platinum/lifestyle-benefits'},
+    link:'https://global.americanexpress.com/card-benefits/detail/400-resy-credit/platinum'},
   {cardId:'amex_plat', benefitId:'uber_cash', cadence:'month', amount:'$15', decemberAmount:'$35', requiresEnrollment:true,
     prerequisiteLabel:'Add card to Uber', markPrerequisiteLabel:'Mark card added', prerequisiteDoneLabel:'Card added', prerequisiteToast:'Marked card added',
-    link:'https://www.americanexpress.com/en-us/account/get-started/platinum/benefits-overview'},
+    link:'https://global.americanexpress.com/card-benefits/detail/uber-rides-with-platinum/platinum'},
   {cardId:'amex_plat', benefitId:'digital_entertainment_credit', cadence:'month', amount:'$25', requiresEnrollment:true,
-    link:'https://www.americanexpress.com/en-us/account/get-started/platinum/benefits-overview'},
+    link:'https://global.americanexpress.com/card-benefits/detail/digital-entertainment/platinum'},
   {cardId:'amex_plat', benefitId:'lululemon_credit', cadence:'quarter', amount:'$75', requiresEnrollment:true,
-    link:'https://www.americanexpress.com/en-us/account/get-started/platinum/benefits-overview'},
+    link:'https://global.americanexpress.com/card-benefits/detail/lululemon-credit/platinum'},
   {cardId:'csr', benefitId:'exclusive_tables_credit', cadence:'half', amount:'$150', requiresEnrollment:true,
     link:'https://www.chase.com/personal/credit-cards/education/basics/how-to-use-dining-credit-chase-sapphire-reserve-exclusive-tables'},
   {cardId:'csr', benefitId:'stubhub_viagogo_credit', cadence:'half', amount:'$150', requiresEnrollment:true,
@@ -556,14 +555,14 @@ const RADAR_BENEFITS = [
   {cardId:'csp', benefitId:'doordash_promo_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
     link:'https://www.doordash.com/en/dashpass/partner/chase/preferred'},
   {cardId:'amex_gold', benefitId:'dining_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
-    link:'https://www.americanexpress.com/en-us/account/get-started/gold/explore-benefits'},
+    link:'https://global.americanexpress.com/card-benefits/detail/dining-credit/gold'},
   {cardId:'amex_gold', benefitId:'resy_credit', cadence:'half', amount:'$50', requiresEnrollment:true,
     link:'https://global.americanexpress.com/card-benefits/detail/resy-credit/gold'},
   {cardId:'amex_gold', benefitId:'dunkin_credit', cadence:'month', amount:'$7', requiresEnrollment:true,
-    link:'https://www.americanexpress.com/en-us/account/get-started/gold/explore-benefits'},
+    link:'https://global.americanexpress.com/card-benefits/detail/dunkin-credit/gold'},
   {cardId:'amex_gold', benefitId:'uber_cash', cadence:'month', amount:'$10', requiresEnrollment:true,
     prerequisiteLabel:'Add card to Uber', markPrerequisiteLabel:'Mark card added', prerequisiteDoneLabel:'Card added', prerequisiteToast:'Marked card added',
-    link:'https://www.americanexpress.com/en-us/account/get-started/gold/explore-benefits'},
+    link:'https://global.americanexpress.com/card-benefits/detail/uber-cash/gold'},
   {cardId:'biz_plat', benefitId:'fhr_hotel_credit', cadence:'half', amount:'$300', requiresEnrollment:false,
     link:'https://global.americanexpress.com/card-benefits/detail/hotel-credit/business-platinum'},
   {cardId:'biz_plat', benefitId:'indeed_credit', cadence:'quarter', amount:'$90', requiresEnrollment:true,
@@ -1429,10 +1428,11 @@ function renderBenefits(){
       rows.map(b=>{
         const meta=b.id&&RADAR_BENEFIT_MAP[b.card.id+':'+b.id];
         if(!meta){
-          const activationLink=b.enroll&&(b.link||ENROLL_LINKS[b.card.id]);
+          const directActivationLink=b.enroll&&b.link, fallbackDestination=b.enroll&&ENROLL_DESTINATIONS[b.card.id];
+          const activationLink=directActivationLink||fallbackDestination&&fallbackDestination.url;
           if(activationLink) return `<div class="action-row">
             <div class="action-topline"><div class="action-title">${esc(b.name)} <span class="badge warn">enrollment required</span></div>
-              <a class="issuer-action" href="${activationLink}" target="_blank" rel="noopener noreferrer" aria-label="Activate ${esc(b.name)} on issuer or partner site, opens in a new tab">Activate <span aria-hidden="true">↗</span></a></div>
+              <a class="issuer-action" href="${activationLink}" target="_blank" rel="noopener noreferrer" aria-label="${directActivationLink?(b.linkAriaPrefix||'Activate')+' '+esc(b.name)+' on issuer or partner site':fallbackDestination.ariaPrefix+' '+esc(b.name)+(fallbackDestination.ariaSuffix||'')}, opens in a new tab">${esc(directActivationLink?(b.linkLabel||'Activate'):fallbackDestination.label)} <span aria-hidden="true">↗</span></a></div>
             <div class="action-meta">${esc(b.card.name)}${b.value?' · '+esc(b.value):''}${b.note?' · '+esc(b.note):''}</div>
           </div>`;
           return `<div class="row"><div class="grow">

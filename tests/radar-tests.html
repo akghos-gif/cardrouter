@@ -104,10 +104,34 @@ document.getElementById('app').addEventListener('load',async()=>{
     equal(closed.eff,1); assert(closed.activationClosed,'Closed activation should use the base rate');
     equal(completed.eff,5); assert(completed.viaRotating,'Recorded activation should retain the rotating rate');
   });
-  test('issuer action data includes the verified Discover link and Uber setup wording',()=>{
-    const now=new Date(2026,7,26,12), radar=R.buildRadarTasks({myCards:['discover_it','amex_gold']},now);
-    const discover=radar.all.find(t=>t.itemId==='discover_5pct'), uber=radar.all.find(t=>t.itemId==='uber_cash');
-    equal(discover.link,'https://www.discover.com/credit-cards/cash-back/cashback-calendar.html');
+  test('every Radar action uses its audited, benefit-specific destination',()=>{
+    const now=new Date(2026,7,26,12), cards=['freedom_flex','discover_it','usb_cashplus','amex_plat','csr','csp','amex_gold','biz_plat','biz_gold','bcp'];
+    const radar=R.buildRadarTasks({myCards:cards},now), expected={
+      'freedom_flex:freedom_flex_5x':'https://www.chase.com/personal/credit-cards/freedom/freedomfive',
+      'discover_it:discover_5pct':'https://www.discover.com/credit-cards/cash-back/cashback-calendar.html',
+      'usb_cashplus:usb_cashplus_categories':'https://cashplus.usbank.com/?redirect=cashplus',
+      'amex_plat:fhr_hotel_credit':'https://global.americanexpress.com/card-benefits/detail/hotel-credit/platinum',
+      'amex_plat:resy_dining_credit':'https://global.americanexpress.com/card-benefits/detail/400-resy-credit/platinum',
+      'amex_plat:uber_cash':'https://global.americanexpress.com/card-benefits/detail/uber-rides-with-platinum/platinum',
+      'amex_plat:digital_entertainment_credit':'https://global.americanexpress.com/card-benefits/detail/digital-entertainment/platinum',
+      'amex_plat:lululemon_credit':'https://global.americanexpress.com/card-benefits/detail/lululemon-credit/platinum',
+      'csr:exclusive_tables_credit':'https://www.chase.com/personal/credit-cards/education/basics/how-to-use-dining-credit-chase-sapphire-reserve-exclusive-tables',
+      'csr:stubhub_viagogo_credit':'https://www.chase.com/personal/credit-cards/education/rewards-benefits/how-to-use-the-%24300-stubhub-credit-with-chase-sapphire-reserve',
+      'csr:peloton_credit':'https://www.chase.com/personal/credit-cards/education/rewards-benefits/how-to-earn-10x-points-on-peloton-with-chase-sapphire-reserve',
+      'csp:doordash_promo_credit':'https://www.doordash.com/en/dashpass/partner/chase/preferred',
+      'amex_gold:dining_credit':'https://global.americanexpress.com/card-benefits/detail/dining-credit/gold',
+      'amex_gold:resy_credit':'https://global.americanexpress.com/card-benefits/detail/resy-credit/gold',
+      'amex_gold:dunkin_credit':'https://global.americanexpress.com/card-benefits/detail/dunkin-credit/gold',
+      'amex_gold:uber_cash':'https://global.americanexpress.com/card-benefits/detail/uber-cash/gold',
+      'biz_plat:fhr_hotel_credit':'https://global.americanexpress.com/card-benefits/detail/hotel-credit/business-platinum',
+      'biz_plat:indeed_credit':'https://global.americanexpress.com/card-benefits/detail/indeed-benefit/business-platinum',
+      'biz_plat:wireless_service_credit':'https://global.americanexpress.com/card-benefits/detail/wireless-credit/business-platinum',
+      'biz_gold:flexible_business_credit':'https://global.americanexpress.com/card-benefits/detail/240-flexible-business-credit/business-gold',
+      'bcp:disney_bundle_credit':'https://global.americanexpress.com/card-benefits/detail/disney-streaming-credit/blue-cash-preferred'
+    };
+    equal(radar.all.length,Object.keys(expected).length,'Every verified action should be included in the audited link inventory');
+    radar.all.forEach(task=>equal(task.link,expected[task.card.id+':'+task.itemId],`Unexpected destination for ${task.card.id}:${task.itemId}`));
+    const uber=radar.all.find(t=>t.card.id==='amex_gold'&&t.itemId==='uber_cash');
     equal(uber.markLabel,'Mark card added'); equal(uber.prerequisiteLabel,'Add card to Uber');
   });
   test('time-bounded Business Gold copy changes after FedEx eligibility ends',()=>{
@@ -276,7 +300,25 @@ document.getElementById('app').addEventListener('load',async()=>{
       doc.querySelector('[data-bcat="lounges"]').click();
       const fallbackRow=[...doc.querySelectorAll('.action-row')].find(row=>row.textContent.includes('Priority Pass Select'));
       assert(fallbackRow&&fallbackRow.querySelector('.action-topline > .issuer-action'),'Non-Radar Benefits links should use the same top-right card treatment');
+      assert(fallbackRow.querySelector('.issuer-action').textContent.includes('Open benefit hub'),'A card-wide fallback should not imply direct activation');
       assert(fallbackRow.querySelector('.issuer-action').getBoundingClientRect().height>=44,'Non-Radar Benefits links should keep a 44px touch target');
+    });
+    await withAppState({schemaVersion:2,myCards:['venture_x','freedom_flex']},async(win,doc,frame)=>{
+      frame.style.width='320px'; await afterRender(win);
+      doc.querySelector('nav button[data-tab="benefits"]').click(); doc.querySelector('[data-bcat="lounges"]').click();
+      const ventureLink=[...doc.querySelectorAll('.issuer-action')].find(link=>link.closest('.action-row').querySelector('.action-title').textContent.includes('Priority Pass'));
+      assert(ventureLink.textContent.includes('How to activate'),'Capital One guide should describe itself as instructions');
+      equal(ventureLink.getAttribute('href'),'https://www.capitalone.com/learn-grow/more-than-money/all-about-priority-pass-and-venture-x/');
+      equal(ventureLink.getAttribute('aria-label'),'Learn how to activate Priority Pass on issuer or partner site, opens in a new tab');
+      doc.querySelector('[data-bcat="status"]').click();
+      const signInLink=doc.querySelector('.issuer-action');
+      assert(signInLink.textContent.includes('Sign in to Capital One'),'Generic Capital One sign-in should not call itself a benefit hub');
+      assert(signInLink.getAttribute('aria-label').includes('then find 10,000 anniversary miles'),'Sign-in accessible copy should explain the next step');
+      assert(signInLink.getBoundingClientRect().height>=44&&doc.documentElement.scrollWidth<=win.innerWidth,'Sign-in label should remain usable at phone width');
+      doc.querySelector('[data-bcat="diningcr"]').click();
+      const dashPassLink=doc.querySelector('.issuer-action');
+      assert(dashPassLink.textContent.includes('Activate'),'DoorDash partner destination should remain a direct action');
+      equal(dashPassLink.getAttribute('href'),'https://www.doordash.com/en/dashpass/partner/chase/freedom');
     });
   });
   test('stale Benefits enrollment refreshes without writing old-period state',async()=>{
