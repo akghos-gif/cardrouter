@@ -287,18 +287,39 @@ document.getElementById('app').addEventListener('load',async()=>{
       assert(doc.body.textContent.includes('Status is stored only on this device.'),'Manual tracking should be explained in-product');
     });
   });
-  test('bottom navigation follows the visible viewport from its top edge',async()=>{
+  test('iOS bottom navigation avoids fixed positioning and follows viewport changes',async()=>{
     await withAppState({schemaVersion:3,myCards:['amex_gold']},async(win,doc,frame)=>{
       frame.style.width='390px'; frame.style.height='844px'; await afterRender(win);
+      const nav=doc.querySelector('nav');
+      equal(win.getComputedStyle(nav).position,'fixed','Other browsers should keep native fixed navigation');
+      win.setIOSViewportAnchoring(true); await afterRender(win);
       win.dispatchEvent(new Event('resize')); await afterRender(win);
-      const nav=doc.querySelector('nav'), rect=nav.getBoundingClientRect(), viewport=win.visualViewport;
+      assert(nav.classList.contains('ios-viewport-anchor'),'iOS should use the absolute-position workaround for the WebKit fixed-layer paint bug');
+      equal(win.getComputedStyle(nav).position,'absolute');
+      const rect=nav.getBoundingClientRect(), viewport=win.visualViewport;
       const visibleBottom=(viewport?.offsetTop||0)+(viewport?.height||win.innerHeight);
-      assert(nav.classList.contains('visual-viewport-anchor'),'Navigation should use the visual-viewport anchoring workaround');
       assert(Math.abs(rect.bottom-visibleBottom)<=2,`Navigation bottom should match the visible viewport: ${rect.bottom} vs ${visibleBottom}`);
       frame.style.height='1040px'; await afterRender(win); win.dispatchEvent(new Event('resize')); await afterRender(win);
       const resizedRect=nav.getBoundingClientRect(), resizedViewport=win.visualViewport;
       const resizedBottom=(resizedViewport?.offsetTop||0)+(resizedViewport?.height||win.innerHeight);
       assert(Math.abs(resizedRect.bottom-resizedBottom)<=2,`Navigation should follow a changed visible viewport: ${resizedRect.bottom} vs ${resizedBottom}`);
+      doc.body.style.minHeight='1600px'; win.scrollTo(0,320); await afterRender(win);
+      const scrolledRect=nav.getBoundingClientRect(), scrolledViewport=win.visualViewport;
+      const scrolledBottom=(scrolledViewport?.offsetTop||0)+(scrolledViewport?.height||win.innerHeight);
+      assert(Math.abs(scrolledRect.bottom-scrolledBottom)<=2,`Absolute iOS navigation should follow scrolling: ${scrolledRect.bottom} vs ${scrolledBottom}`);
+      win.setIOSViewportGeometryForTest({pageTop:320,pageLeft:48,height:600,width:280}); await afterRender(win);
+      equal(parseFloat(nav.style.getPropertyValue('--nav-page-x')),48); equal(parseFloat(win.getComputedStyle(nav).width),280);
+      equal(parseFloat(doc.documentElement.style.getPropertyValue('--floating-viewport-width')),280);
+      equal(parseFloat(doc.getElementById('toast').style.getPropertyValue('--toast-page-center')),188);
+      win.toast('Recurring charge confirmed. We will ask you to confirm again at the next review.',9000,()=>{},{wide:true}); await afterRender(win);
+      const zoomToast=doc.getElementById('toast').getBoundingClientRect(), zoomNav=nav.getBoundingClientRect();
+      assert(zoomToast.width<=256&&zoomToast.left>=48&&zoomToast.right<=328,'A wide toast should stay within the narrowed, horizontally offset visual viewport');
+      assert(zoomToast.bottom<=zoomNav.top-8,'The narrowed toast should remain clear of navigation');
+      win.setIOSViewportGeometryForTest({pageTop:320,pageLeft:96,height:600,width:195}); await afterRender(win);
+      const magnifiedNav=nav.getBoundingClientRect(), magnifiedToast=doc.getElementById('toast').getBoundingClientRect(), iconPills=[...nav.querySelectorAll('.em')].map(element=>element.getBoundingClientRect());
+      assert(iconPills.every(rect=>rect.left>=magnifiedNav.left-1&&rect.right<=magnifiedNav.right+1),'Navigation icon pills should stay within the 200% zoom viewport');
+      assert(iconPills.every((rect,index)=>index===0||iconPills[index-1].right<=rect.left+1),'Navigation icon pills should not overlap at 200% zoom');
+      assert(magnifiedToast.left>=96&&magnifiedToast.right<=291&&magnifiedToast.bottom<=magnifiedNav.top-8,'Toast should remain visible and clear of navigation at 200% zoom');
     });
   });
   test('external action links stay at the top right of action cards',async()=>{

@@ -61,11 +61,12 @@
   nav{position:fixed; bottom:0; left:0; right:0; display:flex; gap:2px; background:var(--card);
     border-top:1px solid var(--line); padding:7px 6px calc(7px + env(safe-area-inset-bottom));
     box-shadow:0 -6px 18px rgba(0,0,0,.08); z-index:40}
-  nav.visual-viewport-anchor{top:0; bottom:auto; transform:translate3d(0,var(--nav-y,0px),0); will-change:transform}
+  nav.ios-viewport-anchor{position:absolute; top:var(--nav-page-y,0); left:var(--nav-page-x,0); right:auto;
+    width:var(--floating-viewport-width,100%); bottom:auto; transform:none; will-change:auto}
   nav button{flex:1; background:none; border:none; color:var(--muted); font-size:10.5px; font-weight:600;
     cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; padding:0; font-family:inherit; min-width:0; line-height:1.2; overflow-wrap:anywhere; text-align:center}
   nav button .em{font-size:19px; line-height:1; display:flex; align-items:center; justify-content:center;
-    width:54px; height:30px; border-radius:99px; background:rgba(125,125,125,.10);
+    width:54px; max-width:100%; height:30px; border-radius:99px; background:rgba(125,125,125,.10);
     border:1.5px solid transparent; transition:background .18s, transform .18s, border-color .18s, box-shadow .18s}
   nav button:not(.on) .em{filter:grayscale(1); opacity:.75}
   nav button:active .em{transform:scale(.9)}
@@ -103,10 +104,11 @@
   .empty{color:var(--muted); text-align:center; padding:22px 10px; font-size:14px; line-height:1.5}
   .toast{position:fixed; bottom:calc(var(--nav-h) + 10px); left:50%; transform:translateX(-50%);
     background:var(--ink); color:var(--bg); padding:7px 9px 7px 16px; border-radius:99px; font-size:13px; opacity:0;
-    transition:opacity .2s ease-out; pointer-events:none; z-index:60; width:max-content; max-width:calc(100vw - 24px); text-align:center;
+    transition:opacity .2s ease-out; pointer-events:none; z-index:60; width:max-content; max-width:calc(var(--floating-viewport-width,100vw) - 24px); text-align:center;
     display:flex; align-items:center; gap:10px; box-shadow:0 8px 24px rgba(0,0,0,.24)}
-  .toast.wide{width:min(520px,calc(100vw - 24px))}
-  .toast.visual-viewport-anchor{top:0; bottom:auto; transform:translate3d(-50%,var(--toast-y,0px),0); will-change:transform}
+  .toast.wide{width:min(520px,calc(var(--floating-viewport-width,100vw) - 24px))}
+  .toast.ios-viewport-anchor{position:absolute; top:var(--toast-page-y,0); left:var(--toast-page-center,50%);
+    bottom:auto; transform:translateX(-50%); will-change:auto}
   .toast.show{opacity:.97; pointer-events:auto}
   .toast button{border:0; border-radius:99px; background:var(--bg); color:var(--ink); min-height:44px; padding:0 14px;
     font:inherit; font-weight:700; cursor:pointer}
@@ -228,10 +230,6 @@
   }
   @media (min-width:640px){
     .recurring-manage{flex-direction:row; align-items:center; justify-content:space-between; gap:12px}
-  }
-  @supports (height:100dvh){
-    nav.visual-viewport-anchor{top:auto; bottom:0; transform:none; will-change:auto}
-    .toast.visual-viewport-anchor{top:auto; bottom:calc(var(--nav-h) + 10px); transform:translateX(-50%); will-change:auto}
   }
   @media (prefers-reduced-motion:reduce){
     *, *::before, *::after{scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important}
@@ -2057,20 +2055,43 @@ function closeModal(restore=true){
 const navEl=document.querySelector('nav');
 const toastEl=document.getElementById('toast');
 let floatingUiFrame=0;
+const iOSWebKit=/iP(?:hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+let useIOSAbsoluteAnchor=iOSWebKit;
+let floatingViewportOverride=null;
+function setIOSViewportAnchoring(enabled){
+  useIOSAbsoluteAnchor=!!enabled;
+  navEl.classList.toggle('ios-viewport-anchor',useIOSAbsoluteAnchor);
+  toastEl.classList.toggle('ios-viewport-anchor',useIOSAbsoluteAnchor);
+  scheduleFloatingUi();
+}
+function setIOSViewportGeometryForTest(geometry){ floatingViewportOverride=geometry; syncFloatingUi(); }
 function syncFloatingUi(){
   floatingUiFrame=0;
-  const viewport=window.visualViewport, viewportTop=viewport?.offsetTop||0, viewportHeight=viewport?.height||window.innerHeight;
-  const navHeight=Math.ceil(navEl.getBoundingClientRect().height), navTop=Math.max(0,viewportTop+viewportHeight-navHeight);
+  const navHeight=Math.ceil(navEl.getBoundingClientRect().height);
   document.documentElement.style.setProperty('--nav-h',`${navHeight}px`);
-  navEl.style.setProperty('--nav-y',`${Math.round(navTop)}px`);
-  const toastHeight=Math.ceil(toastEl.getBoundingClientRect().height), toastTop=Math.max(viewportTop+8,navTop-10-toastHeight);
-  toastEl.style.setProperty('--toast-y',`${Math.round(toastTop)}px`);
+  if(!useIOSAbsoluteAnchor){ document.documentElement.style.removeProperty('--floating-viewport-width'); return; }
+  const viewport=window.visualViewport;
+  const geometry=floatingViewportOverride||{
+    pageTop:Number.isFinite(viewport?.pageTop)?viewport.pageTop:window.scrollY+(viewport?.offsetTop||0),
+    pageLeft:Number.isFinite(viewport?.pageLeft)?viewport.pageLeft:window.scrollX+(viewport?.offsetLeft||0),
+    height:viewport?.height||window.innerHeight,
+    width:viewport?.width||window.innerWidth
+  };
+  const viewportPageTop=geometry.pageTop, viewportPageLeft=geometry.pageLeft, viewportHeight=geometry.height, viewportWidth=geometry.width;
+  const navTop=Math.max(0,viewportPageTop+viewportHeight-navHeight);
+  navEl.style.setProperty('--nav-page-y',`${Math.round(navTop)}px`);
+  navEl.style.setProperty('--nav-page-x',`${Math.round(viewportPageLeft)}px`);
+  document.documentElement.style.setProperty('--floating-viewport-width',`${Math.round(viewportWidth)}px`);
+  const toastHeight=Math.ceil(toastEl.getBoundingClientRect().height), toastTop=Math.max(viewportPageTop+8,navTop-10-toastHeight);
+  toastEl.style.setProperty('--toast-page-y',`${Math.round(toastTop)}px`);
+  toastEl.style.setProperty('--toast-page-center',`${Math.round(viewportPageLeft+viewportWidth/2)}px`);
 }
 function scheduleFloatingUi(){ if(!floatingUiFrame) floatingUiFrame=requestAnimationFrame(syncFloatingUi); }
-navEl.classList.add('visual-viewport-anchor'); toastEl.classList.add('visual-viewport-anchor');
+setIOSViewportAnchoring(iOSWebKit);
 if('ResizeObserver' in window){ const floatingObserver=new ResizeObserver(scheduleFloatingUi); floatingObserver.observe(navEl); floatingObserver.observe(toastEl); }
 window.addEventListener('resize',scheduleFloatingUi);
 window.addEventListener('orientationchange',scheduleFloatingUi);
+window.addEventListener('scroll',scheduleFloatingUi,{passive:true});
 if(window.visualViewport){
   visualViewport.addEventListener('resize',scheduleFloatingUi);
   visualViewport.addEventListener('scroll',scheduleFloatingUi,{passive:true});
