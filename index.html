@@ -9,6 +9,9 @@
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAEF0lEQVR4nLRWzYscRRR/r7rmq3umZ2Y3KlGMCzIaTQiJXrIhEARZPUdBEISgJ0VPondBRS96UAT/BQ/qX6DkIkguS0BDArtsMIsfs9vT0zM90z3dXWV1T3dP9ddEDylqHsVj6r1f/d6vXhd96s0hAUAOBBAYT9fIeWojf8ZT9Iu1gsKCgpD4RRygSURhOUrrxGLij/cgF2G4sBDjiC2GOcK9kcUkDpAEe7Qzu2eJS/JnsmZx5GyaKT5BinFlY6QFZhKkEvbwn4AZZBCdKcxBQ+ylvPOS6Et/wSN4gMQfY09jZmpwX95zSJNKxLzr7dBpT7K1LPJ+fkCreI+ClvOuNvHypcb2dl1rZaKRHO8Xz9L3Xtd0tajUAu95ZIKlmPdMzAtvDNMoLzxfe+c1TfzHnvGPvrL+/Jv/d70Lj95BCGBuy1qKaxDvv35j4Tr8rVe0Dz+3plPh/B96F+lsi0sVjc9BV3qPcty46bvO1LYj7FiqGdmTZApVVHL/RUxa1Ptvt4P76r2jkX6PdDS8ux94Ls/xLt8timv1/vhJMtiiGz2y2SfCbvTDuP0+qdWicjK4uet9+Zkl6S3DR64Geb2/dKXx/tttziE3GQ8J8X2wTbbZQAWWtyzX02KsVL7DkPC+zH/6SToeMtvgkxG3jWBq8KnBbJPbx2xm8pnFOBOxoavhZAoy7zITdE2fOfjZu/WNA8ng8W81mm1Ue2QU4HTiF7GnJyhXiMCyYLylY3uDtLrCKmoPW2J2iViIuGJiqCH49ovJ4WEJ9vgEa/r77AS++4kueOBRPZdVDfm/c5vfOVBq37PNbf/UNVHzAva0HwNdo3fjmImIfx3zW3ts4YGYD/XxuWcI/PgdGPfwzHXl5O/eqWsdnUSdg5f2Y0qq9W6OmNCMruLZgVJXgFKo0UhI21fg7v7i/EXcGAgE1ojlvxnS3aJY3d9Ng43HrNMhIm7IT6RRP+DW05dHJy6JuOYBu7dn7/7ikOpvCSUV/X3rCWVnp2aYLidiMNF1OWFhBgStj1qXeB5fzMnWAE+fa/70g3t0uOJdqjbgi68OZeUIqzXh409bjzxMzclsPJm5Cx+qR6NGu7ra66j/HPpff+A40zwfpNjfu12uqr4k/rUDkzvR9TSdyX1wGRN3rg6L/f3Rx5wzF6xnz5G2VtfUZoPWiBKeO84X/VMIwFl487ljTRZ7u7D/a3v8R6tYUXz56lG2gyf9nYNCeFt3xNR0t9bw642A1sOTBa4SuNSbU9dquKOmY7YwwORrulysguRUlOnvEBDbaM0N9ajwXSv0fch3hORuZVQkv2eq+nuV3nN3aHW3MPsWSw6IEmO5d18hR7ZD5N53NIc9+0aCMuwVei9il96mKSfFt2kRO5DMG6kU+8rSB8K71Bf+BQAA//8+fPdPAAAABklEQVQDAFJLqmHF9MvLAAAAAElFTkSuQmCC">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>ChooseMyCard — Which card?</title>
+<script>
+  if(/iP(?:hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)) document.documentElement.classList.add('ios-scroll-shell');
+</script>
 <style>
   :root{
     --bg:#f4f5f7; --card:#ffffff; --ink:#1a1d21; --muted:#596270; --line:#e5e7eb;
@@ -61,8 +64,6 @@
   nav{position:fixed; bottom:0; left:0; right:0; display:flex; gap:2px; background:var(--card);
     border-top:1px solid var(--line); padding:7px 6px calc(7px + env(safe-area-inset-bottom));
     box-shadow:0 -6px 18px rgba(0,0,0,.08); z-index:40}
-  nav.ios-viewport-anchor{position:absolute; top:var(--nav-page-y,0); left:var(--nav-page-x,0); right:auto;
-    width:var(--floating-viewport-width,100%); bottom:auto; transform:none; will-change:auto}
   nav button{flex:1; background:none; border:none; color:var(--muted); font-size:10.5px; font-weight:600;
     cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; padding:0; font-family:inherit; min-width:0; line-height:1.2; overflow-wrap:anywhere; text-align:center}
   nav button .em{font-size:19px; line-height:1; display:flex; align-items:center; justify-content:center;
@@ -100,19 +101,27 @@
   .sheet-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
   .field-label{display:block; font-size:13.5px; font-weight:600; line-height:1.35}
   .field-label .tag{display:block; font-weight:400}
+  .field-error{margin:0; color:var(--warn); font-size:13px; font-weight:650; line-height:1.4}
   .sr-only{position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important}
   .empty{color:var(--muted); text-align:center; padding:22px 10px; font-size:14px; line-height:1.5}
   .toast{position:fixed; bottom:calc(var(--nav-h) + 10px); left:50%; transform:translateX(-50%);
     background:var(--ink); color:var(--bg); padding:7px 9px 7px 16px; border-radius:99px; font-size:13px; opacity:0;
-    transition:opacity .2s ease-out; pointer-events:none; z-index:60; width:max-content; max-width:calc(var(--floating-viewport-width,100vw) - 24px); text-align:center;
+    transition:opacity .2s ease-out; pointer-events:none; z-index:60; width:max-content; max-width:calc(100vw - 24px); text-align:center;
     display:flex; align-items:center; gap:10px; box-shadow:0 8px 24px rgba(0,0,0,.24)}
-  .toast.wide{width:min(520px,calc(var(--floating-viewport-width,100vw) - 24px))}
-  .toast.ios-viewport-anchor{position:absolute; top:var(--toast-page-y,0); left:var(--toast-page-center,50%);
-    bottom:auto; transform:translateX(-50%); will-change:auto}
+  .toast.wide{width:min(520px,calc(100vw - 24px))}
   .toast.show{opacity:.97; pointer-events:auto}
+  .toast.modal-suppressed{opacity:0; pointer-events:none; z-index:40}
   .toast button{border:0; border-radius:99px; background:var(--bg); color:var(--ink); min-height:44px; padding:0 14px;
     font:inherit; font-weight:700; cursor:pointer}
   #toastmsg{min-width:0; overflow-wrap:anywhere}
+  html.ios-scroll-shell{height:100%; overflow:hidden; overscroll-behavior:none}
+  html.ios-scroll-shell body{position:relative; height:100%; height:100dvh; min-height:0; padding-bottom:0; overflow:hidden;
+    display:grid; grid-template-rows:minmax(0,1fr) auto; overscroll-behavior:none}
+  html.ios-scroll-shell .app-scroll{min-height:0; overflow-x:hidden; overflow-y:auto; padding-bottom:12px;
+    -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain}
+  html.ios-scroll-shell .app-scroll:focus-visible{outline:3px solid var(--accent); outline-offset:-3px}
+  html.ios-scroll-shell nav{position:static; inset:auto; width:100%; transform:none; will-change:auto}
+  html.ios-scroll-shell .toast,html.ios-scroll-shell .modal{position:absolute}
   .tag{font-size:11px; color:var(--muted)}
   a{color:var(--accent)}
   button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
@@ -237,6 +246,7 @@
 </style>
 </head>
 <body>
+<div class="app-scroll" id="appScroll" role="region" aria-label="ChooseMyCard content" tabindex="0">
 <div class="brand">
   <svg class="logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
@@ -279,6 +289,7 @@
   <button id="storageBackup">Copy setup link</button>
 </div>
 <main id="main"></main>
+</div>
 
 <nav>
   <button data-tab="which" class="on"><span class="em">💳</span>Which card?</button>
@@ -1072,19 +1083,37 @@ function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;
 let pendingUndo=null;
 function clearToast(){
   const t=document.getElementById('toast'), undo=document.getElementById('toastundo');
-  pendingUndo=null; clearTimeout(t._h); undo.hidden=true; t.classList.remove('show','has-undo','wide');
+  pendingUndo=null; clearTimeout(t._h); t._dismiss=null; t._expiresAt=0; t._remaining=0; undo.hidden=true;
+  t.inert=false; t.removeAttribute('aria-hidden'); t.classList.remove('show','has-undo','wide','modal-suppressed');
+  scheduleFloatingUi();
+}
+function setToastModalSuppressed(suppressed){
+  const t=document.getElementById('toast');
+  if(suppressed){
+    if(!t.classList.contains('show')) return;
+    if(t._expiresAt) t._remaining=Math.max(1000,t._expiresAt-Date.now());
+    clearTimeout(t._h); t.inert=true; t.setAttribute('aria-hidden','true'); t.classList.add('modal-suppressed');
+  }else{
+    t.inert=false; t.removeAttribute('aria-hidden'); t.classList.remove('modal-suppressed');
+    if(t.classList.contains('show')&&t._dismiss){
+      const remaining=t._remaining||2600; t._remaining=0; t._expiresAt=Date.now()+remaining; t._h=setTimeout(t._dismiss,remaining);
+    }
+  }
   scheduleFloatingUi();
 }
 function keepFocusedControlVisible(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    const target=document.activeElement, toastEl=document.getElementById('toast'), nav=document.querySelector('nav');
-    if(!target||!mainEl.contains(target)) return;
+    const target=document.activeElement, toastEl=document.getElementById('toast'), nav=document.querySelector('nav'), sheet=document.getElementById('sheet');
+    const inSheet=!!target&&sheet.contains(target), inMain=!!target&&mainEl.contains(target);
+    if(!inSheet&&!inMain) return;
     const viewport=window.visualViewport, viewportTop=viewport?.offsetTop||0, viewportBottom=viewportTop+(viewport?.height||window.innerHeight);
-    const rect=target.getBoundingClientRect(), navTop=nav?.getBoundingClientRect().top??viewportBottom;
+    const rect=target.getBoundingClientRect(), navTop=nav?.getBoundingClientRect().top??viewportBottom, sheetRect=inSheet?sheet.getBoundingClientRect():null;
     const toastTop=toastEl.classList.contains('show')?toastEl.getBoundingClientRect().top:viewportBottom;
-    const safeBottom=Math.min(viewportBottom-12,navTop-12,toastTop-12), safeTop=viewportTop+12;
-    if(rect.bottom>safeBottom) window.scrollBy({top:rect.bottom-safeBottom,behavior:'auto'});
-    else if(rect.top<safeTop) window.scrollBy({top:rect.top-safeTop,behavior:'auto'});
+    const safeBottom=inSheet?Math.min(viewportBottom-12,sheetRect.bottom-12,toastTop-12):Math.min(viewportBottom-12,navTop-12,toastTop-12);
+    const safeTop=inSheet?Math.max(viewportTop+12,sheetRect.top+12):viewportTop+12;
+    const scrollBy=options=>inSheet?sheet.scrollBy(options):scrollAppBy(options);
+    if(rect.bottom>safeBottom) scrollBy({top:rect.bottom-safeBottom,behavior:'auto'});
+    else if(rect.top<safeTop) scrollBy({top:rect.top-safeTop,behavior:'auto'});
   }));
 }
 function toast(msg,ms,undoFn,{wide=false}={}){
@@ -1095,9 +1124,10 @@ function toast(msg,ms,undoFn,{wide=false}={}){
   undo.onclick=()=>{ if(!pendingUndo) return; const fn=pendingUndo; pendingUndo=null; undo.hidden=true; fn(); };
   const dismiss=()=>{
     if(document.activeElement===undo){ t._h=setTimeout(dismiss,1000); return; }
-    pendingUndo=null; undo.hidden=true; t.classList.remove('show','has-undo','wide');
+    pendingUndo=null; undo.hidden=true; t._dismiss=null; t._expiresAt=0; t._remaining=0; t.classList.remove('show','has-undo','wide');
   };
-  t._h=setTimeout(dismiss,ms||2600);
+  const duration=ms||2600; t._dismiss=dismiss; t._expiresAt=Date.now()+duration; t._remaining=0; t._h=setTimeout(dismiss,duration);
+  if(document.getElementById('modal').classList.contains('open')) setToastModalSuppressed(true);
 }
 function mutateWithUndo(message,mutator,focusId,undoFocusId=focusId,mutationNow=new Date(),{wideToast=false}={}){
   const before=structuredClone(S), snapshotToken=promosVisitToken,
@@ -1430,6 +1460,7 @@ function rankFor(catId){
 /* ---------- views ---------- */
 const mainEl = document.getElementById('main');
 mainEl.addEventListener('focusin',keepFocusedControlVisible);
+document.getElementById('sheet').addEventListener('focusin',keepFocusedControlVisible);
 function normalizePromosHistory(state){
   if(state?.promosView==='quarterly') return {view:'radar',filter:'quarterly'};
   if(state?.promosView==='radar') return {view:'radar',filter:['all','quarterly'].includes(state.radarFilter)?state.radarFilter:'all'};
@@ -1604,12 +1635,17 @@ function openCustomCard(opener){
     <div style="display:grid; gap:8px">
       <label class="field-label" for="ccname">Card name</label><input type="text" id="ccname" maxlength="120">
       <label class="field-label" for="ccprog">Rewards program</label><select id="ccprog">${Object.entries(PROGRAMS).map(([k,p])=>`<option value="${k}">${p.name}</option>`).join('')}</select>
+      <p class="field-error" id="ccerror" role="status" aria-live="polite" tabindex="-1" hidden></p>
       <button class="pill primary" id="ccsave">Create, then set rates with ✎</button></div>`;
   openModal('#ccname',opener);
   document.getElementById('closex').onclick=closeModal;
+  document.getElementById('ccname').addEventListener('input',event=>{
+    event.currentTarget.removeAttribute('aria-invalid'); event.currentTarget.removeAttribute('aria-describedby'); document.getElementById('ccerror').hidden=true;
+  });
   document.getElementById('ccsave').onclick=()=>{
-    const name=document.getElementById('ccname').value.trim(); if(!name){toast('Name it first');return;}
-    if(S.custom.length>=25){toast('You can add up to 25 custom cards');return;}
+    const nameInput=document.getElementById('ccname'), error=document.getElementById('ccerror'), name=nameInput.value.trim();
+    if(!name){error.textContent='Enter a card name.'; error.hidden=false; nameInput.setAttribute('aria-invalid','true'); nameInput.setAttribute('aria-describedby','ccerror'); nameInput.focus();return;}
+    if(S.custom.length>=25){error.textContent='You can add up to 25 custom cards.'; error.hidden=false; error.focus();return;}
     const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,32)||'card';
     let id; do{
       const token=globalThis.crypto&&crypto.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0].toString(36).slice(0,8):Date.now().toString(36).slice(-8);
@@ -1963,7 +1999,7 @@ function renderPromos(){
 }
 function openPromosSubview(filter='all'){
   if(PROMOS_VIEW==='radar'&&RADAR_FILTER===filter) return; PROMOS_VIEW='radar'; RADAR_FILTER=filter; TAB='promos'; beginRadarVisit(new Date());
-  history.pushState({promosView:'radar',radarFilter:filter},'',location.pathname+location.search); render(); window.scrollTo({top:0,behavior:'auto'});
+  history.pushState({promosView:'radar',radarFilter:filter},'',location.pathname+location.search); render(); scrollAppTo({top:0,behavior:'auto'});
   requestAnimationFrame(()=>document.getElementById('hdr').focus?.());
 }
 function backFromPromos(){
@@ -2035,18 +2071,18 @@ Object.assign(window.CardRouterRadar,{validateImportPayload,encodeSetupPayload,e
 /* ---------- modal & nav ---------- */
 let modalReturnFocus=null;
 function setModalBackgroundInert(inert){
-  document.querySelectorAll('.brand, header, #storageWarning, main, nav').forEach(element=>{ element.inert=inert; });
+  document.querySelectorAll('.app-scroll, nav').forEach(element=>{ element.inert=inert; });
 }
 function openModal(initialFocusSelector,opener){
   const active=opener||document.activeElement;
   modalReturnFocus=active&&active!==document.body?{element:active,focusId:active.dataset.focusId||'',id:active.id||''}:null;
   const modal=document.getElementById('modal'), sheet=document.getElementById('sheet');
-  modal.classList.add('open'); setModalBackgroundInert(true);
+  modal.classList.add('open'); setModalBackgroundInert(true); setToastModalSuppressed(true);
   requestAnimationFrame(()=>{ (initialFocusSelector&&sheet.querySelector(initialFocusSelector)||sheet.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])')||sheet).focus(); });
 }
 function closeModal(restore=true){
   const modal=document.getElementById('modal'); if(!modal.classList.contains('open')) return;
-  const returnTarget=modalReturnFocus; modalReturnFocus=null; modal.classList.remove('open'); setModalBackgroundInert(false);
+  const returnTarget=modalReturnFocus; modalReturnFocus=null; modal.classList.remove('open'); setModalBackgroundInert(false); setToastModalSuppressed(false);
   if(restore!==false&&returnTarget) requestAnimationFrame(()=>{
     const target=returnTarget.focusId&&document.querySelector(`[data-focus-id="${returnTarget.focusId}"]`)||returnTarget.id&&document.getElementById(returnTarget.id)||returnTarget.element;
     if(target?.isConnected) target.focus();
@@ -2054,49 +2090,39 @@ function closeModal(restore=true){
 }
 const navEl=document.querySelector('nav');
 const toastEl=document.getElementById('toast');
+const appScrollEl=document.getElementById('appScroll');
 let floatingUiFrame=0;
-const iOSWebKit=/iP(?:hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-let useIOSAbsoluteAnchor=iOSWebKit;
-let floatingViewportOverride=null;
-function setIOSViewportAnchoring(enabled){
-  useIOSAbsoluteAnchor=!!enabled;
-  navEl.classList.toggle('ios-viewport-anchor',useIOSAbsoluteAnchor);
-  toastEl.classList.toggle('ios-viewport-anchor',useIOSAbsoluteAnchor);
-  scheduleFloatingUi();
-}
-function setIOSViewportGeometryForTest(geometry){ floatingViewportOverride=geometry; syncFloatingUi(); }
+function usingIOSScrollShell(){ return document.documentElement.classList.contains('ios-scroll-shell'); }
+function setIOSScrollShell(enabled){ document.documentElement.classList.toggle('ios-scroll-shell',!!enabled); scheduleFloatingUi(); }
+function scrollAppBy(options){ (usingIOSScrollShell()?appScrollEl:window).scrollBy(options); }
+function scrollAppTo(options){ (usingIOSScrollShell()?appScrollEl:window).scrollTo(options); }
+function clampAppScroll(){ if(usingIOSScrollShell()) appScrollEl.scrollTop=Math.min(appScrollEl.scrollTop,Math.max(0,appScrollEl.scrollHeight-appScrollEl.clientHeight)); }
 function syncFloatingUi(){
   floatingUiFrame=0;
   const navHeight=Math.ceil(navEl.getBoundingClientRect().height);
   document.documentElement.style.setProperty('--nav-h',`${navHeight}px`);
-  if(!useIOSAbsoluteAnchor){ document.documentElement.style.removeProperty('--floating-viewport-width'); return; }
   const viewport=window.visualViewport;
-  const geometry=floatingViewportOverride||{
-    pageTop:Number.isFinite(viewport?.pageTop)?viewport.pageTop:window.scrollY+(viewport?.offsetTop||0),
-    pageLeft:Number.isFinite(viewport?.pageLeft)?viewport.pageLeft:window.scrollX+(viewport?.offsetLeft||0),
-    height:viewport?.height||window.innerHeight,
-    width:viewport?.width||window.innerWidth
-  };
-  const viewportPageTop=geometry.pageTop, viewportPageLeft=geometry.pageLeft, viewportHeight=geometry.height, viewportWidth=geometry.width;
-  const navTop=Math.max(0,viewportPageTop+viewportHeight-navHeight);
-  navEl.style.setProperty('--nav-page-y',`${Math.round(navTop)}px`);
-  navEl.style.setProperty('--nav-page-x',`${Math.round(viewportPageLeft)}px`);
-  document.documentElement.style.setProperty('--floating-viewport-width',`${Math.round(viewportWidth)}px`);
-  const toastHeight=Math.ceil(toastEl.getBoundingClientRect().height), toastTop=Math.max(viewportPageTop+8,navTop-10-toastHeight);
-  toastEl.style.setProperty('--toast-page-y',`${Math.round(toastTop)}px`);
-  toastEl.style.setProperty('--toast-page-center',`${Math.round(viewportPageLeft+viewportWidth/2)}px`);
+  if(usingIOSScrollShell()&&viewport?.scale>1.01){
+    const viewportLeft=viewport.offsetLeft||0, viewportTop=viewport.offsetTop||0, viewportBottom=viewportTop+viewport.height;
+    const maxWidth=Math.max(96,viewport.width-24), navTop=navEl.getBoundingClientRect().top;
+    toastEl.style.left=`${viewportLeft+viewport.width/2}px`; toastEl.style.bottom='auto'; toastEl.style.maxWidth=`${maxWidth}px`;
+    toastEl.style.width=toastEl.classList.contains('wide')?`${Math.min(520,maxWidth)}px`:'max-content';
+    const visibleBottom=navTop>viewportTop&&navTop<viewportBottom?navTop-10:viewportBottom-12;
+    toastEl.style.top=`${Math.max(viewportTop+12,visibleBottom-toastEl.offsetHeight)}px`;
+  }else{
+    ['left','right','top','bottom','width','max-width'].forEach(property=>toastEl.style.removeProperty(property));
+  }
 }
 function scheduleFloatingUi(){ if(!floatingUiFrame) floatingUiFrame=requestAnimationFrame(syncFloatingUi); }
-setIOSViewportAnchoring(iOSWebKit);
 if('ResizeObserver' in window){ const floatingObserver=new ResizeObserver(scheduleFloatingUi); floatingObserver.observe(navEl); floatingObserver.observe(toastEl); }
 window.addEventListener('resize',scheduleFloatingUi);
-window.addEventListener('orientationchange',scheduleFloatingUi);
-window.addEventListener('scroll',scheduleFloatingUi,{passive:true});
-if(window.visualViewport){
-  visualViewport.addEventListener('resize',scheduleFloatingUi);
-  visualViewport.addEventListener('scroll',scheduleFloatingUi,{passive:true});
-  if('onscrollend' in visualViewport) visualViewport.addEventListener('scrollend',scheduleFloatingUi);
-}
+window.addEventListener('orientationchange',()=>requestAnimationFrame(()=>{clampAppScroll();scheduleFloatingUi();}));
+window.visualViewport?.addEventListener('resize',()=>{
+  scheduleFloatingUi();
+  const active=document.activeElement;
+  if(active?.matches('input, textarea, select, [contenteditable="true"]')) keepFocusedControlVisible();
+});
+window.visualViewport?.addEventListener('scroll',scheduleFloatingUi);
 scheduleFloatingUi();
 document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal(); });
 document.addEventListener('keydown',e=>{
@@ -2112,7 +2138,7 @@ document.addEventListener('keydown',e=>{
 history.replaceState({promosView:PROMOS_VIEW,radarFilter:RADAR_FILTER},'',location.pathname+location.search);
 window.addEventListener('popstate',e=>{
   const normalized=normalizePromosHistory(e.state); PROMOS_VIEW=normalized.view; RADAR_FILTER=normalized.filter; beginRadarVisit(new Date());
-  TAB='promos'; render(); window.scrollTo({top:0,behavior:'auto'}); requestAnimationFrame(()=>document.getElementById('hdr').focus());
+  TAB='promos'; render(); scrollAppTo({top:0,behavior:'auto'}); requestAnimationFrame(()=>document.getElementById('hdr').focus());
 });
 function refreshIfCalendarChanged(){
   const now=new Date(), currentDayKey=localIsoDate(localDay(now)), currentMonthKey=periodInfo('month',now).key, previousMonthKey=renderedMonthKey;
@@ -2127,7 +2153,8 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   const nextTab=b.dataset.tab; if(TAB==='promos'&&nextTab!=='promos') endPromosVisit();
   TAB=nextTab; PROMOS_VIEW='overview'; RADAR_FILTER='all'; history.replaceState({promosView:'overview',radarFilter:'all'},'',location.pathname+location.search);
   if(TAB==='promos') beginRadarVisit(new Date());
-  render(); window.scrollTo({top:0,behavior:'auto'});
+  render(); scrollAppTo({top:0,behavior:'auto'});
+  if(window.visualViewport?.scale>1.01) requestAnimationFrame(()=>document.getElementById('hdr').focus());
 });
 document.getElementById('storageBackup').onclick=()=>copySetupLink();
 if(TAB==='promos') beginRadarVisit(new Date());

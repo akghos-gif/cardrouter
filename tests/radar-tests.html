@@ -287,39 +287,63 @@ document.getElementById('app').addEventListener('load',async()=>{
       assert(doc.body.textContent.includes('Status is stored only on this device.'),'Manual tracking should be explained in-product');
     });
   });
-  test('iOS bottom navigation avoids fixed positioning and follows viewport changes',async()=>{
+  test('iOS scroll shell keeps navigation out of the root scrolling compositor',async()=>{
     await withAppState({schemaVersion:3,myCards:['amex_gold']},async(win,doc,frame)=>{
       frame.style.width='390px'; frame.style.height='844px'; await afterRender(win);
-      const nav=doc.querySelector('nav');
+      const nav=doc.querySelector('nav'), appScroll=doc.getElementById('appScroll');
       equal(win.getComputedStyle(nav).position,'fixed','Other browsers should keep native fixed navigation');
-      win.setIOSViewportAnchoring(true); await afterRender(win);
+      win.setIOSScrollShell(true); await afterRender(win);
       win.dispatchEvent(new Event('resize')); await afterRender(win);
-      assert(nav.classList.contains('ios-viewport-anchor'),'iOS should use the absolute-position workaround for the WebKit fixed-layer paint bug');
-      equal(win.getComputedStyle(nav).position,'absolute');
-      const rect=nav.getBoundingClientRect(), viewport=win.visualViewport;
-      const visibleBottom=(viewport?.offsetTop||0)+(viewport?.height||win.innerHeight);
-      assert(Math.abs(rect.bottom-visibleBottom)<=2,`Navigation bottom should match the visible viewport: ${rect.bottom} vs ${visibleBottom}`);
+      equal(win.getComputedStyle(nav).position,'static','iOS navigation must be an ordinary shell row, not a positioned layer');
+      equal(win.getComputedStyle(doc.documentElement).overflow,'hidden'); equal(win.getComputedStyle(appScroll).overflowY,'auto');
+      equal(appScroll.tabIndex,0); equal(appScroll.getAttribute('role'),'region'); assert(appScroll.getAttribute('aria-label'),'The sole scroll region should be keyboard reachable and named');
+      appScroll.focus(); equal(doc.activeElement,appScroll,'The app scroll region should accept keyboard focus');
+      const rect=nav.getBoundingClientRect();
+      assert(Math.abs(rect.bottom-win.innerHeight)<=2,`Shell navigation should end at the app viewport: ${rect.bottom} vs ${win.innerHeight}`);
+      doc.getElementById('main').style.minHeight='1600px'; await afterRender(win);
+      appScroll.scrollTop=320; appScroll.dispatchEvent(new Event('scroll')); await afterRender(win);
+      const scrolledRect=nav.getBoundingClientRect();
+      assert(appScroll.scrollTop===320&&win.scrollY===0,'Momentum-style content scrolling should stay inside the app scroller');
+      assert(Math.abs(scrolledRect.top-rect.top)<=1&&Math.abs(scrolledRect.bottom-rect.bottom)<=1,'Normal-flow navigation should not move when app content scrolls');
       frame.style.height='1040px'; await afterRender(win); win.dispatchEvent(new Event('resize')); await afterRender(win);
-      const resizedRect=nav.getBoundingClientRect(), resizedViewport=win.visualViewport;
-      const resizedBottom=(resizedViewport?.offsetTop||0)+(resizedViewport?.height||win.innerHeight);
-      assert(Math.abs(resizedRect.bottom-resizedBottom)<=2,`Navigation should follow a changed visible viewport: ${resizedRect.bottom} vs ${resizedBottom}`);
-      doc.body.style.minHeight='1600px'; win.scrollTo(0,320); await afterRender(win);
-      const scrolledRect=nav.getBoundingClientRect(), scrolledViewport=win.visualViewport;
-      const scrolledBottom=(scrolledViewport?.offsetTop||0)+(scrolledViewport?.height||win.innerHeight);
-      assert(Math.abs(scrolledRect.bottom-scrolledBottom)<=2,`Absolute iOS navigation should follow scrolling: ${scrolledRect.bottom} vs ${scrolledBottom}`);
-      win.setIOSViewportGeometryForTest({pageTop:320,pageLeft:48,height:600,width:280}); await afterRender(win);
-      equal(parseFloat(nav.style.getPropertyValue('--nav-page-x')),48); equal(parseFloat(win.getComputedStyle(nav).width),280);
-      equal(parseFloat(doc.documentElement.style.getPropertyValue('--floating-viewport-width')),280);
-      equal(parseFloat(doc.getElementById('toast').style.getPropertyValue('--toast-page-center')),188);
+      const resizedRect=nav.getBoundingClientRect();
+      assert(Math.abs(resizedRect.bottom-win.innerHeight)<=2,`Shell navigation should reflow with viewport height: ${resizedRect.bottom} vs ${win.innerHeight}`);
       win.toast('Recurring charge confirmed. We will ask you to confirm again at the next review.',9000,()=>{},{wide:true}); await afterRender(win);
-      const zoomToast=doc.getElementById('toast').getBoundingClientRect(), zoomNav=nav.getBoundingClientRect();
-      assert(zoomToast.width<=256&&zoomToast.left>=48&&zoomToast.right<=328,'A wide toast should stay within the narrowed, horizontally offset visual viewport');
-      assert(zoomToast.bottom<=zoomNav.top-8,'The narrowed toast should remain clear of navigation');
-      win.setIOSViewportGeometryForTest({pageTop:320,pageLeft:96,height:600,width:195}); await afterRender(win);
-      const magnifiedNav=nav.getBoundingClientRect(), magnifiedToast=doc.getElementById('toast').getBoundingClientRect(), iconPills=[...nav.querySelectorAll('.em')].map(element=>element.getBoundingClientRect());
-      assert(iconPills.every(rect=>rect.left>=magnifiedNav.left-1&&rect.right<=magnifiedNav.right+1),'Navigation icon pills should stay within the 200% zoom viewport');
-      assert(iconPills.every((rect,index)=>index===0||iconPills[index-1].right<=rect.left+1),'Navigation icon pills should not overlap at 200% zoom');
-      assert(magnifiedToast.left>=96&&magnifiedToast.right<=291&&magnifiedToast.bottom<=magnifiedNav.top-8,'Toast should remain visible and clear of navigation at 200% zoom');
+      const toastRect=doc.getElementById('toast').getBoundingClientRect(), toastNav=nav.getBoundingClientRect();
+      equal(win.getComputedStyle(doc.getElementById('toast')).position,'absolute'); assert(toastRect.bottom<=toastNav.top-8,'Shell toast should remain above navigation');
+      frame.style.width='195px'; await afterRender(win);
+      const narrowNav=nav.getBoundingClientRect(), narrowToast=doc.getElementById('toast').getBoundingClientRect(), iconPills=[...nav.querySelectorAll('.em')].map(element=>element.getBoundingClientRect());
+      assert(iconPills.every(rect=>rect.left>=narrowNav.left-1&&rect.right<=narrowNav.right+1),'Navigation icon pills should stay inside the shell at high zoom');
+      assert(iconPills.every((pill,index)=>index===0||iconPills[index-1].right<=pill.left+1),'Navigation icon pills should not overlap at high zoom');
+      assert(narrowToast.left>=12&&narrowToast.right<=183&&narrowToast.bottom<=narrowNav.top-8,'Toast should remain visible and clear of shell navigation at high zoom');
+      appScroll.scrollTop=300; nav.querySelector('[data-tab="benefits"]').click(); await afterRender(win); equal(appScroll.scrollTop,0,'Tab changes should reset the inner app scroller');
+
+      frame.style.width='390px'; frame.style.height='844px'; await afterRender(win);
+      const viewport=win.visualViewport;
+      if(viewport){
+        Object.defineProperties(viewport,{
+          scale:{configurable:true,value:2}, width:{configurable:true,value:195}, height:{configurable:true,value:422},
+          offsetLeft:{configurable:true,value:0}, offsetTop:{configurable:true,value:0}
+        });
+        viewport.dispatchEvent(new Event('resize')); await afterRender(win);
+        const zoomToast=doc.getElementById('toast').getBoundingClientRect(), zoomUndo=doc.getElementById('toastundo').getBoundingClientRect();
+        assert(zoomToast.left>=0&&zoomToast.right<=195&&zoomToast.top>=0&&zoomToast.bottom<=422,'A magnified visual viewport should retain the full Undo message');
+        assert(zoomUndo.left>=0&&zoomUndo.right<=195&&zoomUndo.top>=0&&zoomUndo.bottom<=422,'Undo should remain reachable in the magnified visual viewport');
+        nav.querySelector('[data-tab="settings"]').click(); await afterRender(win); equal(doc.activeElement,doc.getElementById('hdr'),'Zoomed tab navigation should focus and reveal the destination heading');
+
+        Object.defineProperty(viewport,'height',{configurable:true,value:300});
+        const pageInput=doc.querySelector('[data-cpp]'); pageInput.focus(); appScroll.scrollTop=0;
+        pageInput.getBoundingClientRect=()=>({top:620,bottom:664,left:20,right:370,width:350,height:44,x:20,y:620,toJSON(){}});
+        viewport.dispatchEvent(new Event('resize')); await afterRender(win);
+        assert(appScroll.scrollTop>0,'A reduced visual viewport should reveal a focused page input inside the app scroller');
+
+        nav.querySelector('[data-tab="cards"]').click(); await afterRender(win); doc.querySelector('[data-edit="amex_gold"]').click(); await afterRender(win);
+        const sheet=doc.getElementById('sheet'), modalInput=[...sheet.querySelectorAll('[data-rk]')].at(-1);
+        modalInput.focus(); sheet.scrollTop=0;
+        modalInput.getBoundingClientRect=()=>({top:620,bottom:664,left:220,right:370,width:150,height:44,x:220,y:620,toJSON(){}});
+        viewport.dispatchEvent(new Event('resize')); await afterRender(win);
+        assert(sheet.scrollTop>0,'A reduced visual viewport should reveal a focused modal input inside the sheet scroller');
+      }
     });
   });
   test('external action links stay at the top right of action cards',async()=>{
@@ -663,12 +687,21 @@ document.getElementById('app').addEventListener('load',async()=>{
     await withAppState({schemaVersion:3,myCards:['amex_plat']},async(win,doc)=>{
       doc.querySelector('nav button[data-tab="cards"]').click(); const edit=doc.querySelector('[data-edit="amex_plat"]');
       assert(edit.getAttribute('aria-label').includes('Amex Platinum'),'Card actions should identify their card');
+      win.toast('Marked used',9000,()=>{}); await afterRender(win);
       edit.click(); await afterRender(win);
-      const sheet=doc.getElementById('sheet'); equal(sheet.getAttribute('role'),'dialog'); equal(sheet.getAttribute('aria-modal'),'true'); assert(doc.querySelector('main').inert,'Background content should be inert while the editor is open');
+      const sheet=doc.getElementById('sheet'); equal(sheet.getAttribute('role'),'dialog'); equal(sheet.getAttribute('aria-modal'),'true'); assert(doc.getElementById('appScroll').inert&&doc.querySelector('nav').inert,'Background content should be inert while the editor is open');
+      const toast=doc.getElementById('toast'); assert(toast.inert&&toast.getAttribute('aria-hidden')==='true'&&toast.classList.contains('modal-suppressed'),'A pending Undo should be hidden and inert while the modal is open');
       assert(sheet.contains(doc.activeElement)&&doc.activeElement.matches('[data-rk]'),'The first rate field should receive initial focus');
       assert([...sheet.querySelectorAll('[data-rk]')].every(input=>input.labels&&input.labels.length===1),'Every rate field should have a program-and-category label');
       doc.dispatchEvent(new win.KeyboardEvent('keydown',{key:'Escape',bubbles:true})); await afterRender(win);
-      assert(!doc.getElementById('modal').classList.contains('open')&&!doc.querySelector('main').inert,'Escape should close the modal and restore the page'); equal(doc.activeElement,edit);
+      assert(!doc.getElementById('modal').classList.contains('open')&&!doc.getElementById('appScroll').inert&&!doc.querySelector('nav').inert,'Escape should close the modal and restore the page'); equal(doc.activeElement,edit);
+      assert(!toast.inert&&!toast.hasAttribute('aria-hidden')&&!toast.classList.contains('modal-suppressed')&&toast.classList.contains('show')&&!doc.getElementById('toastundo').hidden,'Closing the modal should restore the pending Undo and its remaining time');
+      doc.getElementById('addcustom').click(); await afterRender(win); doc.getElementById('ccsave').click(); await afterRender(win);
+      const modalError=doc.getElementById('ccerror'); assert(!modalError.hidden&&modalError.getAttribute('role')==='status'&&modalError.textContent==='Enter a card name.','Invalid modal input should show its feedback inside the dialog');
+      assert(doc.getElementById('ccname').getAttribute('aria-invalid')==='true'&&doc.activeElement===doc.getElementById('ccname'),'The invalid field should be identified and focused');
+      assert(toast.inert&&doc.getElementById('toastmsg').textContent==='Marked used'&&!doc.getElementById('toastundo').hidden,'Inline modal validation must preserve the paused Undo');
+      doc.dispatchEvent(new win.KeyboardEvent('keydown',{key:'Escape',bubbles:true})); await afterRender(win);
+      assert(!toast.inert&&toast.classList.contains('show')&&doc.getElementById('toastmsg').textContent==='Marked used'&&!doc.getElementById('toastundo').hidden,'Closing after validation should restore the original Undo');
       doc.querySelector('nav button[data-tab="settings"]').click(); assert([...doc.querySelectorAll('[data-cpp]')].every(input=>input.labels&&input.labels[0].textContent.includes('cents per point')),'Every point valuation should have a contextual label');
     });
   });
