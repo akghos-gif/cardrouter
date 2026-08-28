@@ -33,6 +33,9 @@
   header h1{font-size:22px; margin:0; letter-spacing:-.02em; white-space:nowrap}
   header h1:focus{outline:none}
   header .sub{color:var(--muted); font-size:13px}
+  header .header-action{margin-left:auto; border:0; background:none; color:var(--accent); min-height:44px; padding:8px 0 8px 2px;
+    font:inherit; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap}
+  header .header-action[hidden]{display:none}
   main{padding:0 14px; max-width:560px; margin:0 auto}
   .panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:14px; margin:10px 0}
   .catgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
@@ -112,18 +115,12 @@
   button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
     outline:3px solid var(--accent); outline-offset:2px}
   .row[tabindex]:focus-visible{outline:3px solid var(--accent); outline-offset:2px; border-radius:10px}
-  .recurring-status:focus-visible,.confirmed-status:focus-visible,.recurring-head h2:focus-visible,.section-head h2:focus-visible{
+  .recurring-status:focus-visible,.confirmed-status:focus-visible,.recurring-head h2:focus-visible{
     outline:3px solid var(--accent); outline-offset:3px; border-radius:4px}
   .storage-warning{max-width:532px; margin:0 auto 10px; padding:10px 14px; border:1px solid var(--warn); border-radius:12px;
     color:var(--ink); background:color-mix(in srgb, var(--warn) 8%, var(--card)); font-size:13px; line-height:1.4}
   .storage-warning button{border:0; background:none; color:var(--accent); font:inherit; font-weight:700; min-height:44px; padding:7px 4px; cursor:pointer}
-  .section-head{display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin:16px 4px 6px}
-  .section-head h2{margin:0}
   .title-icon{display:inline-block; width:1.15em; margin-right:6px; text-align:center; font-size:1em; line-height:1; vertical-align:-.04em}
-  .section-head .section-link{border:0; background:none; color:var(--accent); font:inherit; font-size:13px; font-weight:700;
-    padding:9px 2px; min-height:44px; cursor:pointer; white-space:nowrap}
-  .radar-summary{font-size:14px; line-height:1.4; margin:0 4px 9px}
-  .radar-summary strong{font-weight:750}
   .action-list{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); margin:8px 0}
   .action-row{display:block; padding:13px 14px; border-bottom:1px solid var(--line)}
   .action-row:last-child{border-bottom:0}
@@ -202,11 +199,14 @@
   .recurring-count{font-size:12px; color:var(--warn); font-weight:750}
   .review-confirm{white-space:nowrap}
   .confirmed-status{display:inline-flex; align-items:center; min-height:44px; color:var(--good); font-size:12.5px; font-weight:750}
-  .more-options{margin-top:4px}
-  .more-options > button{display:flex; align-items:center; gap:6px; border:0; background:none; color:var(--muted); min-height:44px;
-    padding:8px 0; font:inherit; font-size:12.5px; font-weight:600; cursor:pointer}
-  .more-options-panel{padding:2px 0 7px; border-top:1px solid var(--line)}
-  .more-options-panel p{font-size:12px; line-height:1.45; color:var(--muted); margin:8px 0 2px}
+  .more-options{margin:10px -14px -13px; padding:4px 14px 8px; border-top:1px solid var(--line);
+    background:color-mix(in srgb, var(--muted) 4%, transparent)}
+  .more-options > button{width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; border:0; background:none;
+    color:var(--muted); min-height:44px; padding:8px 0; font:inherit; font-size:12.5px; font-weight:650; cursor:pointer; text-align:left}
+  .more-options-panel{padding:10px 0 2px; border-top:1px solid var(--line)}
+  .hide-radar-action{display:inline-flex; align-items:center; justify-content:center; min-height:44px; border:1px solid var(--line);
+    border-radius:12px; background:var(--card); color:var(--ink); padding:8px 12px; font:inherit; font-size:12.5px; font-weight:700; cursor:pointer}
+  .more-options-panel p{max-width:60ch; font-size:12px; line-height:1.45; color:var(--muted); margin:7px 0 2px}
   .terms-changed{color:var(--warn); font-weight:750}
   @media (max-width:420px){
     header{flex-wrap:wrap; align-items:flex-start}
@@ -272,7 +272,8 @@
 </div>
 <header>
   <h1 id="hdr" tabindex="-1">Which card?</h1>
-  <span class="sub" id="hdrsub"></span>
+  <span class="sub" id="hdrsub" hidden></span>
+  <button class="header-action" id="radar-view-all" aria-label="View all Benefit Radar items" hidden>View all <span aria-hidden="true">›</span></button>
 </header>
 <div class="storage-warning" id="storageWarning" role="status" hidden>
   <span id="storageWarningText">Changes will last only until you close this tab because browser storage is unavailable.</span>
@@ -1113,8 +1114,9 @@ function mutateWithUndo(message,mutator,focusId,undoFocusId=focusId,mutationNow=
 }
 function restoreFocus(focusId){
   requestAnimationFrame(()=>{
-    const exact=focusId&&document.querySelector(`[data-focus-id="${focusId}"]`);
-    const target=exact||document.getElementById('radar-view-all')||document.querySelector('main button, main a');
+    const exact=focusId&&(document.querySelector(`[data-focus-id="${focusId}"]`)||document.getElementById(focusId));
+    const viewAll=document.getElementById('radar-view-all');
+    const target=exact||viewAll&&!viewAll.hidden&&viewAll||document.getElementById('hdr')||document.querySelector('main button, main a');
     if(!target) return;
     target.focus({preventScroll:true});
     const rect=target.getBoundingClientRect();
@@ -1351,7 +1353,7 @@ function hideBenefitTask(task){
     S.radarHidden[key]={cardId:task.card.id,benefitId:task.benefitId,hiddenAt:new Date().toISOString()};
     suspendRecurringSetup(task.card.id,task.benefitId,'hidden');
     moreOptionsOpenKey='';
-  },next?`task-${next.key}`:'radar-heading',`task-${task.key}`);
+  },next?`task-${next.key}`:'hdr',`task-${task.key}`);
 }
 function restoreBenefit(cardId,benefitId,focusId,undoFocusId=focusId){
   mutateWithUndo('Shown in Benefit Radar',()=>{delete S.radarHidden[canonicalHiddenKey(cardId,benefitId)];},focusId,undoFocusId);
@@ -1448,7 +1450,8 @@ function render(){
     const on=b.dataset.tab===TAB; b.classList.toggle('on',on);
     if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
   });
-  const hdr = document.getElementById('hdr'), sub=document.getElementById('hdrsub');
+  const hdr = document.getElementById('hdr'), sub=document.getElementById('hdrsub'), headerAction=document.getElementById('radar-view-all');
+  headerAction.hidden=!(TAB==='promos'&&PROMOS_VIEW==='overview');
   if(TAB==='which'){ hdr.textContent='Which card?'; sub.textContent = S.myCards.length? '' : 'set up your cards first'; renderWhich(); }
   if(TAB==='cards'){ hdr.textContent='My cards'; sub.textContent='priority order breaks ties'; renderCards(); }
   if(TAB==='benefits'){ hdr.textContent='Benefits'; sub.textContent='what your cards give you'; renderBenefits(); }
@@ -1458,6 +1461,7 @@ function render(){
     renderPromos();
   }
   if(TAB==='settings'){ hdr.textContent='Settings'; sub.textContent=''; renderSettings(); }
+  sub.hidden=!sub.textContent;
   const titleIcon=hdr.querySelector('.title-icon'), pageTitle=titleIcon?hdr.textContent.slice(titleIcon.textContent.length).trim():hdr.textContent;
   document.title=`ChooseMyCard · ${pageTitle}`;
   updateStorageWarning();
@@ -1752,7 +1756,7 @@ function renderTaskRow(task,{manage=false,allowRecurring=false,quarterlyInventor
     <div class="action-footer"><div class="action-links">
       ${manage&&!task.done&&!task.closed&&!disabled?(task.skipped&&quarterlyInventory?`<button class="manage-action" data-unskip-task="${task.key}" aria-label="${esc(showPeriodLabel(task))}: ${esc(task.title)}, ${esc(task.card.name)}">${esc(showPeriodLabel(task))}</button>`:`<button class="manage-action" data-skip-task="${task.key}" aria-label="${esc(skipPeriodLabel(task))}: ${esc(task.title)}, ${esc(task.card.name)}">${esc(skipPeriodLabel(task))}</button>`):''}
     </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-task-state="${task.closed?'closed':task.unavailable?'unavailable':'open'}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div>
-    ${manage&&task.benefitId?`<div class="more-options"><button data-more-options="${task.key}" data-focus-id="more-options-${task.key}" aria-expanded="${moreOpen}" aria-controls="${moreId}" aria-label="More options for ${esc(task.title)}, ${esc(task.card.name)}">More options <span aria-hidden="true">${moreOpen?'⌃':'⌄'}</span></button><div class="more-options-panel" id="${moreId}" ${moreOpen?'':'hidden'}><p>Stops all reminders for this benefit until you restore it from Hidden.</p><button class="manage-action" data-hide-task="${task.key}" aria-label="Hide ${esc(task.title)} from Benefit Radar, ${esc(task.card.name)}">Hide from Benefit Radar</button></div></div>`:''}
+    ${manage&&task.benefitId?`<div class="more-options"><button data-more-options="${task.key}" data-focus-id="more-options-${task.key}" aria-expanded="${moreOpen}" aria-controls="${moreId}" aria-label="More options for ${esc(task.title)}, ${esc(task.card.name)}">More options <span aria-hidden="true">${moreOpen?'⌃':'⌄'}</span></button><div class="more-options-panel" id="${moreId}" ${moreOpen?'':'hidden'}><button class="hide-radar-action" data-hide-task="${task.key}" aria-label="Hide ${esc(task.title)} from Benefit Radar, ${esc(task.card.name)}">Hide from Benefit Radar</button><p>Stops all reminders for this benefit until you restore it from Hidden.</p></div></div>`:''}
     ${recurringDiscovery}</div>`;
 }
 function radarOverviewState(radar,now=new Date()){
@@ -1785,12 +1789,10 @@ function renderRecurringOverviewRow(setup,confirmed=false,now=new Date()){
 function renderPromosOverview(){
   const now=new Date(), q=currentQuarter(now), radar=buildRadarTasks(now), allOverviewItems=overviewItems(radar,now), preview=allOverviewItems.slice(0,2);
   const state=radarOverviewState(radar,now), qTasks=buildQuarterlyTasks(now), qDone=qTasks.filter(t=>t.done).length;
-  if(preview[0]?.type==='review') state.copy=`${preview[0].setup.benefit.name} recurring charge needs review.`;
-  let html=`<div class="section-head"><h2 id="radar-heading" tabindex="-1" data-focus-id="radar-heading"><span class="title-icon" aria-hidden="true">📡</span>Benefit Radar</h2><button class="section-link" id="radar-view-all" aria-label="View all Benefit Radar items">View all <span aria-hidden="true">›</span></button></div>
-    <p class="section-note">Benefits and quarterly categories that need attention</p>
-    <p class="radar-summary"><strong>${esc(state.copy)}</strong></p>`;
+  let html='';
   if(state.action==='cards') html+=`<div class="action-list"><div class="quiet-state"><button class="pill" data-go-cards>Add cards</button></div></div>`;
   else if(preview.length) html+=`<div class="action-list">${preview.map(item=>item.type==='review'?renderRecurringOverviewRow(item.setup,false,now):renderTaskRow(item.task,{allowRecurring:true})).join('')}</div>`;
+  else html+=`<div class="action-list"><div class="quiet-state"><strong>${esc(state.copy)}</strong></div></div>`;
   const more=Math.max(0,allOverviewItems.length-preview.length); if(more) html+=`<div class="section-note" style="text-align:right">${more} more item${more===1?'':'s'}</div>`;
   const hiddenReviewCount=allOverviewItems.slice(preview.length).filter(item=>item.type==='review').length;
   if(hiddenReviewCount) html+=`<div class="section-note" style="text-align:right">${hiddenReviewCount} recurring charge${hiddenReviewCount===1?'':'s'} also need${hiddenReviewCount===1?'s':''} review</div>`;
@@ -1880,7 +1882,7 @@ function renderFullRadar(){
   if(!radar.active.length&&!reviewDue) html+=`<div class="action-list"><div class="quiet-state"><strong>${esc(state.copy)}</strong>${state.action==='cards'?'<div style="margin-top:10px"><button class="pill" data-go-cards>Add cards</button></div>':''}</div></div>`;
   else if(!radar.unresolved.length&&!reviewDue) html+=`<div class="action-list"><div class="quiet-state"><strong>Nothing needs your attention</strong></div></div>`;
   html+=renderGroup('act','Priority');
-  html+=renderGroup('soon','Due soon');
+  html+=renderGroup('soon','Due within 30 days');
   html+=renderRecurringReview(now);
   html+=renderGroup('later','Later');
   const completed=radar.active.filter(t=>t.done&&t.recurring?.status!=='terms-changed');
@@ -1905,10 +1907,10 @@ function confirmRecurringSetup(cardId,benefitId,{review=false}={},mutationNow=ne
   const key=canonicalRecurringKey(cardId,benefitId), meta=RADAR_BENEFIT_MAP[key]; if(!meta?.recurringEligible) return;
   if(review&&recurringSetupStatus(cardId,benefitId,S,mutationNow).status!=='review-due'){
     if(recurringReviewSession){ recurringReviewSession.keys=recurringReviewSession.keys.filter(item=>item!==key); recurringReviewSession.confirmed.delete(key); }
-    const resumedTask=findCurrentTaskByBenefit(cardId,benefitId,mutationNow); render(); restoreFocus(resumedTask?`recurring-disclosure-${cardId}-${benefitId}`:'radar-heading');
+    const resumedTask=findCurrentTaskByBenefit(cardId,benefitId,mutationNow); render(); restoreFocus(resumedTask?`recurring-disclosure-${cardId}-${benefitId}`:'hdr');
     toast('The review window ended. Monthly reminders have resumed.',5000); return;
   }
-  const reviewDate=recurringReviewDateForNew(mutationNow), focusId=review?`recurring-confirmed-${key}`:PROMOS_VIEW==='radar'?`recurring-status-${key}`:'radar-heading';
+  const reviewDate=recurringReviewDateForNew(mutationNow), focusId=review?`recurring-confirmed-${key}`:PROMOS_VIEW==='radar'?`recurring-status-${key}`:'hdr';
   const reviewConfirmed=review&&recurringReviewSession?new Set([...recurringReviewSession.confirmed,key]):null;
   const progress=reviewConfirmed?` ${reviewConfirmed.size} of ${recurringReviewSession.keys.length} reviewed.`:'';
   const message=`Recurring charge confirmed. We’ll ask you to confirm again on ${displayCalendarDate(reviewDate,mutationNow)}.${progress}`;
@@ -1921,7 +1923,7 @@ function confirmRecurringSetup(cardId,benefitId,{review=false}={},mutationNow=ne
 }
 function removeRecurringSetup(key,context='quiet',mutationNow=new Date()){
   const record=S.recurringSetups[key]; if(!record) return;
-  const task=findCurrentTaskByBenefit(record.cardId,record.benefitId,mutationNow), focusId=task?`recurring-disclosure-${record.cardId}-${record.benefitId}`:'radar-heading';
+  const task=findCurrentTaskByBenefit(record.cardId,record.benefitId,mutationNow), focusId=task?`recurring-disclosure-${record.cardId}-${record.benefitId}`:'hdr';
   const undoFocusId=context==='review'?`recurring-review-confirm-${key}`:`recurring-status-${key}`;
   mutateWithUndo('Confirmation removed. Monthly reminders will resume.',()=>{
     delete S.recurringSetups[key];
@@ -1929,7 +1931,7 @@ function removeRecurringSetup(key,context='quiet',mutationNow=new Date()){
   },focusId,undoFocusId,mutationNow);
 }
 function bindPromoActions(){
-  document.getElementById('radar-view-all')?.addEventListener('click',()=>openPromosSubview('all'));
+  const viewAll=document.getElementById('radar-view-all'); if(viewAll) viewAll.onclick=()=>openPromosSubview('all');
   document.getElementById('quarterly-view-all')?.addEventListener('click',()=>openPromosSubview('quarterly'));
   document.getElementById('promos-back')?.addEventListener('click',backFromPromos);
   document.getElementById('ics')?.addEventListener('click',downloadICS);
@@ -1949,7 +1951,13 @@ function bindPromoActions(){
   mainEl.querySelectorAll('[data-skip-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.skipTask,mutationNow);if(task)skipTask(task,mutationNow);});
   mainEl.querySelectorAll('[data-hide-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.hideTask,mutationNow);if(task)hideBenefitTask(task);});
   mainEl.querySelectorAll('[data-more-options]').forEach(button=>button.onclick=()=>{
-    const opening=moreOptionsOpenKey!==button.dataset.moreOptions; moreOptionsOpenKey=opening?button.dataset.moreOptions:''; render(); restoreFocus(`more-options-${button.dataset.moreOptions}`);
+    const opening=moreOptionsOpenKey!==button.dataset.moreOptions, panelId=button.getAttribute('aria-controls');
+    moreOptionsOpenKey=opening?button.dataset.moreOptions:''; render(); restoreFocus(`more-options-${button.dataset.moreOptions}`);
+    if(opening) requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      const panel=document.getElementById(panelId); if(!panel) return;
+      const safeBottom=(document.querySelector('nav')?.getBoundingClientRect().top??window.innerHeight)-12, rect=panel.getBoundingClientRect();
+      if(rect.bottom>safeBottom) window.scrollBy({top:rect.bottom-safeBottom,behavior:'auto'});
+    }));
   });
   mainEl.querySelectorAll('[data-unskip-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.unskipTask,mutationNow);if(task)unskipTask(task);});
   mainEl.querySelectorAll('[data-restore-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.restoreTask,mutationNow);if(task)restoreBenefit(task.card.id,task.benefitId,`task-${task.key}`,'not-shown-toggle');});

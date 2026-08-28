@@ -257,20 +257,28 @@ document.getElementById('app').addEventListener('load',async()=>{
   });
   test('Benefit Radar consolidates quarterly categories without a second destination',async()=>{
     const hiddenAt=new Date().toISOString();
-    await withAppState({schemaVersion:2,myCards:['amex_plat','discover_it'],radarHidden:[{cardId:'amex_plat',benefitId:'uber_cash',hiddenAt}]},async(win,doc)=>{
+    await withAppState({schemaVersion:2,myCards:['amex_plat','discover_it'],radarHidden:[{cardId:'amex_plat',benefitId:'uber_cash',hiddenAt}]},async(win,doc,frame)=>{
       doc.querySelector('nav button[data-tab="promos"]').click();
+      frame.style.width='320px'; frame.style.height='844px'; await afterRender(win);
       const quarter=R.periodInfo('quarter',new Date()).key.replace('-',' ');
       equal(doc.getElementById('hdrsub').textContent,'');
       assert(!doc.querySelector('.quarter-banner')&&!doc.body.textContent.includes('days left in the quarter'),'Quarter context should not describe the mixed-cadence Promos page');
-      const radarIcon=doc.querySelector('.section-head .title-icon'), quarterlyIcon=doc.querySelector('.quarterly-nav .title-icon');
-      equal(radarIcon.textContent,'📡'); equal(quarterlyIcon.textContent,'📅');
-      assert(radarIcon.getAttribute('aria-hidden')==='true'&&quarterlyIcon.getAttribute('aria-hidden')==='true','Overview icons should be decorative');
+      const viewAll=doc.getElementById('radar-view-all'), quarterlyIcon=doc.querySelector('.quarterly-nav .title-icon');
+      assert(viewAll.closest('header')&&!viewAll.hidden,'View all should sit beside the Promos & activations page title');
+      const titleRect=doc.getElementById('hdr').getBoundingClientRect(), viewRect=viewAll.getBoundingClientRect();
+      assert(Math.abs(titleRect.top-viewRect.top)<12&&viewRect.left>titleRect.right,'View all should remain to the right of the page title at 320px');
+      assert(!doc.querySelector('.section-head')&&!doc.querySelector('.radar-summary'),'Overview should not repeat a Benefit Radar header or generated urgency summary');
+      equal(quarterlyIcon.textContent,'📅');
+      assert(quarterlyIcon.getAttribute('aria-hidden')==='true','Quarterly icon should be decorative');
       assert(!doc.body.textContent.includes('Quarterly actions'),'The retired duplicate destination should not render');
       assert(doc.getElementById('quarterly-view-all').textContent.includes('View in Benefit Radar'),'Quarterly row should explain its single-inbox destination');
       assert(doc.getElementById('quarterly-view-all').textContent.includes(quarter),'Quarter context should stay with the quarterly categories row');
       doc.getElementById('radar-view-all').click();
       equal(doc.title,'ChooseMyCard · Benefit Radar'); equal(doc.getElementById('hdrsub').textContent,'what needs attention');
+      assert(doc.getElementById('radar-view-all').hidden,'The overview action should hide inside full Benefit Radar');
       equal(doc.querySelector('#hdr .title-icon').textContent,'📡'); equal(doc.querySelector('#hdr .title-icon').getAttribute('aria-hidden'),'true');
+      assert([...doc.querySelectorAll('main h2')].some(heading=>heading.textContent==='Due within 30 days'),'Mixed-cadence deadlines should use the explicit 30-day heading');
+      assert(![...doc.querySelectorAll('main h2')].some(heading=>heading.textContent==='Due soon'),'Vague urgency copy should not return');
       assert(doc.getElementById('not-shown-toggle').textContent.includes('Hidden (1)'),'Hidden disclosure should use the approved label');
       assert(!doc.getElementById('not-shown-toggle').textContent.includes('Not shown'),'Legacy Hidden copy should not return');
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('quarterly-view-all').click();
@@ -487,7 +495,7 @@ document.getElementById('app').addEventListener('load',async()=>{
       const panel=doc.querySelector('.recurring-discovery:not([hidden])'); assert(panel.textContent.includes('directly from Peloton')&&panel.textContent.includes('All-Access'),'Recurring-charge details should explain direct-billing and membership eligibility');
       panel.querySelector('[data-confirm-recurring]').click(); await afterRender(win);
       const saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.keys(saved.recurringSetups).length,1); equal(Object.keys(saved.completions).length,0);
-      equal(doc.activeElement.dataset.focusId,'radar-heading');
+      equal(doc.activeElement.id,'hdr');
       assert(![...doc.querySelectorAll('.action-row')].some(row=>row.textContent.includes('Peloton membership credit')),'Confirmed charge should leave the active overview immediately');
       assert(doc.getElementById('toast').classList.contains('show')&&!doc.getElementById('toastundo').hidden,'Confirmation should remain reversible through Undo');
     });
@@ -712,12 +720,18 @@ document.getElementById('app').addEventListener('load',async()=>{
   test('hiding a changed setup suspends it and restoring returns one monthly row',async()=>{
     const now=new Date(), confirmedAt=now.toISOString(), confirmedOn=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`, setup={cardId:'biz_plat',benefitId:'wireless_service_credit',confirmedAt,confirmedOn,termsVersion:'older-terms'};
     const state={schemaVersion:3,myCards:['biz_plat'],enrollments:[{cardId:'biz_plat',benefitId:'wireless_service_credit',enrolledAt:confirmedAt}],recurringSetups:[setup]};
-    await withAppState(state,async(win,doc)=>{
+    await withAppState(state,async(win,doc,frame)=>{
+      frame.style.width='390px'; frame.style.height='844px';
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
       const more=doc.querySelector('[data-more-options*="wireless_service_credit"]'); more.click(); await afterRender(win);
-      equal(doc.querySelector('[data-more-options*="wireless_service_credit"]').getAttribute('aria-expanded'),'true');
-      assert(doc.body.textContent.includes('Stops all reminders for this benefit until you restore it from Hidden.'));
-      doc.querySelector('[data-hide-task*="wireless_service_credit"]').click(); await afterRender(win);
+      const expanded=doc.querySelector('[data-more-options*="wireless_service_credit"]'), footer=expanded.closest('.more-options'), panel=doc.getElementById(expanded.getAttribute('aria-controls'));
+      equal(expanded.getAttribute('aria-expanded'),'true');
+      assert(footer.closest('.action-row')&&footer.closest('.action-row').querySelector('.action-title').textContent.includes('Wireless service credit'),'More options should stay inside the benefit row it controls');
+      assert(win.getComputedStyle(footer).borderTopWidth!=='0px','More options should be visually separated as the current row footer');
+      const hide=panel.querySelector('[data-hide-task]'); assert(hide.classList.contains('hide-radar-action'),'Hide should use a visible button treatment');
+      equal(panel.firstElementChild,hide); assert(hide.nextElementSibling.textContent.includes('Stops all reminders'),'The explanation should follow the Hide button');
+      assert(panel.getBoundingClientRect().bottom<=doc.querySelector('nav').getBoundingClientRect().top-10,'Opening More options should keep its actions above the bottom navigation');
+      hide.click(); await afterRender(win);
       let saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.values(saved.recurringSetups)[0].suspensionReason,'hidden');
       doc.getElementById('not-shown-toggle').click(); doc.querySelector('[data-restore-task*="wireless_service_credit"]').click(); await afterRender(win);
       const rows=[...doc.querySelectorAll('[data-task-check*="wireless_service_credit"]')]; equal(rows.length,1); saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.values(saved.recurringSetups)[0].suspensionReason,'hidden');

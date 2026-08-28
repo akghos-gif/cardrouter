@@ -1,13 +1,14 @@
 # Benefit Radar Consolidation and Recurring Charge Confirmation
 
-**Status: Finalized, implemented, verified, and independently reviewed**
+**Status: Implemented and browser-verified; phone validation pending**
 
 Benefit Radar is the single urgency-first action inbox in Promos. The former Quarterly Actions destination has been removed, while quarterly categories remain available as a complete filtered inventory. Eligible monthly benefits use an explicit, reversible recurring-charge confirmation instead of reminder-oriented setup language.
 
 ## Benefit Radar
 
 - Use **Benefit Radar** in page titles, visible labels, accessible names, help text, tests, and documentation.
-- Order the full inbox as Priority, Due soon, Review recurring charges, Later, Recently completed, Confirmed recurring charges, then Hidden and completion history.
+- Keep the Promos overview visually direct: **View all** sits beside **Promos & activations**, with no duplicate Benefit Radar heading, explanatory line, or generated urgency summary above the preview cards.
+- Order the full inbox as Priority, Due within 30 days, Review recurring charges, Later, Recently completed, Confirmed recurring charges, then Hidden and completion history.
 - Keep cadence in task metadata without splitting the main inbox into monthly, quarterly, or annual groups.
 - Show a distinct **Quarterly categories** navigation row on the Promos overview only when applicable.
 - Use the stateful **Quarterly only** / **Show all** filter in Benefit Radar. The filtered inventory includes incomplete, completed, skipped, closed, and temporarily unavailable current-quarter categories; incomplete work follows urgency ordering and completed work sorts last.
@@ -28,7 +29,7 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 ## Secondary actions and navigation
 
 - Use interval-specific skip labels such as **Skip August**, **Skip Q3**, **Skip Jan–Jun**, **Skip Jul–Dec**, and **Skip 2026**.
-- Put **Hide from Benefit Radar** under a native **More options** disclosure and explain that it stops all reminders until restored from Hidden.
+- Treat **More options** as a separated footer inside its benefit row so its ownership is unambiguous. Inside the disclosure, show **Hide from Benefit Radar** as a neutral outlined button followed by the explanation that it stops all reminders until restored from Hidden.
 - Normalize legacy `{promosView:"quarterly"}` history to Benefit Radar with the quarterly filter active. Overview links push history; in-Radar filter changes replace the current entry; tab navigation resets to overview/all.
 - Keep schema v3, recurring record formats, the `v2.` setup-link envelope, timing, import suspension, terms-version handling, and stale-tab protection unchanged.
 
@@ -41,6 +42,6 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 - The bottom navigation tracks the visual viewport from its top edge to avoid misplaced fixed-bottom rendering in iPhone WebKit browsers.
 - The dependency-free browser harness passes 66 of 66 checks covering persistence, timing, full quarterly inventory, history compatibility, disclosure semantics, confirmation and removal, Undo, visit boundaries, suspension, focus, mobile viewport anchoring, modal behavior, and copy-critical UI states.
 - Browser verification passes at 320px, 390×844, desktop, 200% zoom, and light and dark color schemes without horizontal overflow or console errors.
-- Independent engineering, product, accessibility, and copy reviews pass with no remaining P0–P2 findings.
+- Earlier engineering, product, accessibility, and copy reviews passed with no remaining P0–P2 findings. The latest overview hierarchy, 30-day heading, and More options footer are browser-verified and still need confirmation on the user’s phone.
 
 Keep the work on `codex/credit-radar`. Preserve `PRODUCT.md`; do not push or merge before user approval.
