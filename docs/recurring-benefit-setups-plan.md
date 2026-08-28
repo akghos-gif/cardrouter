@@ -18,7 +18,7 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 ## Recurring charge confirmation
 
 - Allow only Amex Platinum Digital Entertainment, Sapphire Reserve Peloton, Business Platinum Wireless, and eligible monthly direct billing for Blue Cash Preferred Disney streaming. Each uses provider-specific qualification copy and its existing terms version.
-- Present **Confirm recurring charge** as a full-width disclosure below the task footer. A terms mismatch uses **Review recurring charge**. Nothing auto-expands and no new prompt-presentation preference is written.
+- Present recurring setup as a compact direct action below the task footer, before Hide. Use **Recurring charge set up?** with a one-sentence direct-billing explanation and **Confirm setup**. A terms mismatch uses **Recurring charge still set up?**, concise changed-terms guidance, **Reconfirm**, and **Check updated terms** in place of the usual top-right benefit link label. Do not use a card-level disclosure, inline eligibility wall, modal, or new prompt-presentation preference; the existing external benefit link carries detailed eligibility terms.
 - Confirmation suppresses only routine monthly use reminders. It never completes the benefit, changes enrollment, or creates history.
 - Remove a newly confirmed charge from the Promos overview and active urgency groups immediately. Confirm with a polite Undo message instead of leaving a completed row in the action inbox.
 - Show active records only in the flat **Confirmed recurring charges** section of full Benefit Radar, with confirmation date, review date, terms, and removal visible on every row.
@@ -35,13 +35,13 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 
 ## Accessibility and verification
 
-- Recurring disclosures synchronize `aria-expanded` and `aria-controls`; the quarterly-only filter is a native labeled checkbox with a polite result-count announcement.
+- Recurring setup controls are direct buttons with unique benefit-and-card names; the quarterly-only filter is a native labeled checkbox with a polite result-count announcement.
 - Benefit-and-card action names are unique, decorative chevrons are hidden from assistive technology, controls retain 44×44 minimum targets, and focus moves deterministically after confirmation, cancellation, removal, review, hiding, filter changes, and Undo. Focused controls are scrolled fully above the fixed bottom navigation.
 - Responsive controls stack at narrow widths and high text zoom, and the Undo control is not removed while focused.
 - The Promos header carries no global quarter label because the page mixes monthly, quarterly, half-year, and annual work. Current-quarter context appears only on the **Quarterly categories** row and quarterly-only view.
 - The bottom navigation tracks the visual viewport from its top edge to avoid misplaced fixed-bottom rendering in iPhone WebKit browsers.
 - The dependency-free browser harness passes 66 of 66 checks covering persistence, timing, full quarterly inventory, history compatibility, disclosure semantics, confirmation and removal, Undo, visit boundaries, suspension, focus, mobile viewport anchoring, modal behavior, and copy-critical UI states.
 - Browser verification passes at 320px, 390×844, desktop, 200% zoom, and light and dark color schemes without horizontal overflow or console errors.
-- Earlier engineering, product, accessibility, and copy reviews passed with no remaining P0–P2 findings. The latest overview hierarchy, 30-day heading, direct Hide footer, quarterly checkbox, and bottom-navigation focus clearance passed an independent design/visual rerun with no remaining P0–P2 findings; final confirmation on the user’s phone is still pending.
+- Earlier engineering, product, accessibility, and copy reviews passed with no remaining P0–P2 findings. The latest overview hierarchy, 30-day heading, direct recurring setup, direct Hide footer, quarterly checkbox, and bottom-navigation focus clearance passed independent design/visual review with no remaining P0–P2 findings; final confirmation on the user’s phone is still pending.
 
 Keep the work on `codex/credit-radar`. Preserve `PRODUCT.md`; do not push or merge before user approval.

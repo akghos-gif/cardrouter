@@ -183,16 +183,12 @@
   .recurring-status{font-size:12.5px; color:var(--muted); line-height:1.4; margin-top:3px}
   .recurring-status.needs-review{color:var(--warn); font-weight:750}
   .recurring-manage{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-top:4px}
-  .recurring-setup{margin:10px -14px -13px; border-top:1px solid var(--line)}
-  .recurring-setup-toggle{width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:52px;
-    border:0; background:color-mix(in srgb, var(--accent) 4%, transparent); color:var(--ink); padding:10px 14px; font:inherit; cursor:pointer; text-align:left}
-  .recurring-setup-toggle strong{display:block; font-size:13px; line-height:1.35}
-  .recurring-setup-toggle span{display:block; color:var(--muted); font-size:12px; line-height:1.4; margin-top:2px; font-weight:400}
-  .recurring-chevron{flex:none; color:var(--muted); transform:rotate(0); transition:transform .15s ease}
-  .recurring-setup-toggle[aria-expanded="true"] .recurring-chevron{transform:rotate(180deg)}
-  .recurring-discovery{padding:13px 14px 15px; border-top:1px solid var(--line); background:color-mix(in srgb, var(--accent) 2%, transparent)}
+  .recurring-setup{display:grid; grid-template-columns:minmax(0,1fr) max-content; align-items:center; gap:10px 12px;
+    margin:10px -14px 0; padding:10px 14px; border-top:1px solid var(--line); background:color-mix(in srgb, var(--accent) 4%, transparent)}
+  .recurring-setup-copy strong{display:block; font-size:13px; line-height:1.35}
+  .recurring-setup-copy span{display:block; color:var(--muted); font-size:12px; line-height:1.4; margin-top:2px}
   .recurring-discovery-title{font-size:13.5px; font-weight:750; line-height:1.35}
-  .recurring-discovery-copy,.review-note,.review-fallback{font-size:12.5px; line-height:1.45; margin:5px 0 0; color:var(--muted)}
+  .review-note,.review-fallback{font-size:12.5px; line-height:1.45; margin:5px 0 0; color:var(--muted)}
   .review-fallback{color:var(--ink); font-weight:650}
   .choice-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
   .choice-row .pill{font-size:12.5px}
@@ -231,6 +227,8 @@
     .review-confirm{white-space:normal}
   }
   @media (max-width:349px){
+    .recurring-setup{grid-template-columns:1fr; align-items:start}
+    .recurring-setup .pill{width:max-content; max-width:100%}
     .hide-radar-footer{grid-template-columns:1fr; align-items:start}
     .hide-radar-action{width:max-content; max-width:100%}
   }
@@ -1137,7 +1135,7 @@ function captureRefreshFocus(now){
       return {type:'taskAction',attribute,taskKey:focusId.replace(/^task-/,''),focusId};
     }
   }
-  for(const attribute of ['data-show-radar','data-benefit-enroll','data-benefit-use','data-bcat','data-recurring-disclosure','data-review-confirm','data-remove-recurring']){
+  for(const attribute of ['data-show-radar','data-benefit-enroll','data-benefit-use','data-bcat','data-review-confirm','data-remove-recurring']){
     if(active.hasAttribute(attribute)) return {type:'attribute',attribute,value:active.getAttribute(attribute)};
   }
   if(active.id) return {type:'id',value:active.id};
@@ -1441,7 +1439,7 @@ function normalizePromosHistory(state){
 const initialPromosHistory=normalizePromosHistory(history.state);
 let TAB=initialPromosHistory.view==='overview'?'which':'promos', selectedCat=null, PROMOS_VIEW=initialPromosHistory.view, RADAR_FILTER=initialPromosHistory.filter,
   radarHistoryOpen=false, notShownOpen=false, historyLimit=20;
-let recurringDiscoveryOpenKey='', recurringReviewSession=null;
+let recurringReviewSession=null;
 let promosVisitToken='';
 let renderedDayKey=localIsoDate(localDay(new Date())), renderedMonthKey=periodInfo('month',new Date()).key;
 
@@ -1728,38 +1726,34 @@ function skipPeriodLabel(task){
 function showPeriodLabel(task){ return skipPeriodLabel(task).replace(/^Skip /,'Show '); }
 function skippedPeriodLabel(task){ return skipPeriodLabel(task).replace(/^Skip /,'Skipped '); }
 function recurringReviewDateForNew(now=new Date()){ return addCalendarMonths(localDay(now),6); }
-function recurringDiscoveryParts(task){
+function recurringSetupParts(task){
   if(task.actionType!=='use'||!task.meta?.recurringEligible||['active','review-due'].includes(task.recurring?.status)||(task.done&&task.recurring?.status!=='terms-changed')) return '';
-  const open=recurringDiscoveryOpenKey===task.key, panelId=`recurring-discovery-${task.card.id}-${task.benefitId}`;
-  const label=task.recurring?.status==='terms-changed'?'Review recurring charge':'Confirm recurring charge';
-  const noun=task.meta.recurringChargeNoun||'payment', reviewDate=displayCalendarDate(recurringReviewDateForNew(new Date()),new Date());
-  return `<div class="recurring-setup"><button class="recurring-setup-toggle" data-recurring-disclosure="${task.key}" data-focus-id="recurring-disclosure-${task.card.id}-${task.benefitId}" aria-expanded="${open}" aria-controls="${panelId}" aria-label="${esc(`${label} for ${task.title}, ${task.card.name}`)}"><span><strong>${esc(label)}</strong><span>Confirm that an eligible ${esc(noun)} is charged to this card every month.</span></span><span class="recurring-chevron" aria-hidden="true">⌄</span></button>
-    <div class="recurring-discovery" id="${panelId}" ${open?'':'hidden'}><div class="recurring-discovery-title">${esc(task.meta.recurringQualifier)}</div>
-      <p class="recurring-discovery-copy">Routine monthly reminders stay out of Benefit Radar. We’ll ask you to review this charge on ${esc(reviewDate)}.</p>
-      <p class="recurring-discovery-copy">ChooseMyCard can’t verify the payment or statement credit.</p>
-      <div class="choice-row"><button class="pill primary" data-confirm-recurring="${task.card.id}:${task.benefitId}" aria-label="Confirm recurring charge for ${esc(task.title)}, ${esc(task.card.name)}">Confirm recurring charge</button><button class="pill" data-dismiss-recurring="${task.card.id}:${task.benefitId}" data-task-key="${task.key}" aria-label="Close recurring charge details for ${esc(task.title)}, ${esc(task.card.name)}">Cancel</button></div>
-    </div></div>`;
+  const changed=task.recurring?.status==='terms-changed', noun=task.meta.recurringChargeNoun||'payment';
+  const title=changed?'Recurring charge still set up?':'Recurring charge set up?';
+  const support=changed?'Benefit terms changed. Check eligibility before confirming.':`For an eligible ${noun} billed directly to this card every month.`;
+  return `<div class="recurring-setup"><div class="recurring-setup-copy"><strong>${esc(title)}</strong><span>${esc(support)}</span></div><button class="pill" data-confirm-recurring="${task.card.id}:${task.benefitId}" data-focus-id="recurring-setup-${task.card.id}-${task.benefitId}" aria-label="${esc(`${changed?'Reconfirm':'Confirm'} recurring charge for ${task.title}, ${task.card.name}`)}">${changed?'Reconfirm':'Confirm setup'}</button></div>`;
 }
 function renderTaskRow(task,{manage=false,allowRecurring=false,quarterlyInventory=false}={}){
   const statuses=taskStatusLines(task), disabled=task.unavailable;
-  const recurringDiscovery=allowRecurring?recurringDiscoveryParts(task):'';
+  const recurringSetup=allowRecurring?recurringSetupParts(task):'';
   const closedDate=task.actionEnd&&displayDate(periodLastDate(task.actionEnd));
   const closedMark=task.actionType==='select'?`I selected by ${closedDate}`:`I activated by ${closedDate}`;
   const checkboxText=task.done?completedLabel(task):task.unavailable?'Unavailable':task.closed?closedMark:task.markLabel;
   const checkboxAria=checkboxText;
   const setupDone=task.meta&&task.meta.prerequisiteDoneLabel||'Enrolled';
   const hideDescriptionId=`hide-description-${task.key.replace(/[^A-Za-z0-9_-]/g,'-')}`;
+  const externalLabel=task.recurring?.status==='terms-changed'?'Check updated terms':task.externalLabel;
   return `<div class="action-row ${task.done?'completed':''}">
     <div class="action-topline"><div class="action-title">${esc(task.title)}</div>
-      <a class="issuer-action" href="${task.link}" target="_blank" rel="noopener noreferrer" aria-label="${esc(task.externalLabel)} for ${esc(task.title)}, ${esc(task.card.name)}, on issuer or partner site, opens in a new tab">${esc(task.externalLabel)} <span aria-hidden="true">↗</span></a></div>
+      <a class="issuer-action" href="${task.link}" target="_blank" rel="noopener noreferrer" aria-label="${esc(externalLabel)} for ${esc(task.title)}, ${esc(task.card.name)}, on issuer or partner site, opens in a new tab">${esc(externalLabel)} <span aria-hidden="true">↗</span></a></div>
     <div class="action-meta">${esc(task.card.name)}${task.detail?' · '+esc(task.detail):''}</div>
     ${task.enrolled&&task.actionType==='use'?`<div class="action-meta">${esc(setupDone)} ${displayDate(task.enrolled.enrolledAt)}</div>`:''}
     ${statuses.map(status=>`<div class="action-meta ${status.urgent?'urgent':''}">${esc(status.text)}</div>`).join('')}
     <div class="action-footer"><div class="action-links">
       ${manage&&!task.done&&!task.closed&&!disabled?(task.skipped&&quarterlyInventory?`<button class="manage-action" data-unskip-task="${task.key}" aria-label="${esc(showPeriodLabel(task))}: ${esc(task.title)}, ${esc(task.card.name)}">${esc(showPeriodLabel(task))}</button>`:`<button class="manage-action" data-skip-task="${task.key}" aria-label="${esc(skipPeriodLabel(task))}: ${esc(task.title)}, ${esc(task.card.name)}">${esc(skipPeriodLabel(task))}</button>`):''}
     </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-task-state="${task.closed?'closed':task.unavailable?'unavailable':'open'}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div>
-    ${manage&&task.benefitId?`<div class="hide-radar-footer"><button class="hide-radar-action" data-hide-task="${task.key}" aria-describedby="${hideDescriptionId}" aria-label="Hide ${esc(task.title)} from Benefit Radar, ${esc(task.card.name)}">Hide from Benefit Radar</button><p id="${hideDescriptionId}">Stops reminders. Restore anytime from Hidden.</p></div>`:''}
-    ${recurringDiscovery}</div>`;
+    ${recurringSetup}
+    ${manage&&task.benefitId?`<div class="hide-radar-footer"><button class="hide-radar-action" data-hide-task="${task.key}" aria-describedby="${hideDescriptionId}" aria-label="Hide ${esc(task.title)} from Benefit Radar, ${esc(task.card.name)}">Hide from Benefit Radar</button><p id="${hideDescriptionId}">Stops reminders. Restore anytime from Hidden.</p></div>`:''}</div>`;
 }
 function radarOverviewState(radar,now=new Date()){
   const reviewCount=recurringSetupsForState(S,now).filter(item=>item.status==='review-due').length;
@@ -1839,7 +1833,7 @@ function beginRadarVisit(now=new Date()){
   else recurringReviewSession.keys=[...new Set([...recurringReviewSession.keys.filter(key=>recurringReviewSession.confirmed.has(key)||dueKeys.includes(key)),...dueKeys])];
 }
 function endPromosVisit(){
-  promosVisitToken=''; recurringReviewSession=null; recurringDiscoveryOpenKey=''; clearToast();
+  promosVisitToken=''; recurringReviewSession=null; clearToast();
 }
 function recurringItemValue(item,now=new Date()){ return `Up to ${benefitAmount(item.meta,now)}/mo`; }
 function renderRecurringQuiet(now=new Date()){
@@ -1909,7 +1903,7 @@ function confirmRecurringSetup(cardId,benefitId,{review=false}={},mutationNow=ne
   const key=canonicalRecurringKey(cardId,benefitId), meta=RADAR_BENEFIT_MAP[key]; if(!meta?.recurringEligible) return;
   if(review&&recurringSetupStatus(cardId,benefitId,S,mutationNow).status!=='review-due'){
     if(recurringReviewSession){ recurringReviewSession.keys=recurringReviewSession.keys.filter(item=>item!==key); recurringReviewSession.confirmed.delete(key); }
-    const resumedTask=findCurrentTaskByBenefit(cardId,benefitId,mutationNow); render(); restoreFocus(resumedTask?`recurring-disclosure-${cardId}-${benefitId}`:'hdr');
+    const resumedTask=findCurrentTaskByBenefit(cardId,benefitId,mutationNow); render(); restoreFocus(resumedTask?`recurring-setup-${cardId}-${benefitId}`:'hdr');
     toast('The review window ended. Monthly reminders have resumed.',5000); return;
   }
   const reviewDate=recurringReviewDateForNew(mutationNow), focusId=review?`recurring-confirmed-${key}`:PROMOS_VIEW==='radar'?`recurring-status-${key}`:'hdr';
@@ -1920,12 +1914,11 @@ function confirmRecurringSetup(cardId,benefitId,{review=false}={},mutationNow=ne
     S.recurringSetups[key]={cardId,benefitId,confirmedAt:mutationNow.toISOString(),confirmedOn:localIsoDate(localDay(mutationNow)),termsVersion:meta.recurringTermsVersion};
     delete S.recurringPromptPrefs[key];
     if(review&&recurringReviewSession?.keys.includes(key)) recurringReviewSession.confirmed.add(key);
-    recurringDiscoveryOpenKey='';
-  },focusId,review?`recurring-review-confirm-${key}`:`recurring-disclosure-${cardId}-${benefitId}`,mutationNow);
+  },focusId,review?`recurring-review-confirm-${key}`:`recurring-setup-${cardId}-${benefitId}`,mutationNow);
 }
 function removeRecurringSetup(key,context='quiet',mutationNow=new Date()){
   const record=S.recurringSetups[key]; if(!record) return;
-  const task=findCurrentTaskByBenefit(record.cardId,record.benefitId,mutationNow), focusId=task?`recurring-disclosure-${record.cardId}-${record.benefitId}`:'hdr';
+  const task=findCurrentTaskByBenefit(record.cardId,record.benefitId,mutationNow), focusId=task?`recurring-setup-${record.cardId}-${record.benefitId}`:'hdr';
   const undoFocusId=context==='review'?`recurring-review-confirm-${key}`:`recurring-status-${key}`;
   mutateWithUndo('Confirmation removed. Monthly reminders will resume.',()=>{
     delete S.recurringSetups[key];
@@ -1955,20 +1948,6 @@ function bindPromoActions(){
   mainEl.querySelectorAll('[data-unskip-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.unskipTask,mutationNow);if(task)unskipTask(task);});
   mainEl.querySelectorAll('[data-restore-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.restoreTask,mutationNow);if(task)restoreBenefit(task.card.id,task.benefitId,`task-${task.key}`,'not-shown-toggle');});
   mainEl.querySelectorAll('[data-show-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.showTask,mutationNow);if(task)showTaskInRadar(task);});
-  mainEl.querySelectorAll('[data-recurring-disclosure]').forEach(button=>button.onclick=()=>{
-    const task=findCurrentTask(button.dataset.recurringDisclosure); if(!task) return;
-    const opening=recurringDiscoveryOpenKey!==task.key; recurringDiscoveryOpenKey=opening?task.key:'';
-    render(); restoreFocus(`recurring-disclosure-${task.card.id}-${task.benefitId}`);
-    if(opening) requestAnimationFrame(()=>{
-      const panel=document.getElementById(`recurring-discovery-${task.card.id}-${task.benefitId}`); if(!panel) return;
-      const safeBottom=window.innerHeight-84, rect=panel.getBoundingClientRect();
-      if(rect.bottom>safeBottom) window.scrollBy({top:rect.bottom-safeBottom+12,behavior:'auto'});
-    });
-  });
-  mainEl.querySelectorAll('[data-dismiss-recurring]').forEach(button=>button.onclick=()=>{
-    const [cardId,benefitId]=button.dataset.dismissRecurring.split(':');
-    recurringDiscoveryOpenKey=''; render(); restoreFocus(`recurring-disclosure-${cardId}-${benefitId}`);
-  });
   mainEl.querySelectorAll('[data-confirm-recurring]').forEach(button=>button.onclick=()=>{
     const [cardId,benefitId]=button.dataset.confirmRecurring.split(':'); confirmRecurringSetup(cardId,benefitId,{},new Date());
   });
@@ -2126,7 +2105,7 @@ window.addEventListener('pageshow',refreshIfCalendarChanged);
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   const nextTab=b.dataset.tab; if(TAB==='promos'&&nextTab!=='promos') endPromosVisit();
   TAB=nextTab; PROMOS_VIEW='overview'; RADAR_FILTER='all'; history.replaceState({promosView:'overview',radarFilter:'all'},'',location.pathname+location.search);
-  recurringDiscoveryOpenKey=''; if(TAB==='promos') beginRadarVisit(new Date());
+  if(TAB==='promos') beginRadarVisit(new Date());
   render(); window.scrollTo({top:0,behavior:'auto'});
 });
 document.getElementById('storageBackup').onclick=()=>copySetupLink();
