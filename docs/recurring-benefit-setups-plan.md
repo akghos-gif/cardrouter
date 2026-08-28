@@ -18,7 +18,7 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 ## Recurring charge confirmation
 
 - Allow only Amex Platinum Digital Entertainment, Sapphire Reserve Peloton, Business Platinum Wireless, and eligible monthly direct billing for Blue Cash Preferred Disney streaming. Each uses provider-specific qualification copy and its existing terms version.
-- Present recurring setup as a compact direct action below the task footer, before Hide. Use **Recurring charge set up?** with a one-sentence direct-billing explanation and **Confirm setup**. A terms mismatch uses **Recurring charge still set up?**, concise changed-terms guidance, **Reconfirm**, and **Check updated terms** in place of the usual top-right benefit link label. Do not use a card-level disclosure, inline eligibility wall, modal, or new prompt-presentation preference; the existing external benefit link carries detailed eligibility terms.
+- Present recurring setup as a compact inset action below the task footer. Use **Recurring charge set up?**, **Confirm setup**, and consequence-first subtext with the exact six-month review date: “Hides monthly reminders until your review on [date].” A terms mismatch uses **Recurring charge still set up?**, “Terms changed. Reconfirm to hide monthly reminders again.”, **Reconfirm**, and **Check updated terms** in place of the usual top-right benefit link label. Do not use a card-level disclosure, inline eligibility wall, modal, or new prompt-presentation preference; the existing external benefit link carries detailed eligibility terms.
 - Confirmation suppresses only routine monthly use reminders. It never completes the benefit, changes enrollment, or creates history.
 - Remove a newly confirmed charge from the Promos overview and active urgency groups immediately. Confirm with a polite Undo message instead of leaving a completed row in the action inbox.
 - Show active records only in the flat **Confirmed recurring charges** section of full Benefit Radar, with confirmation date, review date, terms, and removal visible on every row.
@@ -29,7 +29,7 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 ## Secondary actions and navigation
 
 - Use interval-specific skip labels such as **Skip August**, **Skip Q3**, **Skip Jan–Jun**, **Skip Jul–Dec**, and **Skip 2026**.
-- Remove the More options disclosure. Present recurring setup and **Hide from Benefit Radar** as matching inset action strips inside the benefit row, using the same border, radius, padding, and copy-left/action-right layout. The inset edges and outer row divider communicate ownership of the benefit above. Keep each pair side by side at 390px and above, stacking only below 350px. Pair Hide with “Stops reminders. Restore anytime from Hidden.”
+- Remove the More options disclosure and repeated Hide strips. Show a compact **Hide** action beside the cadence-specific Skip control in the benefit’s existing action row, retaining a centered 44×44 minimum target. Its accessible name identifies the benefit and card; the Undo message states that it was hidden from Benefit Radar, and restoration remains available under Hidden.
 - Normalize legacy `{promosView:"quarterly"}` history to Benefit Radar with the quarterly filter active. Overview links push history; in-Radar filter changes replace the current entry; tab navigation resets to overview/all.
 - Keep schema v3, recurring record formats, the `v2.` setup-link envelope, timing, import suspension, terms-version handling, and stale-tab protection unchanged.
 
@@ -42,6 +42,6 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 - The bottom navigation tracks the visual viewport from its top edge to avoid misplaced fixed-bottom rendering in iPhone WebKit browsers.
 - The dependency-free browser harness passes 66 of 66 checks covering persistence, timing, full quarterly inventory, history compatibility, disclosure semantics, confirmation and removal, Undo, visit boundaries, suspension, focus, mobile viewport anchoring, modal behavior, and copy-critical UI states.
 - Browser verification passes at 320px, 390×844, desktop, 200% zoom, and light and dark color schemes without horizontal overflow or console errors.
-- Earlier engineering, product, accessibility, and copy reviews passed with no remaining P0–P2 findings. The latest overview hierarchy, 30-day heading, matching inset recurring/Hide action strips, quarterly checkbox, and bottom-navigation focus clearance passed independent design/visual review with no remaining P0–P3 findings; final confirmation on the user’s phone is still pending.
+- Earlier engineering, product, accessibility, and copy reviews passed with no remaining P0–P2 findings. The latest consequence-first recurring setup, wide Undo toast, compact 44×44 Hide action, quarterly checkbox, and bottom-navigation focus clearance passed independent design/visual review with no remaining P0–P2 findings; final confirmation on the user’s phone is still pending.
 
 Keep the work on `codex/credit-radar`. Preserve `PRODUCT.md`; do not push or merge before user approval.

@@ -103,8 +103,9 @@
   .empty{color:var(--muted); text-align:center; padding:22px 10px; font-size:14px; line-height:1.5}
   .toast{position:fixed; bottom:calc(var(--nav-h) + 10px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%);
     background:var(--ink); color:var(--bg); padding:7px 9px 7px 16px; border-radius:99px; font-size:13px; opacity:0;
-    transition:opacity .2s ease-out; pointer-events:none; z-index:60; max-width:92%; text-align:center;
+    transition:opacity .2s ease-out; pointer-events:none; z-index:60; width:max-content; max-width:calc(100vw - 24px); text-align:center;
     display:flex; align-items:center; gap:10px; box-shadow:0 8px 24px rgba(0,0,0,.24)}
+  .toast.has-undo{width:min(520px,calc(100vw - 24px))}
   .toast.visual-viewport-anchor{top:0; bottom:auto; transform:translate3d(-50%,var(--toast-y,0px),0); will-change:transform}
   .toast.show{opacity:.97; pointer-events:auto}
   .toast button{border:0; border-radius:99px; background:var(--bg); color:var(--ink); min-height:44px; padding:0 14px;
@@ -183,7 +184,7 @@
   .recurring-status{font-size:12.5px; color:var(--muted); line-height:1.4; margin-top:3px}
   .recurring-status.needs-review{color:var(--warn); font-weight:750}
   .recurring-manage{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-top:4px}
-  .recurring-setup,.hide-radar-footer{display:grid; grid-template-columns:minmax(0,1fr) max-content; align-items:center; gap:10px 12px;
+  .recurring-setup{display:grid; grid-template-columns:minmax(0,1fr) max-content; align-items:center; gap:10px 12px;
     margin:10px 0 0; padding:10px 12px; border:1px solid var(--line); border-radius:12px}
   .recurring-setup{background:color-mix(in srgb, var(--accent) 4%, var(--card))}
   .recurring-setup-copy strong{display:block; font-size:13px; line-height:1.35}
@@ -196,9 +197,7 @@
   .recurring-count{font-size:12px; color:var(--warn); font-weight:750}
   .review-confirm{white-space:nowrap}
   .confirmed-status{display:inline-flex; align-items:center; min-height:44px; color:var(--good); font-size:12.5px; font-weight:750}
-  .hide-radar-footer{background:color-mix(in srgb, var(--muted) 4%, var(--card))}
-  .hide-radar-action{color:var(--muted); font-weight:600}
-  .hide-radar-footer p{max-width:60ch; font-size:12px; line-height:1.45; color:var(--muted); margin:0}
+  .hide-radar-action{color:var(--muted); min-width:44px; justify-content:center}
   .terms-changed{color:var(--warn); font-weight:750}
   @media (max-width:420px){
     header{flex-wrap:wrap; align-items:flex-start}
@@ -221,14 +220,12 @@
     .history-row .when{white-space:normal}
     .choice-row{flex-direction:column}
     .choice-row .pill{width:100%}
-    .toast{border-radius:16px; align-items:flex-start; text-align:left; flex-wrap:wrap}
+    .toast{border-radius:16px; align-items:center; text-align:left; flex-wrap:nowrap}
     .review-confirm{white-space:normal}
   }
   @media (max-width:349px){
     .recurring-setup{grid-template-columns:1fr; align-items:start}
     .recurring-setup .pill{width:max-content; max-width:100%}
-    .hide-radar-footer{grid-template-columns:1fr; align-items:start}
-    .hide-radar-action{width:max-content; max-width:100%}
   }
   @media (prefers-reduced-motion:reduce){
     *, *::before, *::after{scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important}
@@ -1071,7 +1068,7 @@ function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;
 let pendingUndo=null;
 function clearToast(){
   const t=document.getElementById('toast'), undo=document.getElementById('toastundo');
-  pendingUndo=null; clearTimeout(t._h); undo.hidden=true; t.classList.remove('show');
+  pendingUndo=null; clearTimeout(t._h); undo.hidden=true; t.classList.remove('show','has-undo');
   scheduleFloatingUi();
 }
 function keepFocusedControlVisible(){
@@ -1088,13 +1085,13 @@ function keepFocusedControlVisible(){
 }
 function toast(msg,ms,undoFn){
   const t=document.getElementById('toast'), text=document.getElementById('toastmsg'), undo=document.getElementById('toastundo');
-  text.textContent=msg; pendingUndo=undoFn||null; undo.hidden=!undoFn; t.classList.add('show'); clearTimeout(t._h);
+  text.textContent=msg; pendingUndo=undoFn||null; undo.hidden=!undoFn; t.classList.toggle('has-undo',!!undoFn); t.classList.add('show'); clearTimeout(t._h);
   scheduleFloatingUi();
   keepFocusedControlVisible();
   undo.onclick=()=>{ if(!pendingUndo) return; const fn=pendingUndo; pendingUndo=null; undo.hidden=true; fn(); };
   const dismiss=()=>{
     if(document.activeElement===undo){ t._h=setTimeout(dismiss,1000); return; }
-    pendingUndo=null; undo.hidden=true; t.classList.remove('show');
+    pendingUndo=null; undo.hidden=true; t.classList.remove('show','has-undo');
   };
   t._h=setTimeout(dismiss,ms||2600);
 }
@@ -1726,9 +1723,9 @@ function skippedPeriodLabel(task){ return skipPeriodLabel(task).replace(/^Skip /
 function recurringReviewDateForNew(now=new Date()){ return addCalendarMonths(localDay(now),6); }
 function recurringSetupParts(task){
   if(task.actionType!=='use'||!task.meta?.recurringEligible||['active','review-due'].includes(task.recurring?.status)||(task.done&&task.recurring?.status!=='terms-changed')) return '';
-  const changed=task.recurring?.status==='terms-changed', noun=task.meta.recurringChargeNoun||'payment';
+  const changed=task.recurring?.status==='terms-changed', now=new Date(), reviewDate=displayCalendarDate(recurringReviewDateForNew(now),now);
   const title=changed?'Recurring charge still set up?':'Recurring charge set up?';
-  const support=changed?'Benefit terms changed. Check eligibility before confirming.':`For an eligible ${noun} billed directly to this card every month.`;
+  const support=changed?'Terms changed. Reconfirm to hide monthly reminders again.':`Hides monthly reminders until your review on ${reviewDate}.`;
   return `<div class="recurring-setup"><div class="recurring-setup-copy"><strong>${esc(title)}</strong><span>${esc(support)}</span></div><button class="pill" data-confirm-recurring="${task.card.id}:${task.benefitId}" data-focus-id="recurring-setup-${task.card.id}-${task.benefitId}" aria-label="${esc(`${changed?'Reconfirm':'Confirm'} recurring charge for ${task.title}, ${task.card.name}`)}">${changed?'Reconfirm':'Confirm setup'}</button></div>`;
 }
 function renderTaskRow(task,{manage=false,allowRecurring=false,quarterlyInventory=false}={}){
@@ -1739,7 +1736,6 @@ function renderTaskRow(task,{manage=false,allowRecurring=false,quarterlyInventor
   const checkboxText=task.done?completedLabel(task):task.unavailable?'Unavailable':task.closed?closedMark:task.markLabel;
   const checkboxAria=checkboxText;
   const setupDone=task.meta&&task.meta.prerequisiteDoneLabel||'Enrolled';
-  const hideDescriptionId=`hide-description-${task.key.replace(/[^A-Za-z0-9_-]/g,'-')}`;
   const externalLabel=task.recurring?.status==='terms-changed'?'Check updated terms':task.externalLabel;
   return `<div class="action-row ${task.done?'completed':''}">
     <div class="action-topline"><div class="action-title">${esc(task.title)}</div>
@@ -1749,9 +1745,9 @@ function renderTaskRow(task,{manage=false,allowRecurring=false,quarterlyInventor
     ${statuses.map(status=>`<div class="action-meta ${status.urgent?'urgent':''}">${esc(status.text)}</div>`).join('')}
     <div class="action-footer"><div class="action-links">
       ${manage&&!task.done&&!task.closed&&!disabled?(task.skipped&&quarterlyInventory?`<button class="manage-action" data-unskip-task="${task.key}" aria-label="${esc(showPeriodLabel(task))}: ${esc(task.title)}, ${esc(task.card.name)}">${esc(showPeriodLabel(task))}</button>`:`<button class="manage-action" data-skip-task="${task.key}" aria-label="${esc(skipPeriodLabel(task))}: ${esc(task.title)}, ${esc(task.card.name)}">${esc(skipPeriodLabel(task))}</button>`):''}
+      ${manage&&task.benefitId?`<button class="manage-action hide-radar-action" data-hide-task="${task.key}" aria-label="Hide ${esc(task.title)} from Benefit Radar, ${esc(task.card.name)}">Hide</button>`:''}
     </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-task-state="${task.closed?'closed':task.unavailable?'unavailable':'open'}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div>
-    ${recurringSetup}
-    ${manage&&task.benefitId?`<div class="hide-radar-footer"><p id="${hideDescriptionId}">Stops reminders. Restore anytime from Hidden.</p><button class="pill hide-radar-action" data-hide-task="${task.key}" aria-describedby="${hideDescriptionId}" aria-label="Hide ${esc(task.title)} from Benefit Radar, ${esc(task.card.name)}">Hide from Benefit Radar</button></div>`:''}</div>`;
+    ${recurringSetup}</div>`;
 }
 function radarOverviewState(radar,now=new Date()){
   const reviewCount=recurringSetupsForState(S,now).filter(item=>item.status==='review-due').length;

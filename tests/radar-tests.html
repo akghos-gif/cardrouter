@@ -476,24 +476,26 @@ document.getElementById('app').addEventListener('load',async()=>{
       const benefit=row.querySelector('.action-title').textContent.trim(), card=row.querySelector('.action-meta').textContent.split(' · ')[0].trim();
       assert(control.getAttribute('aria-label').includes(benefit)&&control.getAttribute('aria-label').includes(card),'Confirm accessible name should identify the benefit and card');
       assert(!control.hasAttribute('aria-expanded')&&!control.hasAttribute('aria-controls'),'Recurring setup should be a direct action, not a disclosure');
-      assert(row.textContent.includes('Recurring charge set up?')&&row.textContent.includes('billed directly to this card every month.')&&control.textContent==='Confirm setup','The setup row should explain the confirmation in one short sentence with an explicit action');
+      assert(row.textContent.includes('Recurring charge set up?')&&row.textContent.includes('Hides monthly reminders until your review on')&&control.textContent==='Confirm setup','The setup row should explain its consequence and review timing with an explicit action');
       assert(!doc.querySelector('main').innerText.includes('Eligible providers are')&&!doc.querySelector('.recurring-discovery'),'Detailed eligibility copy should not expand inside the card');
       equal(Object.keys(JSON.parse(win.localStorage.getItem('cardrouter')).recurringPromptPrefs).length,0);
     });
   });
   test('Promos overview removes Peloton from the active inbox after recurring-charge confirmation',async()=>{
     const enrolledAt=new Date().toISOString(), state={schemaVersion:3,myCards:['discover_it','csr'],enrollments:[{cardId:'csr',benefitId:'peloton_credit',enrolledAt}]};
-    await withAppState(state,async(win,doc)=>{
+    await withAppState(state,async(win,doc,frame)=>{
+      frame.style.width='390px'; frame.style.height='844px'; await afterRender(win);
       doc.querySelector('nav button[data-tab="promos"]').click(); await afterRender(win);
       assert(!doc.body.textContent.includes('Quarterly actions'),'Quarterly overview should not render a duplicate destination');
       const pelotonRow=[...doc.querySelectorAll('.action-row')].find(row=>row.querySelector('.action-title')?.textContent.includes('Peloton membership credit'));
       assert(pelotonRow,'Expected Peloton membership credit in the Radar preview');
       assert(pelotonRow.querySelector('.task-check').textContent.includes('Mark used'),'Manual monthly fallback should remain available');
-      const setup=pelotonRow.querySelector('[data-confirm-recurring]'); assert(setup&&pelotonRow.textContent.includes('eligible membership')&&pelotonRow.textContent.includes('billed directly'),'Recurring setup should be direct and concise'); setup.click(); await afterRender(win);
+      const setup=pelotonRow.querySelector('[data-confirm-recurring]'); assert(setup&&pelotonRow.textContent.includes('Hides monthly reminders until your review on'),'Recurring setup should state its consequence and exact review timing'); setup.click(); await afterRender(win);
       const saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.keys(saved.recurringSetups).length,1); equal(Object.keys(saved.completions).length,0);
       equal(doc.activeElement.id,'hdr');
       assert(![...doc.querySelectorAll('.action-row')].some(row=>row.textContent.includes('Peloton membership credit')),'Confirmed charge should leave the active overview immediately');
       assert(doc.getElementById('toast').classList.contains('show')&&!doc.getElementById('toastundo').hidden,'Confirmation should remain reversible through Undo');
+      const toastRect=doc.getElementById('toast').getBoundingClientRect(); assert(toastRect.width>=350&&toastRect.width>toastRect.height*3,'Undo confirmation should use a wide phone bar instead of a tall bubble');
     });
   });
   test('confirming a recurring charge removes the active task and shows its management row',async()=>{
@@ -524,7 +526,7 @@ document.getElementById('app').addEventListener('load',async()=>{
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
       const row=[...doc.querySelectorAll('.action-row')].find(item=>item.textContent.includes('Disney streaming credit'));
       assert(row.querySelector('[data-task-check]').checked&&row.textContent.includes('Benefit terms changed.'),'Changed-terms row should retain its checked use state and warning');
-      const reconfirm=row.querySelector('[data-confirm-recurring]'), termsLink=row.querySelector('.issuer-action'); assert(reconfirm&&reconfirm.textContent==='Reconfirm'&&row.textContent.includes('Benefit terms changed. Check eligibility before confirming.')&&termsLink.textContent.includes('Check updated terms'),'Changed terms should expose a concise direct reconfirmation and a clear terms destination');
+      const reconfirm=row.querySelector('[data-confirm-recurring]'), termsLink=row.querySelector('.issuer-action'); assert(reconfirm&&reconfirm.textContent==='Reconfirm'&&row.textContent.includes('Terms changed. Reconfirm to hide monthly reminders again.')&&termsLink.textContent.includes('Check updated terms'),'Changed terms should expose the resumed-reminder consequence and a clear terms destination');
     });
   });
   test('multiple confirmations leave the active inbox and remain manageable',async()=>{
@@ -717,15 +719,13 @@ document.getElementById('app').addEventListener('load',async()=>{
     await withAppState(state,async(win,doc,frame)=>{
       frame.style.width='390px'; frame.style.height='844px';
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
-      const hide=doc.querySelector('[data-hide-task*="wireless_service_credit"]'), footer=hide.closest('.hide-radar-footer'), row=footer.closest('.action-row');
+      const hide=doc.querySelector('[data-hide-task*="wireless_service_credit"]'), actionLinks=hide.closest('.action-links'), row=hide.closest('.action-row');
       assert(!doc.querySelector('[data-more-options]'),'Hide should not be nested behind More options');
-      const recurring=row.querySelector('.recurring-setup'), footerStyle=win.getComputedStyle(footer), recurringStyle=win.getComputedStyle(recurring);
-      assert(row&&row.querySelector('.action-title').textContent.includes('Wireless service credit'),'The Hide footer should stay inside the benefit row it controls');
-      assert(footerStyle.borderTopWidth!=='0px'&&footerStyle.borderRadius===recurringStyle.borderRadius&&footerStyle.padding===recurringStyle.padding,'Recurring and Hide actions should use the same inset strip geometry');
-      assert(footer.getBoundingClientRect().left>row.getBoundingClientRect().left&&footer.getBoundingClientRect().right<row.getBoundingClientRect().right,'Inset edges should make the strip ownership clear');
-      assert(hide.classList.contains('pill')&&hide.classList.contains('hide-radar-action'),'Hide should use the same visible button treatment as recurring setup');
-      const description=doc.getElementById(hide.getAttribute('aria-describedby')); assert(description&&footer.firstElementChild===description&&footer.lastElementChild===hide&&description.textContent==='Stops reminders. Restore anytime from Hidden.','Both action strips should place explanation first and action second');
-      assert(footerStyle.gridTemplateColumns.split(' ').length===2,'Hide and its explanation should remain side by side at 390px');
+      assert(!doc.querySelector('.hide-radar-footer'),'Radar rows should not repeat large Hide containers');
+      assert(row&&row.querySelector('.action-title').textContent.includes('Wireless service credit')&&actionLinks&&actionLinks.contains(hide),'The compact Hide action should stay in the benefit action row it controls');
+      assert(hide.classList.contains('manage-action')&&hide.textContent==='Hide'&&hide.getAttribute('aria-label').includes('Wireless service credit'),'Hide should be visually compact while retaining a unique accessible name');
+      assert(hide.getBoundingClientRect().width>=44&&hide.getBoundingClientRect().height>=44,'Compact Hide must retain a 44 by 44 pixel target');
+      assert(actionLinks.querySelector('[data-skip-task]'),'Hide should sit beside the cadence-specific Skip action');
       frame.style.width='320px'; await afterRender(win); hide.focus(); await afterRender(win);
       assert(hide.getBoundingClientRect().bottom<=doc.querySelector('nav').getBoundingClientRect().top-10,'Focused Hide controls should scroll fully above the bottom navigation');
       hide.click(); await afterRender(win);
