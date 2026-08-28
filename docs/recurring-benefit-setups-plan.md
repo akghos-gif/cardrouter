@@ -44,4 +44,4 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 - Browser verification passes at 320px, 390×844, desktop, 200% zoom, and light and dark color schemes without horizontal overflow or console errors.
 - Earlier engineering, product, accessibility, and copy reviews passed with no remaining P0–P2 findings. The iOS app-shell replacement and its keyboard, magnification, modal, toast, and focus behavior passed independent engineering, accessibility, and design/visual reviews with no remaining P0–P2 findings. The user confirmed on an iPhone that the bottom navigation remains anchored during upward swipes.
 
-Keep the work on `codex/credit-radar`. Preserve `PRODUCT.md`; do not push or merge before user approval.
+The implementation lives on `codex/credit-radar` and is under review in PR #1. Preserve `PRODUCT.md`; do not merge without explicit user approval.

@@ -104,6 +104,8 @@ Single self-contained production `index.html` (no dependencies, no build step): 
 
 Pure Radar date, migration, task-building, and calendar helpers are exposed through the internal `CardRouterRadar` namespace. Serve the repository locally and open `tests/radar-tests.html` to run the dependency-free test harness.
 
+Repository working agreements live in `AGENTS.md`; durable product and design principles live in `PRODUCT.md`; the implemented Benefit Radar decisions and verification record live in `docs/recurring-benefit-setups-plan.md`.
+
 ## Background
 
 This app is the pragmatic outcome of a bigger question: *could you build a true NFC "card router" that automatically pays with the optimal card at the terminal?* Short answer: not without becoming a card issuer — the merchant category code that determines "optimal" only reaches the **issuer** during authorization, never the phone at tap time, and Apple's Secure Element entitlements are limited to licensed payment providers. Curve, the one company that did true routing (by fronting your cards with its own), shut its US program in 2024 and was acquired by Lloyds in 2025. Hence: a butler, not a router.
