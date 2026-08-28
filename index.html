@@ -93,7 +93,7 @@
   label.check{display:flex; gap:10px; align-items:center; font-size:14px; padding:8px 0}
   input[type=checkbox]{width:18px; height:18px; accent-color:var(--accent)}
   input[type=text], input[type=number], textarea, select{width:100%; padding:9px 10px; border-radius:10px; border:1px solid var(--line);
-    background:var(--bg); color:var(--ink); font-size:14px; font-family:inherit}
+    background:var(--bg); color:var(--ink); font-size:14px; font-family:inherit; min-height:44px}
   .rate-grid{display:grid; grid-template-columns:1fr 84px; gap:6px 10px; align-items:center; font-size:13.5px}
   .modal{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:flex-end; z-index:50}
   .modal.open{display:flex}
@@ -233,9 +233,9 @@
     .toast{border-radius:16px; align-items:center; text-align:left; flex-wrap:nowrap}
     .review-confirm{white-space:normal}
   }
-  @media (max-width:349px){
+  @media (max-width:520px){
     .recurring-setup{grid-template-columns:1fr; align-items:start}
-    .recurring-setup .pill{width:max-content; max-width:100%}
+    .recurring-setup .pill{width:max-content; max-width:100%; justify-self:start}
   }
   @media (min-width:640px){
     .recurring-manage{flex-direction:row; align-items:center; justify-content:space-between; gap:12px}
@@ -625,7 +625,7 @@ const RADAR_BENEFITS = [
     link:'https://global.americanexpress.com/card-benefits/detail/uber-rides-with-platinum/platinum'},
   {cardId:'amex_plat', benefitId:'digital_entertainment_credit', cadence:'month', amount:'$25', requiresEnrollment:true,
     recurringEligible:true, recurringChargeNoun:'subscription', recurringTermsVersion:'2026-08-27-2',
-    recurringQualifier:'Eligible providers are Disney+, ESPN streaming, Hulu, The New York Times, Paramount+, Peacock, The Wall Street Journal, YouTube Premium, YouTube Music, and YouTube TV. Purchase directly from the provider; app stores, digital wallets, cable bundles, and other third-party billing do not qualify.',
+    recurringQualifier:'Eligible monthly subscriptions are Disney+, ESPN streaming, Hulu, The New York Times, Paramount+, Peacock, The Wall Street Journal, YouTube Premium, YouTube Music, and YouTube TV. Purchase directly from the provider; app stores, digital wallets, cable bundles, and other third-party billing do not qualify.',
     link:'https://global.americanexpress.com/card-benefits/detail/digital-entertainment/platinum'},
   {cardId:'amex_plat', benefitId:'lululemon_credit', cadence:'quarter', amount:'$75', requiresEnrollment:true,
     link:'https://global.americanexpress.com/card-benefits/detail/lululemon-credit/platinum'},
@@ -636,7 +636,7 @@ const RADAR_BENEFITS = [
   {cardId:'csr', benefitId:'peloton_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
     prerequisiteLabel:'Activate the benefit', markPrerequisiteLabel:'Mark activated', prerequisiteDoneLabel:'Activated',
     recurringEligible:true, recurringChargeNoun:'membership', recurringTermsVersion:'2026-08-27-2',
-    recurringQualifier:'Eligible memberships are All-Access, Rental, App+, Guide, App One, and Strength+. Purchase in the U.S. directly from Peloton, with this card saved on the Peloton account, not through an app store.',
+    recurringQualifier:'Eligible monthly memberships are All-Access, Rental, App+, Guide, App One, and Strength+. Purchase in the U.S. directly from Peloton, with this card saved on the Peloton account, not through an app store.',
     link:'https://www.onepeloton.com/chase-sapphire-reserve'},
   {cardId:'csp', benefitId:'doordash_promo_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
     link:'https://www.doordash.com/en/dashpass/partner/chase/preferred'},
@@ -655,7 +655,7 @@ const RADAR_BENEFITS = [
     link:'https://global.americanexpress.com/card-benefits/detail/indeed-benefit/business-platinum'},
   {cardId:'biz_plat', benefitId:'wireless_service_credit', cadence:'month', amount:'$10', requiresEnrollment:true,
     recurringEligible:true, recurringChargeNoun:'bill', recurringTermsVersion:'2026-08-27-2',
-    recurringQualifier:'Only service billed directly by an eligible U.S. wireless provider qualifies. Google Fi, hardware, reseller, and bundled TV, internet, or VoIP charges do not.',
+    recurringQualifier:'Only monthly wireless telephone service billed directly by an eligible U.S. wireless provider qualifies. Google Fi, hardware, reseller, and bundled TV, internet, or VoIP charges do not.',
     link:'https://global.americanexpress.com/card-benefits/detail/wireless-credit/business-platinum'},
   {cardId:'biz_gold', benefitId:'flexible_business_credit', cadence:'month', amount:'$20', requiresEnrollment:true,
     detailBefore:'FedEx through Oct 1, 2026; Grubhub and U.S. office supply stores continue', detailAfter:'Grubhub and U.S. office supply stores', detailChangesOn:'2026-10-02',
@@ -919,7 +919,7 @@ function validateImportShape(raw,now=new Date()){
   assertAllowedKeys(raw,['schemaVersion','catalogVersion','myCards','overrides','cpp','custom','coachDone','activations','enrollments','completions','radarHidden','radarSkips','recurringSetups']);
   if(raw.catalogVersion!=null&&typeof raw.catalogVersion!=='string') invalidSetupData();
   if(raw.coachDone!=null&&typeof raw.coachDone!=='boolean') invalidSetupData();
-  if(raw.myCards!=null&&(!Array.isArray(raw.myCards)||raw.myCards.some(id=>!validSetupId(id)))) invalidSetupData();
+  if(raw.myCards!=null&&(!Array.isArray(raw.myCards)||raw.myCards.some(id=>!validSetupId(id))||new Set(raw.myCards).size!==raw.myCards.length)) invalidSetupData();
   if(raw.custom!=null&&!Array.isArray(raw.custom)) invalidSetupData();
   for(const key of ['overrides','cpp','activations']) if(raw[key]!=null&&!plainObject(raw[key])) invalidSetupData();
   for(const key of ['enrollments','completions','radarHidden','radarSkips','recurringSetups']) if(raw[key]!=null&&!Array.isArray(raw[key])&&!plainObject(raw[key])) invalidSetupData();
@@ -936,16 +936,22 @@ function validateImportShape(raw,now=new Date()){
   }
   if(plainObject(raw.cpp)) for(const [key,value] of Object.entries(raw.cpp)) if(!PROGRAMS[key]||typeof value!=='number'||!Number.isFinite(value)||value<=0) invalidSetupData();
   if(plainObject(raw.activations)) for(const [key,value] of Object.entries(raw.activations)) if(!/^\d{4}-Q[1-4]:(?:freedom_flex|discover_it)$/.test(key)||typeof value!=='boolean') invalidSetupData();
+  const enrollmentKeys=new Set();
   for(const record of recordsOf(raw.enrollments)){
     assertAllowedKeys(record,['cardId','benefitId','enrolledAt','labelSnapshot','cardNameSnapshot']);
-    if(!validSetupId(record.cardId)||!validSetupId(record.benefitId)||!RADAR_BENEFIT_MAP[record.cardId+':'+record.benefitId]||typeof record.enrolledAt!=='string'||!validEventIso(record.enrolledAt,now)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
+    const key=canonicalEnrollmentKey(record.cardId,record.benefitId);
+    if(enrollmentKeys.has(key)||!validSetupId(record.cardId)||!validSetupId(record.benefitId)||!RADAR_BENEFIT_MAP[record.cardId+':'+record.benefitId]||typeof record.enrolledAt!=='string'||!validEventIso(record.enrolledAt,now)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
+    enrollmentKeys.add(key);
   }
+  const completionKeys=new Set();
   for(const record of recordsOf(raw.completions)){
     assertAllowedKeys(record,['actionType','cardId','itemId','benefitId','quarterlyActionId','periodKey','completedAt','legacyUndated','attestedBy','labelSnapshot','cardNameSnapshot']);
     const itemId=record.itemId||record.benefitId||record.quarterlyActionId, action=QUARTERLY_ACTIONS.find(item=>item.actionType===record.actionType&&item.cardId===record.cardId&&item.id===itemId);
+    const key=canonicalTaskKey(record.actionType,record.cardId,itemId,record.periodKey);
     const periodEnd=periodEndFromKey(record.periodKey), expectedAttestedBy=action&&periodEnd?localIsoDate(periodLastDate(actionEndFor(action,{key:record.periodKey,end:periodEnd}))):'';
     const completionTimeValid=record.completedAt===null||(typeof record.completedAt==='string'&&validEventIso(record.completedAt,now));
-    if(!['activate','select','use'].includes(record.actionType)||!validSetupId(record.cardId)||!validSetupId(itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validCompletionIdentity(record.actionType,record.cardId,itemId,record.periodKey,{fromImport:true})||!completionTimeValid||(record.completedAt===null&&!(action&&record.actionType==='activate'))||(record.legacyUndated!=null&&typeof record.legacyUndated!=='boolean')||(record.attestedBy!=null&&record.attestedBy!==expectedAttestedBy)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
+    if(completionKeys.has(key)||!['activate','select','use'].includes(record.actionType)||!validSetupId(record.cardId)||!validSetupId(itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validCompletionIdentity(record.actionType,record.cardId,itemId,record.periodKey,{fromImport:true})||!completionTimeValid||(record.completedAt===null&&!(action&&record.actionType==='activate'))||(record.legacyUndated!=null&&typeof record.legacyUndated!=='boolean')||(record.attestedBy!=null&&record.attestedBy!==expectedAttestedBy)||!validOptionalText(record.labelSnapshot)||!validOptionalText(record.cardNameSnapshot)) invalidSetupData();
+    completionKeys.add(key);
   }
   const recurringKeys=new Set();
   for(const record of recordsOf(raw.recurringSetups)){
@@ -954,14 +960,20 @@ function validateImportShape(raw,now=new Date()){
     if(recurringKeys.has(key)||!validSetupId(record.cardId)||!validSetupId(record.benefitId)||!meta?.recurringEligible||typeof record.confirmedAt!=='string'||!validEventIso(record.confirmedAt,now)||typeof record.confirmedOn!=='string'||!confirmationDateMatchesInstant(record.confirmedOn,record.confirmedAt)||typeof record.termsVersion!=='string'||!record.termsVersion||record.termsVersion.length>64||hasSuspendedAt!==hasReason||(hasSuspendedAt&&(!validEventIso(record.suspendedAt,now)||!RECURRING_SUSPENSION_REASONS.has(record.suspensionReason)||new Date(record.suspendedAt)<new Date(record.confirmedAt)))) invalidSetupData();
     recurringKeys.add(key);
   }
+  const hiddenKeys=new Set();
   for(const record of recordsOf(raw.radarHidden)){
     assertAllowedKeys(record,['cardId','benefitId','hiddenAt']);
-    if(!validSetupId(record.cardId)||!validSetupId(record.benefitId)||!RADAR_BENEFIT_MAP[record.cardId+':'+record.benefitId]||typeof record.hiddenAt!=='string'||!validEventIso(record.hiddenAt,now)) invalidSetupData();
+    const key=canonicalHiddenKey(record.cardId,record.benefitId);
+    if(hiddenKeys.has(key)||!validSetupId(record.cardId)||!validSetupId(record.benefitId)||!RADAR_BENEFIT_MAP[record.cardId+':'+record.benefitId]||typeof record.hiddenAt!=='string'||!validEventIso(record.hiddenAt,now)) invalidSetupData();
+    hiddenKeys.add(key);
   }
+  const skipKeys=new Set();
   for(const record of recordsOf(raw.radarSkips)){
     assertAllowedKeys(record,['taskKind','cardId','itemId','periodKey','skippedAt','expiresAt']);
+    const key=canonicalTaskKey(record.taskKind,record.cardId,record.itemId,record.periodKey);
     const expiry=new Date(record.expiresAt), maxExpiry=new Date(now.getFullYear()+2,now.getMonth(),now.getDate());
-    if(!['activate','select','use','enroll-task'].includes(record.taskKind)||!validSetupId(record.cardId)||!validSetupId(record.itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validTaskIdentity(record.taskKind,record.cardId,record.itemId,record.periodKey)||typeof record.skippedAt!=='string'||!validEventIso(record.skippedAt,now)||typeof record.expiresAt!=='string'||!validIso(record.expiresAt)||expiry>maxExpiry) invalidSetupData();
+    if(skipKeys.has(key)||!['activate','select','use','enroll-task'].includes(record.taskKind)||!validSetupId(record.cardId)||!validSetupId(record.itemId)||typeof record.periodKey!=='string'||!PERIOD_RE.test(record.periodKey)||!validTaskIdentity(record.taskKind,record.cardId,record.itemId,record.periodKey)||typeof record.skippedAt!=='string'||!validEventIso(record.skippedAt,now)||typeof record.expiresAt!=='string'||!validIso(record.expiresAt)||expiry>maxExpiry) invalidSetupData();
+    skipKeys.add(key);
   }
 }
 function validateImportPayload(raw,encodedLength,decodedBytes,now=new Date()){
@@ -1082,9 +1094,9 @@ function cpp(card){ return cppFor(card,S); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 let pendingUndo=null;
 function clearToast(){
-  const t=document.getElementById('toast'), undo=document.getElementById('toastundo');
+  const t=document.getElementById('toast'), text=document.getElementById('toastmsg'), undo=document.getElementById('toastundo');
   pendingUndo=null; clearTimeout(t._h); t._dismiss=null; t._expiresAt=0; t._remaining=0; undo.hidden=true;
-  t.inert=false; t.removeAttribute('aria-hidden'); t.classList.remove('show','has-undo','wide','modal-suppressed');
+  text.textContent=''; t.inert=false; t.removeAttribute('aria-hidden'); t.classList.remove('show','has-undo','wide','modal-suppressed');
   scheduleFloatingUi();
 }
 function setToastModalSuppressed(suppressed){
@@ -1124,7 +1136,7 @@ function toast(msg,ms,undoFn,{wide=false}={}){
   undo.onclick=()=>{ if(!pendingUndo) return; const fn=pendingUndo; pendingUndo=null; undo.hidden=true; fn(); };
   const dismiss=()=>{
     if(document.activeElement===undo){ t._h=setTimeout(dismiss,1000); return; }
-    pendingUndo=null; undo.hidden=true; t._dismiss=null; t._expiresAt=0; t._remaining=0; t.classList.remove('show','has-undo','wide');
+    pendingUndo=null; text.textContent=''; undo.hidden=true; t._dismiss=null; t._expiresAt=0; t._remaining=0; t.classList.remove('show','has-undo','wide');
   };
   const duration=ms||2600; t._dismiss=dismiss; t._expiresAt=Date.now()+duration; t._remaining=0; t._h=setTimeout(dismiss,duration);
   if(document.getElementById('modal').classList.contains('open')) setToastModalSuppressed(true);
@@ -1764,9 +1776,13 @@ function recurringReviewDateForNew(now=new Date()){ return addCalendarMonths(loc
 function recurringSetupParts(task){
   if(task.actionType!=='use'||!task.meta?.recurringEligible||['active','review-due'].includes(task.recurring?.status)||(task.done&&task.recurring?.status!=='terms-changed')) return '';
   const changed=task.recurring?.status==='terms-changed', now=new Date(), reviewDate=displayCalendarDate(recurringReviewDateForNew(now),now);
-  const title=changed?'Recurring charge still set up?':'Recurring charge set up?';
-  const support=changed?'Terms changed. Reconfirm to hide monthly reminders again.':`Hides monthly reminders until your review on ${reviewDate}.`;
-  return `<div class="recurring-setup"><div class="recurring-setup-copy"><strong>${esc(title)}</strong><span>${esc(support)}</span></div><button class="pill" data-confirm-recurring="${task.card.id}:${task.benefitId}" data-focus-id="recurring-setup-${task.card.id}-${task.benefitId}" aria-label="${esc(`${changed?'Reconfirm':'Confirm'} recurring charge for ${task.title}, ${task.card.name}`)}">${changed?'Reconfirm':'Confirm setup'}</button></div>`;
+  const noun=task.meta.recurringChargeNoun||'charge';
+  const title=changed?'Still billed monthly?':noun==='membership'?'Membership billed monthly?':noun==='bill'?'Wireless bill paid monthly?':'Subscription billed monthly?';
+  const qualification='Eligible direct monthly billing only.';
+  const annualWarning=task.card.id==='bcp'&&task.benefitId==='disney_bundle_credit'?' Annual plans can earn one month’s credit but don’t qualify here.':'';
+  const support=changed?`Terms changed. Check eligibility, then confirm again. Hides routine monthly reminders. Review on ${reviewDate}.`:`${qualification}${annualWarning} Hides routine monthly reminders. Review on ${reviewDate}.`;
+  const buttonLabel=changed?'Confirm again':'Confirm recurring charge', ariaVerb=changed?'Confirm recurring charge again':'Confirm recurring charge';
+  return `<div class="recurring-setup"><div class="recurring-setup-copy"><strong>${esc(title)}</strong><span>${esc(support)}</span></div><button class="pill" data-confirm-recurring="${task.card.id}:${task.benefitId}" data-focus-id="recurring-setup-${task.card.id}-${task.benefitId}" aria-label="${esc(`${ariaVerb} for ${task.title}, ${task.card.name}`)}">${buttonLabel}</button></div>`;
 }
 function renderTaskRow(task,{manage=false,allowRecurring=false,quarterlyInventory=false}={}){
   const statuses=taskStatusLines(task), disabled=task.unavailable;
@@ -1776,7 +1792,7 @@ function renderTaskRow(task,{manage=false,allowRecurring=false,quarterlyInventor
   const checkboxText=task.done?completedLabel(task):task.unavailable?'Unavailable':task.closed?closedMark:task.markLabel;
   const checkboxAria=checkboxText;
   const setupDone=task.meta&&task.meta.prerequisiteDoneLabel||'Enrolled';
-  const externalLabel=task.recurring?.status==='terms-changed'?'Check updated terms':task.externalLabel;
+  const externalLabel=recurringSetup?'Check eligibility':task.externalLabel;
   return `<div class="action-row ${task.done?'completed':''}">
     <div class="action-topline"><div class="action-title">${esc(task.title)}</div>
       <a class="issuer-action" href="${task.link}" target="_blank" rel="noopener noreferrer" aria-label="${esc(externalLabel)} for ${esc(task.title)}, ${esc(task.card.name)}, on issuer or partner site, opens in a new tab">${esc(externalLabel)} <span aria-hidden="true">↗</span></a></div>
