@@ -719,11 +719,13 @@ document.getElementById('app').addEventListener('load',async()=>{
       doc.querySelector('nav button[data-tab="promos"]').click(); doc.getElementById('radar-view-all').click(); await afterRender(win);
       const hide=doc.querySelector('[data-hide-task*="wireless_service_credit"]'), footer=hide.closest('.hide-radar-footer'), row=footer.closest('.action-row');
       assert(!doc.querySelector('[data-more-options]'),'Hide should not be nested behind More options');
+      const recurring=row.querySelector('.recurring-setup'), footerStyle=win.getComputedStyle(footer), recurringStyle=win.getComputedStyle(recurring);
       assert(row&&row.querySelector('.action-title').textContent.includes('Wireless service credit'),'The Hide footer should stay inside the benefit row it controls');
-      assert(win.getComputedStyle(footer).borderTopWidth!=='0px','The Hide action should be visually separated as the current row footer');
-      assert(hide.classList.contains('hide-radar-action'),'Hide should use a visible button treatment');
-      const description=doc.getElementById(hide.getAttribute('aria-describedby')); assert(description&&footer.contains(description)&&description.textContent==='Stops reminders. Restore anytime from Hidden.','The concise explanation should be visibly and accessibly associated with the Hide button');
-      assert(win.getComputedStyle(footer).gridTemplateColumns.split(' ').length===2,'Hide and its explanation should remain side by side at 390px');
+      assert(footerStyle.borderTopWidth!=='0px'&&footerStyle.borderRadius===recurringStyle.borderRadius&&footerStyle.padding===recurringStyle.padding,'Recurring and Hide actions should use the same inset strip geometry');
+      assert(footer.getBoundingClientRect().left>row.getBoundingClientRect().left&&footer.getBoundingClientRect().right<row.getBoundingClientRect().right,'Inset edges should make the strip ownership clear');
+      assert(hide.classList.contains('pill')&&hide.classList.contains('hide-radar-action'),'Hide should use the same visible button treatment as recurring setup');
+      const description=doc.getElementById(hide.getAttribute('aria-describedby')); assert(description&&footer.firstElementChild===description&&footer.lastElementChild===hide&&description.textContent==='Stops reminders. Restore anytime from Hidden.','Both action strips should place explanation first and action second');
+      assert(footerStyle.gridTemplateColumns.split(' ').length===2,'Hide and its explanation should remain side by side at 390px');
       frame.style.width='320px'; await afterRender(win); hide.focus(); await afterRender(win);
       assert(hide.getBoundingClientRect().bottom<=doc.querySelector('nav').getBoundingClientRect().top-10,'Focused Hide controls should scroll fully above the bottom navigation');
       hide.click(); await afterRender(win);

@@ -183,8 +183,9 @@
   .recurring-status{font-size:12.5px; color:var(--muted); line-height:1.4; margin-top:3px}
   .recurring-status.needs-review{color:var(--warn); font-weight:750}
   .recurring-manage{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-top:4px}
-  .recurring-setup{display:grid; grid-template-columns:minmax(0,1fr) max-content; align-items:center; gap:10px 12px;
-    margin:10px -14px 0; padding:10px 14px; border-top:1px solid var(--line); background:color-mix(in srgb, var(--accent) 4%, transparent)}
+  .recurring-setup,.hide-radar-footer{display:grid; grid-template-columns:minmax(0,1fr) max-content; align-items:center; gap:10px 12px;
+    margin:10px 0 0; padding:10px 12px; border:1px solid var(--line); border-radius:12px}
+  .recurring-setup{background:color-mix(in srgb, var(--accent) 4%, var(--card))}
   .recurring-setup-copy strong{display:block; font-size:13px; line-height:1.35}
   .recurring-setup-copy span{display:block; color:var(--muted); font-size:12px; line-height:1.4; margin-top:2px}
   .recurring-discovery-title{font-size:13.5px; font-weight:750; line-height:1.35}
@@ -195,11 +196,8 @@
   .recurring-count{font-size:12px; color:var(--warn); font-weight:750}
   .review-confirm{white-space:nowrap}
   .confirmed-status{display:inline-flex; align-items:center; min-height:44px; color:var(--good); font-size:12.5px; font-weight:750}
-  .hide-radar-footer{display:grid; grid-template-columns:max-content minmax(0,1fr); align-items:center; gap:10px 12px;
-    margin:10px -14px -13px; padding:10px 14px; border-top:1px solid var(--line);
-    background:color-mix(in srgb, var(--muted) 4%, transparent)}
-  .hide-radar-action{display:inline-flex; align-items:center; justify-content:center; min-height:44px; border:1px solid var(--line);
-    border-radius:12px; background:transparent; color:var(--muted); padding:8px 12px; font:inherit; font-size:12.5px; font-weight:650; cursor:pointer}
+  .hide-radar-footer{background:color-mix(in srgb, var(--muted) 4%, var(--card))}
+  .hide-radar-action{color:var(--muted); font-weight:600}
   .hide-radar-footer p{max-width:60ch; font-size:12px; line-height:1.45; color:var(--muted); margin:0}
   .terms-changed{color:var(--warn); font-weight:750}
   @media (max-width:420px){
@@ -1753,7 +1751,7 @@ function renderTaskRow(task,{manage=false,allowRecurring=false,quarterlyInventor
       ${manage&&!task.done&&!task.closed&&!disabled?(task.skipped&&quarterlyInventory?`<button class="manage-action" data-unskip-task="${task.key}" aria-label="${esc(showPeriodLabel(task))}: ${esc(task.title)}, ${esc(task.card.name)}">${esc(showPeriodLabel(task))}</button>`:`<button class="manage-action" data-skip-task="${task.key}" aria-label="${esc(skipPeriodLabel(task))}: ${esc(task.title)}, ${esc(task.card.name)}">${esc(skipPeriodLabel(task))}</button>`):''}
     </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-task-state="${task.closed?'closed':task.unavailable?'unavailable':'open'}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div>
     ${recurringSetup}
-    ${manage&&task.benefitId?`<div class="hide-radar-footer"><button class="hide-radar-action" data-hide-task="${task.key}" aria-describedby="${hideDescriptionId}" aria-label="Hide ${esc(task.title)} from Benefit Radar, ${esc(task.card.name)}">Hide from Benefit Radar</button><p id="${hideDescriptionId}">Stops reminders. Restore anytime from Hidden.</p></div>`:''}</div>`;
+    ${manage&&task.benefitId?`<div class="hide-radar-footer"><p id="${hideDescriptionId}">Stops reminders. Restore anytime from Hidden.</p><button class="pill hide-radar-action" data-hide-task="${task.key}" aria-describedby="${hideDescriptionId}" aria-label="Hide ${esc(task.title)} from Benefit Radar, ${esc(task.card.name)}">Hide from Benefit Radar</button></div>`:''}</div>`;
 }
 function radarOverviewState(radar,now=new Date()){
   const reviewCount=recurringSetupsForState(S,now).filter(item=>item.status==='review-due').length;

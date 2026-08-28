@@ -29,7 +29,7 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 ## Secondary actions and navigation
 
 - Use interval-specific skip labels such as **Skip August**, **Skip Q3**, **Skip Jan–Jun**, **Skip Jul–Dec**, and **Skip 2026**.
-- Remove the More options disclosure. Show **Hide from Benefit Radar** directly as a quiet tertiary button in an attached secondary-action footer inside its benefit row. Pair it with “Stops reminders. Restore anytime from Hidden.” Keep the pair side by side at 390px and above, stacking only below 350px.
+- Remove the More options disclosure. Present recurring setup and **Hide from Benefit Radar** as matching inset action strips inside the benefit row, using the same border, radius, padding, and copy-left/action-right layout. The inset edges and outer row divider communicate ownership of the benefit above. Keep each pair side by side at 390px and above, stacking only below 350px. Pair Hide with “Stops reminders. Restore anytime from Hidden.”
 - Normalize legacy `{promosView:"quarterly"}` history to Benefit Radar with the quarterly filter active. Overview links push history; in-Radar filter changes replace the current entry; tab navigation resets to overview/all.
 - Keep schema v3, recurring record formats, the `v2.` setup-link envelope, timing, import suspension, terms-version handling, and stale-tab protection unchanged.
 
@@ -42,6 +42,6 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 - The bottom navigation tracks the visual viewport from its top edge to avoid misplaced fixed-bottom rendering in iPhone WebKit browsers.
 - The dependency-free browser harness passes 66 of 66 checks covering persistence, timing, full quarterly inventory, history compatibility, disclosure semantics, confirmation and removal, Undo, visit boundaries, suspension, focus, mobile viewport anchoring, modal behavior, and copy-critical UI states.
 - Browser verification passes at 320px, 390×844, desktop, 200% zoom, and light and dark color schemes without horizontal overflow or console errors.
-- Earlier engineering, product, accessibility, and copy reviews passed with no remaining P0–P2 findings. The latest overview hierarchy, 30-day heading, direct recurring setup, direct Hide footer, quarterly checkbox, and bottom-navigation focus clearance passed independent design/visual review with no remaining P0–P2 findings; final confirmation on the user’s phone is still pending.
+- Earlier engineering, product, accessibility, and copy reviews passed with no remaining P0–P2 findings. The latest overview hierarchy, 30-day heading, matching inset recurring/Hide action strips, quarterly checkbox, and bottom-navigation focus clearance passed independent design/visual review with no remaining P0–P3 findings; final confirmation on the user’s phone is still pending.
 
 Keep the work on `codex/credit-radar`. Preserve `PRODUCT.md`; do not push or merge before user approval.
