@@ -166,9 +166,9 @@
   .quarterly-nav-copy span{display:block; color:var(--muted); font-size:12.5px; line-height:1.4; margin-top:2px}
   .quarterly-nav-action{flex:none; color:var(--accent); font-size:12.5px; font-weight:700; text-align:right}
   .radar-toolbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin:4px 4px 10px}
-  .quarterly-filter{border:1px solid var(--line); border-radius:99px; min-height:44px; padding:8px 14px; background:var(--card);
-    color:var(--ink); font:inherit; font-size:12.5px; font-weight:700; cursor:pointer}
-  .quarterly-filter[aria-pressed="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); background:var(--primary-soft)}
+  .quarterly-filter{display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:6px 2px;
+    color:var(--ink); font-size:12.5px; font-weight:700; cursor:pointer}
+  .quarterly-filter input{width:20px; height:20px; margin:0; flex:none; accent-color:var(--accent); cursor:pointer}
   .reminder-row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 0 2px}
   .reminder-row .hint{margin:0}
   .not-shown-list{border:1px solid var(--line); border-radius:12px; padding:0 12px; background:var(--card)}
@@ -199,14 +199,12 @@
   .recurring-count{font-size:12px; color:var(--warn); font-weight:750}
   .review-confirm{white-space:nowrap}
   .confirmed-status{display:inline-flex; align-items:center; min-height:44px; color:var(--good); font-size:12.5px; font-weight:750}
-  .more-options{margin:10px -14px -13px; padding:4px 14px 8px; border-top:1px solid var(--line);
+  .hide-radar-footer{display:grid; grid-template-columns:max-content minmax(0,1fr); align-items:center; gap:10px 12px;
+    margin:10px -14px -13px; padding:10px 14px; border-top:1px solid var(--line);
     background:color-mix(in srgb, var(--muted) 4%, transparent)}
-  .more-options > button{width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; border:0; background:none;
-    color:var(--muted); min-height:44px; padding:8px 0; font:inherit; font-size:12.5px; font-weight:650; cursor:pointer; text-align:left}
-  .more-options-panel{padding:10px 0 2px; border-top:1px solid var(--line)}
   .hide-radar-action{display:inline-flex; align-items:center; justify-content:center; min-height:44px; border:1px solid var(--line);
-    border-radius:12px; background:var(--card); color:var(--ink); padding:8px 12px; font:inherit; font-size:12.5px; font-weight:700; cursor:pointer}
-  .more-options-panel p{max-width:60ch; font-size:12px; line-height:1.45; color:var(--muted); margin:7px 0 2px}
+    border-radius:12px; background:transparent; color:var(--muted); padding:8px 12px; font:inherit; font-size:12.5px; font-weight:650; cursor:pointer}
+  .hide-radar-footer p{max-width:60ch; font-size:12px; line-height:1.45; color:var(--muted); margin:0}
   .terms-changed{color:var(--warn); font-weight:750}
   @media (max-width:420px){
     header{flex-wrap:wrap; align-items:flex-start}
@@ -222,7 +220,7 @@
     .recurring-head{align-items:flex-start}
     .recurring-manage{align-items:flex-start; flex-direction:column}
     .radar-toolbar{align-items:flex-start; flex-direction:column}
-    .quarterly-filter{width:100%}
+    .quarterly-filter{align-self:flex-start}
     .quarterly-nav{align-items:flex-start; flex-wrap:wrap}
     .quarterly-nav-action{white-space:normal}
     .progress-line,.history-row{align-items:flex-start; flex-wrap:wrap}
@@ -231,6 +229,10 @@
     .choice-row .pill{width:100%}
     .toast{border-radius:16px; align-items:flex-start; text-align:left; flex-wrap:wrap}
     .review-confirm{white-space:normal}
+  }
+  @media (max-width:349px){
+    .hide-radar-footer{grid-template-columns:1fr; align-items:start}
+    .hide-radar-action{width:max-content; max-width:100%}
   }
   @media (prefers-reduced-motion:reduce){
     *, *::before, *::after{scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important}
@@ -1135,7 +1137,7 @@ function captureRefreshFocus(now){
       return {type:'taskAction',attribute,taskKey:focusId.replace(/^task-/,''),focusId};
     }
   }
-  for(const attribute of ['data-show-radar','data-benefit-enroll','data-benefit-use','data-bcat','data-recurring-disclosure','data-review-confirm','data-remove-recurring','data-more-options']){
+  for(const attribute of ['data-show-radar','data-benefit-enroll','data-benefit-use','data-bcat','data-recurring-disclosure','data-review-confirm','data-remove-recurring']){
     if(active.hasAttribute(attribute)) return {type:'attribute',attribute,value:active.getAttribute(attribute)};
   }
   if(active.id) return {type:'id',value:active.id};
@@ -1352,7 +1354,6 @@ function hideBenefitTask(task){
   mutateWithUndo('Hidden from Benefit Radar',()=>{
     S.radarHidden[key]={cardId:task.card.id,benefitId:task.benefitId,hiddenAt:new Date().toISOString()};
     suspendRecurringSetup(task.card.id,task.benefitId,'hidden');
-    moreOptionsOpenKey='';
   },next?`task-${next.key}`:'hdr',`task-${task.key}`);
 }
 function restoreBenefit(cardId,benefitId,focusId,undoFocusId=focusId){
@@ -1431,6 +1432,7 @@ function rankFor(catId){
 
 /* ---------- views ---------- */
 const mainEl = document.getElementById('main');
+mainEl.addEventListener('focusin',keepFocusedControlVisible);
 function normalizePromosHistory(state){
   if(state?.promosView==='quarterly') return {view:'radar',filter:'quarterly'};
   if(state?.promosView==='radar') return {view:'radar',filter:['all','quarterly'].includes(state.radarFilter)?state.radarFilter:'all'};
@@ -1439,7 +1441,7 @@ function normalizePromosHistory(state){
 const initialPromosHistory=normalizePromosHistory(history.state);
 let TAB=initialPromosHistory.view==='overview'?'which':'promos', selectedCat=null, PROMOS_VIEW=initialPromosHistory.view, RADAR_FILTER=initialPromosHistory.filter,
   radarHistoryOpen=false, notShownOpen=false, historyLimit=20;
-let recurringDiscoveryOpenKey='', recurringReviewSession=null, moreOptionsOpenKey='';
+let recurringDiscoveryOpenKey='', recurringReviewSession=null;
 let promosVisitToken='';
 let renderedDayKey=localIsoDate(localDay(new Date())), renderedMonthKey=periodInfo('month',new Date()).key;
 
@@ -1746,7 +1748,7 @@ function renderTaskRow(task,{manage=false,allowRecurring=false,quarterlyInventor
   const checkboxText=task.done?completedLabel(task):task.unavailable?'Unavailable':task.closed?closedMark:task.markLabel;
   const checkboxAria=checkboxText;
   const setupDone=task.meta&&task.meta.prerequisiteDoneLabel||'Enrolled';
-  const moreId=`more-options-${task.key.replace(/[^A-Za-z0-9_-]/g,'-')}`, moreOpen=moreOptionsOpenKey===task.key;
+  const hideDescriptionId=`hide-description-${task.key.replace(/[^A-Za-z0-9_-]/g,'-')}`;
   return `<div class="action-row ${task.done?'completed':''}">
     <div class="action-topline"><div class="action-title">${esc(task.title)}</div>
       <a class="issuer-action" href="${task.link}" target="_blank" rel="noopener noreferrer" aria-label="${esc(task.externalLabel)} for ${esc(task.title)}, ${esc(task.card.name)}, on issuer or partner site, opens in a new tab">${esc(task.externalLabel)} <span aria-hidden="true">↗</span></a></div>
@@ -1756,7 +1758,7 @@ function renderTaskRow(task,{manage=false,allowRecurring=false,quarterlyInventor
     <div class="action-footer"><div class="action-links">
       ${manage&&!task.done&&!task.closed&&!disabled?(task.skipped&&quarterlyInventory?`<button class="manage-action" data-unskip-task="${task.key}" aria-label="${esc(showPeriodLabel(task))}: ${esc(task.title)}, ${esc(task.card.name)}">${esc(showPeriodLabel(task))}</button>`:`<button class="manage-action" data-skip-task="${task.key}" aria-label="${esc(skipPeriodLabel(task))}: ${esc(task.title)}, ${esc(task.card.name)}">${esc(skipPeriodLabel(task))}</button>`):''}
     </div><label class="task-check"><input type="checkbox" data-task-check="${task.key}" data-task-state="${task.closed?'closed':task.unavailable?'unavailable':'open'}" data-focus-id="task-${task.key}" aria-label="${esc(checkboxAria)} for ${esc(task.title)}, ${esc(task.card.name)}" ${task.done?'checked':''} ${disabled?'disabled':''}>${esc(checkboxText)}</label></div>
-    ${manage&&task.benefitId?`<div class="more-options"><button data-more-options="${task.key}" data-focus-id="more-options-${task.key}" aria-expanded="${moreOpen}" aria-controls="${moreId}" aria-label="More options for ${esc(task.title)}, ${esc(task.card.name)}">More options <span aria-hidden="true">${moreOpen?'⌃':'⌄'}</span></button><div class="more-options-panel" id="${moreId}" ${moreOpen?'':'hidden'}><button class="hide-radar-action" data-hide-task="${task.key}" aria-label="Hide ${esc(task.title)} from Benefit Radar, ${esc(task.card.name)}">Hide from Benefit Radar</button><p>Stops all reminders for this benefit until you restore it from Hidden.</p></div></div>`:''}
+    ${manage&&task.benefitId?`<div class="hide-radar-footer"><button class="hide-radar-action" data-hide-task="${task.key}" aria-describedby="${hideDescriptionId}" aria-label="Hide ${esc(task.title)} from Benefit Radar, ${esc(task.card.name)}">Hide from Benefit Radar</button><p id="${hideDescriptionId}">Stops reminders. Restore anytime from Hidden.</p></div>`:''}
     ${recurringDiscovery}</div>`;
 }
 function radarOverviewState(radar,now=new Date()){
@@ -1837,7 +1839,7 @@ function beginRadarVisit(now=new Date()){
   else recurringReviewSession.keys=[...new Set([...recurringReviewSession.keys.filter(key=>recurringReviewSession.confirmed.has(key)||dueKeys.includes(key)),...dueKeys])];
 }
 function endPromosVisit(){
-  promosVisitToken=''; recurringReviewSession=null; recurringDiscoveryOpenKey=''; moreOptionsOpenKey=''; clearToast();
+  promosVisitToken=''; recurringReviewSession=null; recurringDiscoveryOpenKey=''; clearToast();
 }
 function recurringItemValue(item,now=new Date()){ return `Up to ${benefitAmount(item.meta,now)}/mo`; }
 function renderRecurringQuiet(now=new Date()){
@@ -1867,7 +1869,7 @@ function renderRecurringReview(now=new Date()){
 function renderFullRadar(){
   const now=new Date(), radar=buildRadarTasks(now), state=radarOverviewState(radar,now), qTasks=buildQuarterlyTasks(now).sort((a,b)=>compareRadarTasks(a,b)), qDone=qTasks.filter(t=>t.done).length;
   let html=`<button class="back-btn" id="promos-back"><span aria-hidden="true">‹</span> Promos</button>
-    <div class="radar-toolbar"><p class="section-note">Check items off after you complete them on the issuer or partner site. Status is stored only on this device.</p><button class="quarterly-filter" id="quarterly-filter" data-focus-id="quarterly-filter" aria-pressed="${RADAR_FILTER==='quarterly'}">${RADAR_FILTER==='quarterly'?'Show all':'Quarterly only'}</button></div><div id="radar-filter-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>`;
+    <div class="radar-toolbar"><p class="section-note">Check items off after you complete them on the issuer or partner site. Status is stored only on this device.</p><label class="quarterly-filter"><input type="checkbox" id="quarterly-filter" data-focus-id="quarterly-filter" ${RADAR_FILTER==='quarterly'?'checked':''}><span>Quarterly only</span></label></div><div id="radar-filter-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>`;
   if(RADAR_FILTER==='quarterly'){
     html+=`<div class="progress-line"><span>${currentQuarter(now).replace('-',' ')} quarterly categories</span>${qTasks.length?`<strong>${qDone} of ${qTasks.length} complete</strong>`:''}</div>`;
     html+=qTasks.length?`<div class="action-list">${qTasks.map(t=>renderTaskRow(t,{manage:true,quarterlyInventory:true})).join('')}</div>`:'<div class="action-list"><div class="quiet-state">No quarterly categories apply to your cards.</div></div>';
@@ -1935,8 +1937,8 @@ function bindPromoActions(){
   document.getElementById('quarterly-view-all')?.addEventListener('click',()=>openPromosSubview('quarterly'));
   document.getElementById('promos-back')?.addEventListener('click',backFromPromos);
   document.getElementById('ics')?.addEventListener('click',downloadICS);
-  document.getElementById('quarterly-filter')?.addEventListener('click',button=>{
-    RADAR_FILTER=RADAR_FILTER==='quarterly'?'all':'quarterly'; history.replaceState({promosView:'radar',radarFilter:RADAR_FILTER},'',location.pathname+location.search); render(); restoreFocus('quarterly-filter');
+  document.getElementById('quarterly-filter')?.addEventListener('change',event=>{
+    RADAR_FILTER=event.currentTarget.checked?'quarterly':'all'; history.replaceState({promosView:'radar',radarFilter:RADAR_FILTER},'',location.pathname+location.search); render(); restoreFocus('quarterly-filter');
     const count=RADAR_FILTER==='quarterly'?buildQuarterlyTasks(new Date()).length:buildRadarTasks(new Date()).active.length;
     const message=RADAR_FILTER==='quarterly'?`Showing ${count} quarterly categor${count===1?'y':'ies'}.`:'Showing all Benefit Radar items.';
     requestAnimationFrame(()=>{ const status=document.getElementById('radar-filter-status'); if(status) status.textContent=message; });
@@ -1950,15 +1952,6 @@ function bindPromoActions(){
   });
   mainEl.querySelectorAll('[data-skip-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.skipTask,mutationNow);if(task)skipTask(task,mutationNow);});
   mainEl.querySelectorAll('[data-hide-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.hideTask,mutationNow);if(task)hideBenefitTask(task);});
-  mainEl.querySelectorAll('[data-more-options]').forEach(button=>button.onclick=()=>{
-    const opening=moreOptionsOpenKey!==button.dataset.moreOptions, panelId=button.getAttribute('aria-controls');
-    moreOptionsOpenKey=opening?button.dataset.moreOptions:''; render(); restoreFocus(`more-options-${button.dataset.moreOptions}`);
-    if(opening) requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      const panel=document.getElementById(panelId); if(!panel) return;
-      const safeBottom=(document.querySelector('nav')?.getBoundingClientRect().top??window.innerHeight)-12, rect=panel.getBoundingClientRect();
-      if(rect.bottom>safeBottom) window.scrollBy({top:rect.bottom-safeBottom,behavior:'auto'});
-    }));
-  });
   mainEl.querySelectorAll('[data-unskip-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.unskipTask,mutationNow);if(task)unskipTask(task);});
   mainEl.querySelectorAll('[data-restore-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.restoreTask,mutationNow);if(task)restoreBenefit(task.card.id,task.benefitId,`task-${task.key}`,'not-shown-toggle');});
   mainEl.querySelectorAll('[data-show-task]').forEach(b=>b.onclick=()=>{const mutationNow=new Date(),task=findCurrentTaskOrRefresh(b.dataset.showTask,mutationNow);if(task)showTaskInRadar(task);});
@@ -2133,7 +2126,7 @@ window.addEventListener('pageshow',refreshIfCalendarChanged);
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   const nextTab=b.dataset.tab; if(TAB==='promos'&&nextTab!=='promos') endPromosVisit();
   TAB=nextTab; PROMOS_VIEW='overview'; RADAR_FILTER='all'; history.replaceState({promosView:'overview',radarFilter:'all'},'',location.pathname+location.search);
-  recurringDiscoveryOpenKey=''; moreOptionsOpenKey=''; if(TAB==='promos') beginRadarVisit(new Date());
+  recurringDiscoveryOpenKey=''; if(TAB==='promos') beginRadarVisit(new Date());
   render(); window.scrollTo({top:0,behavior:'auto'});
 });
 document.getElementById('storageBackup').onclick=()=>copySetupLink();

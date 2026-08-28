@@ -11,7 +11,7 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 - Order the full inbox as Priority, Due within 30 days, Review recurring charges, Later, Recently completed, Confirmed recurring charges, then Hidden and completion history.
 - Keep cadence in task metadata without splitting the main inbox into monthly, quarterly, or annual groups.
 - Show a distinct **Quarterly categories** navigation row on the Promos overview only when applicable.
-- Use the stateful **Quarterly only** / **Show all** filter in Benefit Radar. The filtered inventory includes incomplete, completed, skipped, closed, and temporarily unavailable current-quarter categories; incomplete work follows urgency ordering and completed work sorts last.
+- Use a native **Quarterly only** checkbox in Benefit Radar. Checked shows the complete current-quarter inventory; unchecked shows all radar items. The filtered inventory includes incomplete, completed, skipped, closed, and temporarily unavailable current-quarter categories; incomplete work follows urgency ordering and completed work sorts last.
 - Keep skipped quarterly categories visible and completable in quarterly-only mode.
 - Keep **Download quarterly reminders** as a real download button on the overview and at the bottom of Benefit Radar.
 
@@ -29,19 +29,19 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 ## Secondary actions and navigation
 
 - Use interval-specific skip labels such as **Skip August**, **Skip Q3**, **Skip Jan–Jun**, **Skip Jul–Dec**, and **Skip 2026**.
-- Treat **More options** as a separated footer inside its benefit row so its ownership is unambiguous. Inside the disclosure, show **Hide from Benefit Radar** as a neutral outlined button followed by the explanation that it stops all reminders until restored from Hidden.
+- Remove the More options disclosure. Show **Hide from Benefit Radar** directly as a quiet tertiary button in an attached secondary-action footer inside its benefit row. Pair it with “Stops reminders. Restore anytime from Hidden.” Keep the pair side by side at 390px and above, stacking only below 350px.
 - Normalize legacy `{promosView:"quarterly"}` history to Benefit Radar with the quarterly filter active. Overview links push history; in-Radar filter changes replace the current entry; tab navigation resets to overview/all.
 - Keep schema v3, recurring record formats, the `v2.` setup-link envelope, timing, import suspension, terms-version handling, and stale-tab protection unchanged.
 
 ## Accessibility and verification
 
-- Recurring and More options disclosures synchronize `aria-expanded` and `aria-controls`; the quarterly filter uses `aria-pressed` and a polite result-count announcement.
-- Benefit-and-card action names are unique, decorative chevrons are hidden from assistive technology, controls retain 44×44 minimum targets, and focus moves deterministically after confirmation, cancellation, removal, review, hiding, filter changes, and Undo.
+- Recurring disclosures synchronize `aria-expanded` and `aria-controls`; the quarterly-only filter is a native labeled checkbox with a polite result-count announcement.
+- Benefit-and-card action names are unique, decorative chevrons are hidden from assistive technology, controls retain 44×44 minimum targets, and focus moves deterministically after confirmation, cancellation, removal, review, hiding, filter changes, and Undo. Focused controls are scrolled fully above the fixed bottom navigation.
 - Responsive controls stack at narrow widths and high text zoom, and the Undo control is not removed while focused.
 - The Promos header carries no global quarter label because the page mixes monthly, quarterly, half-year, and annual work. Current-quarter context appears only on the **Quarterly categories** row and quarterly-only view.
 - The bottom navigation tracks the visual viewport from its top edge to avoid misplaced fixed-bottom rendering in iPhone WebKit browsers.
 - The dependency-free browser harness passes 66 of 66 checks covering persistence, timing, full quarterly inventory, history compatibility, disclosure semantics, confirmation and removal, Undo, visit boundaries, suspension, focus, mobile viewport anchoring, modal behavior, and copy-critical UI states.
 - Browser verification passes at 320px, 390×844, desktop, 200% zoom, and light and dark color schemes without horizontal overflow or console errors.
-- Earlier engineering, product, accessibility, and copy reviews passed with no remaining P0–P2 findings. The latest overview hierarchy, 30-day heading, and More options footer are browser-verified and still need confirmation on the user’s phone.
+- Earlier engineering, product, accessibility, and copy reviews passed with no remaining P0–P2 findings. The latest overview hierarchy, 30-day heading, direct Hide footer, quarterly checkbox, and bottom-navigation focus clearance passed an independent design/visual rerun with no remaining P0–P2 findings; final confirmation on the user’s phone is still pending.
 
 Keep the work on `codex/credit-radar`. Preserve `PRODUCT.md`; do not push or merge before user approval.
