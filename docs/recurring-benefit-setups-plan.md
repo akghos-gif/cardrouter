@@ -19,10 +19,10 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 - Allow only Amex Platinum Digital Entertainment, Sapphire Reserve Peloton, Business Platinum Wireless, and eligible monthly direct billing for Blue Cash Preferred Disney streaming. Each uses provider-specific qualification copy and its existing terms version.
 - Present **Confirm recurring charge** as a full-width disclosure below the task footer. A terms mismatch uses **Review recurring charge**. Nothing auto-expands and no new prompt-presentation preference is written.
 - Confirmation suppresses only routine monthly use reminders. It never completes the benefit, changes enrollment, or creates history.
-- Retain a neutral **Recurring charge confirmed** row in its original overview slot or urgency group for the current Promos visit. It shows the review date and a direct **Remove confirmation** action.
-- End visit-scoped state on reload or when leaving Promos. Later visits show active records in the flat **Confirmed recurring charges** section, with confirmation date, review date, terms, and removal visible on every row.
+- Remove a newly confirmed charge from the Promos overview and active urgency groups immediately. Confirm with a polite Undo message instead of leaving a completed row in the action inbox.
+- Show active records only in the flat **Confirmed recurring charges** section of full Benefit Radar, with confirmation date, review date, terms, and removal visible on every row.
 - Review due records appear under **Review recurring charges** with **Yes, still recurring**, **Remove confirmation**, and the exact reminder-return date.
-- Removal and confirmation use the existing reversible mutation mechanism. Undo restores persisted state plus visit-scoped confirmation and review state only when the Promos visit token still matches.
+- Removal and confirmation use the existing reversible mutation mechanism. Undo restores persisted state plus review-session state only when the Promos visit token still matches.
 - Card removal, enrollment removal, hiding, import, and terms changes continue to prevent silent reactivation.
 
 ## Secondary actions and navigation
@@ -37,7 +37,9 @@ Benefit Radar is the single urgency-first action inbox in Promos. The former Qua
 - Recurring and More options disclosures synchronize `aria-expanded` and `aria-controls`; the quarterly filter uses `aria-pressed` and a polite result-count announcement.
 - Benefit-and-card action names are unique, decorative chevrons are hidden from assistive technology, controls retain 44×44 minimum targets, and focus moves deterministically after confirmation, cancellation, removal, review, hiding, filter changes, and Undo.
 - Responsive controls stack at narrow widths and high text zoom, and the Undo control is not removed while focused.
-- The dependency-free browser harness passes 65 of 65 checks covering persistence, timing, full quarterly inventory, history compatibility, disclosure semantics, confirmation and removal, Undo, visit boundaries, suspension, focus, modal behavior, and copy-critical UI states.
+- The Promos header carries no global quarter label because the page mixes monthly, quarterly, half-year, and annual work. Current-quarter context appears only on the **Quarterly categories** row and quarterly-only view.
+- The bottom navigation tracks the visual viewport from its top edge to avoid misplaced fixed-bottom rendering in iPhone WebKit browsers.
+- The dependency-free browser harness passes 66 of 66 checks covering persistence, timing, full quarterly inventory, history compatibility, disclosure semantics, confirmation and removal, Undo, visit boundaries, suspension, focus, mobile viewport anchoring, modal behavior, and copy-critical UI states.
 - Browser verification passes at 320px, 390×844, desktop, 200% zoom, and light and dark color schemes without horizontal overflow or console errors.
 - Independent engineering, product, accessibility, and copy reviews pass with no remaining P0–P2 findings.
 
