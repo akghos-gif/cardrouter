@@ -101,11 +101,11 @@
   .field-label .tag{display:block; font-weight:400}
   .sr-only{position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important}
   .empty{color:var(--muted); text-align:center; padding:22px 10px; font-size:14px; line-height:1.5}
-  .toast{position:fixed; bottom:calc(var(--nav-h) + 10px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%);
+  .toast{position:fixed; bottom:calc(var(--nav-h) + 10px); left:50%; transform:translateX(-50%);
     background:var(--ink); color:var(--bg); padding:7px 9px 7px 16px; border-radius:99px; font-size:13px; opacity:0;
     transition:opacity .2s ease-out; pointer-events:none; z-index:60; width:max-content; max-width:calc(100vw - 24px); text-align:center;
     display:flex; align-items:center; gap:10px; box-shadow:0 8px 24px rgba(0,0,0,.24)}
-  .toast.has-undo{width:min(520px,calc(100vw - 24px))}
+  .toast.wide{width:min(520px,calc(100vw - 24px))}
   .toast.visual-viewport-anchor{top:0; bottom:auto; transform:translate3d(-50%,var(--toast-y,0px),0); will-change:transform}
   .toast.show{opacity:.97; pointer-events:auto}
   .toast button{border:0; border-radius:99px; background:var(--bg); color:var(--ink); min-height:44px; padding:0 14px;
@@ -183,7 +183,7 @@
   .recurring-row h3{font-size:14.5px; line-height:1.3; margin:0}
   .recurring-status{font-size:12.5px; color:var(--muted); line-height:1.4; margin-top:3px}
   .recurring-status.needs-review{color:var(--warn); font-weight:750}
-  .recurring-manage{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-top:4px}
+  .recurring-manage{display:flex; flex-direction:column; align-items:flex-start; gap:2px; margin-top:7px}
   .recurring-setup{display:grid; grid-template-columns:minmax(0,1fr) max-content; align-items:center; gap:10px 12px;
     margin:10px 0 0; padding:10px 12px; border:1px solid var(--line); border-radius:12px}
   .recurring-setup{background:color-mix(in srgb, var(--accent) 4%, var(--card))}
@@ -211,7 +211,6 @@
     .action-links{margin-top:3px}
     .reminder-row{align-items:flex-start; flex-direction:column}
     .recurring-head{align-items:flex-start}
-    .recurring-manage{align-items:flex-start; flex-direction:column}
     .radar-toolbar{align-items:flex-start; flex-direction:column}
     .quarterly-filter{align-self:flex-start}
     .quarterly-nav{align-items:flex-start; flex-wrap:wrap}
@@ -226,6 +225,13 @@
   @media (max-width:349px){
     .recurring-setup{grid-template-columns:1fr; align-items:start}
     .recurring-setup .pill{width:max-content; max-width:100%}
+  }
+  @media (min-width:640px){
+    .recurring-manage{flex-direction:row; align-items:center; justify-content:space-between; gap:12px}
+  }
+  @supports (height:100dvh){
+    nav.visual-viewport-anchor{top:auto; bottom:0; transform:none; will-change:auto}
+    .toast.visual-viewport-anchor{top:auto; bottom:calc(var(--nav-h) + 10px); transform:translateX(-50%); will-change:auto}
   }
   @media (prefers-reduced-motion:reduce){
     *, *::before, *::after{scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important}
@@ -1068,7 +1074,7 @@ function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;
 let pendingUndo=null;
 function clearToast(){
   const t=document.getElementById('toast'), undo=document.getElementById('toastundo');
-  pendingUndo=null; clearTimeout(t._h); undo.hidden=true; t.classList.remove('show','has-undo');
+  pendingUndo=null; clearTimeout(t._h); undo.hidden=true; t.classList.remove('show','has-undo','wide');
   scheduleFloatingUi();
 }
 function keepFocusedControlVisible(){
@@ -1083,19 +1089,19 @@ function keepFocusedControlVisible(){
     else if(rect.top<safeTop) window.scrollBy({top:rect.top-safeTop,behavior:'auto'});
   }));
 }
-function toast(msg,ms,undoFn){
+function toast(msg,ms,undoFn,{wide=false}={}){
   const t=document.getElementById('toast'), text=document.getElementById('toastmsg'), undo=document.getElementById('toastundo');
-  text.textContent=msg; pendingUndo=undoFn||null; undo.hidden=!undoFn; t.classList.toggle('has-undo',!!undoFn); t.classList.add('show'); clearTimeout(t._h);
+  text.textContent=msg; pendingUndo=undoFn||null; undo.hidden=!undoFn; t.classList.toggle('has-undo',!!undoFn); t.classList.toggle('wide',wide); t.classList.add('show'); clearTimeout(t._h);
   scheduleFloatingUi();
   keepFocusedControlVisible();
   undo.onclick=()=>{ if(!pendingUndo) return; const fn=pendingUndo; pendingUndo=null; undo.hidden=true; fn(); };
   const dismiss=()=>{
     if(document.activeElement===undo){ t._h=setTimeout(dismiss,1000); return; }
-    pendingUndo=null; undo.hidden=true; t.classList.remove('show','has-undo');
+    pendingUndo=null; undo.hidden=true; t.classList.remove('show','has-undo','wide');
   };
   t._h=setTimeout(dismiss,ms||2600);
 }
-function mutateWithUndo(message,mutator,focusId,undoFocusId=focusId,mutationNow=new Date()){
+function mutateWithUndo(message,mutator,focusId,undoFocusId=focusId,mutationNow=new Date(),{wideToast=false}={}){
   const before=structuredClone(S), snapshotToken=promosVisitToken,
     reviewBefore=recurringReviewSession?{keys:[...recurringReviewSession.keys],confirmed:[...recurringReviewSession.confirmed]}:null;
   mutator(); saveState(S,mutationNow); render(); restoreFocus(focusId);
@@ -1105,7 +1111,7 @@ function mutateWithUndo(message,mutator,focusId,undoFocusId=focusId,mutationNow=
       recurringReviewSession=reviewBefore?{keys:[...reviewBefore.keys],confirmed:new Set(reviewBefore.confirmed)}:null;
     }
     saveState(S); render(); restoreFocus(undoFocusId); toast('Change undone');
-  });
+  },{wide:wideToast});
 }
 function restoreFocus(focusId){
   requestAnimationFrame(()=>{
@@ -1837,7 +1843,7 @@ function renderRecurringQuiet(now=new Date()){
   if(!active.length) return '';
   const nextReview=active.map(item=>item.reviewDue).sort((a,b)=>a-b)[0];
   const summary=`${active.length} confirmed charge${active.length===1?'':'s'} · Routine monthly reminders paused · Next review ${displayCalendarDate(nextReview,now)}`;
-  const rows=active.map(item=>`<article class="recurring-row" data-recurring-row="${item.key}"><div class="action-topline"><h3 class="action-title">${esc(item.benefit.name)}</h3><a class="issuer-action" href="${item.meta.link}" target="_blank" rel="noopener noreferrer" aria-label="Check terms for ${esc(item.benefit.name)}, ${esc(item.card.name)}, opens in a new tab">Check terms <span aria-hidden="true">↗</span></a></div><div class="action-meta">${esc(item.card.name)} · ${esc(recurringItemValue(item,now))}</div><div class="recurring-status" tabindex="-1" data-focus-id="recurring-status-${item.key}">Confirmed ${displayCalendarDate(item.record.confirmedOn,now)} · Review ${displayCalendarDate(item.reviewDue,now)}</div><div class="recurring-manage"><div class="action-meta">Routine monthly reminders stay out of Benefit Radar.</div><div><button class="manage-action" data-remove-recurring="${item.key}" data-remove-context="quiet" data-focus-id="recurring-remove-${item.key}" aria-label="Remove recurring charge confirmation for ${esc(item.benefit.name)}, ${esc(item.card.name)}">Remove confirmation</button><div class="action-meta">Routine monthly reminders will resume.</div></div></div></article>`).join('');
+  const rows=active.map(item=>`<article class="recurring-row" data-recurring-row="${item.key}"><div class="action-topline"><h3 class="action-title">${esc(item.benefit.name)}</h3><a class="issuer-action" href="${item.meta.link}" target="_blank" rel="noopener noreferrer" aria-label="Check terms for ${esc(item.benefit.name)}, ${esc(item.card.name)}, opens in a new tab">Check terms <span aria-hidden="true">↗</span></a></div><div class="action-meta">${esc(item.card.name)} · ${esc(recurringItemValue(item,now))}</div><div class="recurring-status" tabindex="-1" data-focus-id="recurring-status-${item.key}">Confirmed ${displayCalendarDate(item.record.confirmedOn,now)} · Review ${displayCalendarDate(item.reviewDue,now)}</div><div class="recurring-manage"><div class="action-meta">Removing confirmation resumes monthly reminders.</div><button class="manage-action" data-remove-recurring="${item.key}" data-remove-context="quiet" data-focus-id="recurring-remove-${item.key}" aria-label="Remove recurring charge confirmation for ${esc(item.benefit.name)}, ${esc(item.card.name)}">Remove confirmation</button></div></article>`).join('');
   return `<section class="recurring-section" aria-labelledby="recurring-heading"><div class="recurring-head"><h2 id="recurring-heading" tabindex="-1" data-focus-id="recurring-heading">Confirmed recurring charges</h2></div><p class="section-note">${esc(summary)}</p><div class="recurring-list" id="recurring-setup-list">${rows}</div></section>`;
 }
 function renderRecurringReview(now=new Date()){
@@ -1908,7 +1914,7 @@ function confirmRecurringSetup(cardId,benefitId,{review=false}={},mutationNow=ne
     S.recurringSetups[key]={cardId,benefitId,confirmedAt:mutationNow.toISOString(),confirmedOn:localIsoDate(localDay(mutationNow)),termsVersion:meta.recurringTermsVersion};
     delete S.recurringPromptPrefs[key];
     if(review&&recurringReviewSession?.keys.includes(key)) recurringReviewSession.confirmed.add(key);
-  },focusId,review?`recurring-review-confirm-${key}`:`recurring-setup-${cardId}-${benefitId}`,mutationNow);
+  },focusId,review?`recurring-review-confirm-${key}`:`recurring-setup-${cardId}-${benefitId}`,mutationNow,{wideToast:true});
 }
 function removeRecurringSetup(key,context='quiet',mutationNow=new Date()){
   const record=S.recurringSetups[key]; if(!record) return;
@@ -1917,7 +1923,7 @@ function removeRecurringSetup(key,context='quiet',mutationNow=new Date()){
   mutateWithUndo('Confirmation removed. Monthly reminders will resume.',()=>{
     delete S.recurringSetups[key];
     if(recurringReviewSession){ recurringReviewSession.keys=recurringReviewSession.keys.filter(item=>item!==key); recurringReviewSession.confirmed.delete(key); }
-  },focusId,undoFocusId,mutationNow);
+  },focusId,undoFocusId,mutationNow,{wideToast:true});
 }
 function bindPromoActions(){
   const viewAll=document.getElementById('radar-view-all'); if(viewAll) viewAll.onclick=()=>openPromosSubview('all');
