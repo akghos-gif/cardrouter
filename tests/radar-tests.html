@@ -337,7 +337,7 @@ document.getElementById('app').addEventListener('load',async()=>{
         viewport.dispatchEvent(new Event('resize')); await afterRender(win);
         assert(appScroll.scrollTop>0,'A reduced visual viewport should reveal a focused page input inside the app scroller');
 
-        nav.querySelector('[data-tab="cards"]').click(); await afterRender(win); doc.querySelector('[data-edit="amex_gold"]').click(); await afterRender(win);
+        nav.querySelector('[data-tab="cards"]').click(); await afterRender(win); doc.querySelector('[data-picker-edit="amex_gold"]').click(); await afterRender(win);
         const sheet=doc.getElementById('sheet'), modalInput=[...sheet.querySelectorAll('[data-rk]')].at(-1);
         modalInput.focus(); sheet.scrollTop=0;
         modalInput.getBoundingClientRect=()=>({top:620,bottom:664,left:220,right:370,width:150,height:44,x:220,y:620,toJSON(){}});
@@ -443,9 +443,9 @@ document.getElementById('app').addEventListener('load',async()=>{
       equal(doc.activeElement.dataset.focusId,`task-${task.key}`);
     });
   });
-  test('schema v3 migrates older state and explicitly allowlists four recurring benefits',()=>{
+  test('schema v4 migrates older state and explicitly allowlists four recurring benefits',()=>{
     const now=new Date(2026,7,27,12), migrated=R.normalizeState({schemaVersion:2,myCards:['amex_plat']},now);
-    equal(migrated.schemaVersion,3); equal(Object.keys(migrated.recurringSetups).length,0);
+    equal(migrated.schemaVersion,4); equal(Object.keys(migrated.recurringSetups).length,0);
     const cards=['amex_plat','csr','biz_plat','bcp','csp','amex_gold'], enrolledAt=now.toISOString();
     const enrollments=[['amex_plat','digital_entertainment_credit'],['csr','peloton_credit'],['biz_plat','wireless_service_credit'],['bcp','disney_bundle_credit'],['csp','doordash_promo_credit'],['amex_gold','dining_credit']].map(([cardId,benefitId])=>({cardId,benefitId,enrolledAt}));
     const eligible=R.buildRadarTasks({myCards:cards,enrollments},now).all.filter(task=>task.meta&&task.meta.recurringEligible).map(task=>`${task.card.id}:${task.benefitId}`).sort();
@@ -717,7 +717,7 @@ document.getElementById('app').addEventListener('load',async()=>{
   });
   test('card editor is a labeled modal with labeled fields and deterministic return focus',async()=>{
     await withAppState({schemaVersion:3,myCards:['amex_plat']},async(win,doc)=>{
-      doc.querySelector('nav button[data-tab="cards"]').click(); const edit=doc.querySelector('[data-edit="amex_plat"]');
+      doc.querySelector('nav button[data-tab="cards"]').click(); const edit=doc.querySelector('[data-picker-edit="amex_plat"]');
       assert(edit.getAttribute('aria-label').includes('Amex Platinum'),'Card actions should identify their card');
       win.toast('Marked used',9000,()=>{}); await afterRender(win);
       edit.click(); await afterRender(win);
@@ -804,8 +804,8 @@ document.getElementById('app').addEventListener('load',async()=>{
   });
   test('a stale open tab never overwrites newer saved schema data',async()=>{
     await withAppState({schemaVersion:3,myCards:['amex_gold']},async(win,doc)=>{
-      const newer={schemaVersion:4,myCards:['csr'],futureState:{keep:true}}; win.localStorage.setItem('cardrouter',JSON.stringify(newer));
-      doc.querySelector('nav button[data-tab="cards"]').click(); doc.querySelector('[data-add="amex_plat"]').click(); await afterRender(win);
+      const newer={schemaVersion:5,myCards:['csr'],futureState:{keep:true}}; win.localStorage.setItem('cardrouter',JSON.stringify(newer));
+      doc.querySelector('nav button[data-tab="cards"]').click(); const search=doc.getElementById('cardSearch'); search.value='Amex Platinum'; search.dispatchEvent(new Event('input',{bubbles:true})); await afterRender(win); doc.querySelector('[data-picker-add="amex_plat"]').click(); await afterRender(win);
       equal(win.localStorage.getItem('cardrouter'),JSON.stringify(newer)); assert(!doc.getElementById('storageWarning').hidden,'Expected newer-data storage warning');
     });
   });
@@ -813,9 +813,9 @@ document.getElementById('app').addEventListener('load',async()=>{
     const now=new Date(), confirmedAt=now.toISOString(), confirmedOn=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`, setup={cardId:'amex_plat',benefitId:'digital_entertainment_credit',confirmedAt,confirmedOn,termsVersion:'2026-08-27-2'};
     const state={schemaVersion:3,myCards:['amex_plat'],enrollments:[{cardId:'amex_plat',benefitId:'digital_entertainment_credit',enrolledAt:confirmedAt}],recurringSetups:[setup]};
     await withAppState(state,async(win,doc)=>{
-      doc.querySelector('nav button[data-tab="cards"]').click(); doc.querySelector('[data-del="amex_plat"]').click(); await afterRender(win);
+      doc.querySelector('nav button[data-tab="cards"]').click(); doc.querySelector('[data-picker-edit="amex_plat"]').click(); await afterRender(win); doc.getElementById('removeCard').click(); await afterRender(win);
       let saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.values(saved.recurringSetups)[0].suspensionReason,'card-removed');
-      doc.querySelector('[data-add="amex_plat"]').click(); await afterRender(win); doc.querySelector('nav button[data-tab="benefits"]').click(); doc.querySelector('[data-bcat="streamcr"]').click();
+      const search=doc.getElementById('cardSearch'); search.value='Amex Platinum'; search.dispatchEvent(new Event('input',{bubbles:true})); await afterRender(win); doc.querySelector('[data-picker-add="amex_plat"]').click(); await afterRender(win); doc.querySelector('nav button[data-tab="benefits"]').click(); doc.querySelector('[data-bcat="streamcr"]').click();
       const enrollment=doc.querySelector('[data-benefit-enroll="amex_plat:digital_entertainment_credit"]'); enrollment.checked=false; enrollment.dispatchEvent(new Event('change',{bubbles:true})); await afterRender(win);
       saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.values(saved.recurringSetups)[0].suspensionReason,'enrollment-removed');
     });
@@ -866,6 +866,110 @@ document.getElementById('app').addEventListener('load',async()=>{
       const confirmation=doc.querySelector('[data-confirm-recurring="bcp:disney_bundle_credit"]'); assert(confirmation,'Imported setup should return as a normal monthly task'); confirmation.click(); await afterRender(win);
       saved=JSON.parse(win.localStorage.getItem('cardrouter')); assert(!Object.values(saved.recurringSetups)[0].suspensionReason,'Local reconfirmation should clear import suspension');
       assert(doc.querySelector('[data-focus-id="recurring-status-bcp:disney_bundle_credit"]'),'Reconfirmation should move directly to Confirmed recurring charges');
+    });
+  });
+  test('schema v4 saved state loads normally and renders the production-card hub',async()=>{
+    await withAppState({schemaVersion:4,myCards:['csp','amex_gold','double_cash']},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      assert(doc.getElementById('storageWarning').hidden,'Current schema data must not be mistaken for future data');
+      equal([...doc.querySelectorAll('[data-picker-held]')].map(row=>row.dataset.pickerHeld).join(','),'csp,amex_gold,double_cash');
+      equal([...doc.querySelectorAll('.picker-browse-label')].map(label=>label.textContent).join(','),'Chase,Amex,Citi,Capital One,Discover,US Bank,Wells Fargo,Airline cards,Hotel cards,Store cards,Business cards,Other');
+      assert(!doc.getElementById('pickerBrowse').textContent.includes('cards available'),'Browse tiles should not show counts');
+      const art=doc.querySelector('.picker-held-art'); assert(art.src.endsWith('/assets/card-picker/cards/card-csp-112.webp')); assert(art.srcset.includes('card-csp-360.webp 360w'));
+      equal(doc.querySelector('[data-picker-held="csp"] .picker-held-best').textContent,'3× dining, streaming & gas + more');
+      equal(doc.querySelector('[data-picker-held="amex_gold"] .picker-held-best').textContent,'Up to 5× hotels');
+      equal(doc.querySelector('[data-picker-held="double_cash"] .picker-held-best').textContent,'2% on everything');
+    });
+  });
+  test('held card rows open the editor and handles reorder with the keyboard',async()=>{
+    await withAppState({schemaVersion:4,myCards:['csp','amex_gold','double_cash']},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      const row=doc.querySelector('[data-picker-edit="csp"]'); row.closest('[data-picker-held]').click(); await afterRender(win);
+      assert(doc.getElementById('removeCard'),'The row editor should contain the relocated Remove action');
+      doc.getElementById('closex').click(); await afterRender(win); equal(doc.activeElement,row);
+      const handle=doc.querySelector('[data-picker-drag="amex_gold"]'); handle.focus();
+      handle.dispatchEvent(new win.KeyboardEvent('keydown',{key:'ArrowUp',bubbles:true})); await afterRender(win);
+      equal(JSON.parse(win.localStorage.getItem('cardrouter')).myCards.join(','),'amex_gold,csp,double_cash');
+      equal(doc.activeElement.dataset.focusId,'picker-drag-amex_gold');
+      assert(doc.getElementById('pickerLive').textContent.includes('moved to priority 1'));
+    });
+  });
+  test('search keeps every match in a six-row scroll region and restores the hub when cleared',async()=>{
+    await withAppState({schemaVersion:4,myCards:['csp']},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      const input=doc.getElementById('cardSearch'); input.focus(); await afterRender(win);
+      assert(!doc.getElementById('pickerHubTop').hidden&&!doc.getElementById('pickerBrowse').hidden&&!doc.getElementById('pageHeader').hidden,'An empty focused search should retain the hub');
+      input.value='a'; input.dispatchEvent(new win.Event('input',{bubbles:true})); await afterRender(win);
+      const results=doc.querySelector('.picker-search-results'), rows=[...results.querySelectorAll('.picker-search-row')];
+      assert(rows.length>6,'The full production match set should remain in the DOM');
+      assert(results.scrollHeight>results.clientHeight,'More than six rows should scroll');
+      assert(results.clientHeight>=330&&results.clientHeight<=336,`Expected a six-row region, received ${results.clientHeight}px`);
+      assert(rows.some(row=>row.textContent.includes('Apple Card')),'A late catalog match must not be hard-capped away');
+      assert(rows.every(row=>row.querySelector('mark')),'Every name match should be highlighted');
+      doc.getElementById('pickerSearchClear').click(); await afterRender(win);
+      equal(input.value,''); assert(!doc.getElementById('pickerHubTop').hidden&&!doc.getElementById('pickerBrowse').hidden&&!doc.getElementById('pageHeader').hidden);
+    });
+  });
+  test('adding from search stays in place, uses the short artwork toast, and supports Undo',async()=>{
+    await withAppState({schemaVersion:4,myCards:['csp']},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      const input=doc.getElementById('cardSearch'); input.value='Freedom Flex'; input.dispatchEvent(new win.Event('input',{bubbles:true})); await afterRender(win);
+      doc.querySelector('[data-picker-add="freedom_flex"]').click(); await afterRender(win);
+      equal(doc.title,'ChooseMyCard · Search cards'); equal(doc.getElementById('cardSearch').value,'Freedom Flex');
+      assert(doc.querySelector('[data-focus-id="picker-action-freedom_flex"].is-added'));
+      const toast=doc.getElementById('toast'); assert(toast.classList.contains('card-picker-toast')&&toast.classList.contains('show'));
+      equal(doc.getElementById('toastmsg').textContent,'Freedom Flex added'); assert(doc.getElementById('toastart').src.endsWith('/assets/card-picker/cards/card-freedom_flex-112.webp'));
+      assert(!doc.querySelector('nav .pulse'),'The retired coaching pulse must not return');
+      doc.getElementById('toastundo').click(); await afterRender(win);
+      assert(doc.querySelector('[data-picker-add="freedom_flex"]')); assert(!JSON.parse(win.localStorage.getItem('cardrouter')).myCards.includes('freedom_flex'));
+      doc.querySelector('[data-picker-add="freedom_flex"]').click(); await afterRender(win); doc.querySelector('nav button[data-tab="benefits"]').click(); await afterRender(win);
+      doc.getElementById('toastundo').click(); await afterRender(win);
+      equal(doc.title,'ChooseMyCard · Benefits'); assert(!JSON.parse(win.localStorage.getItem('cardrouter')).myCards.includes('freedom_flex'),'Undo from another tab should not replace that tab with picker content');
+    });
+  });
+  test('issuer pages use only production cards and keep held cards visibly marked',async()=>{
+    await withAppState({schemaVersion:4,myCards:['csp']},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      doc.querySelector('[data-picker-route="issuer"][data-picker-value="Chase"]').click(); await afterRender(win);
+      equal(doc.querySelector('[data-picker-page-title]').textContent,'Add a Chase card');
+      const tiles=[...doc.querySelectorAll('.picker-card-tile')]; equal(tiles.length,7,'Six production Chase cards plus Custom should render');
+      assert(tiles.at(-1).textContent.includes('Custom Chase card')&&tiles.at(-1).textContent.includes('issuer pre-filled'));
+      assert(doc.querySelector('[data-focus-id="picker-action-csp"].is-added').textContent.includes('In my cards'));
+      assert(!doc.body.textContent.includes('Ink Business Preferred')&&!doc.body.textContent.includes('United Quest'),'Proposed cards must not ship');
+    });
+  });
+  test('airline chips scroll, remain focusable, and Delta truthfully filters to custom only',async()=>{
+    await withAppState({schemaVersion:4,myCards:[]},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      doc.querySelector('[data-picker-route="airline"]').click(); await afterRender(win);
+      const chipRow=doc.querySelector('.picker-jump-row'), chips=[...chipRow.querySelectorAll('button')];
+      equal(chips.length,8); assert(chipRow.scrollWidth>chipRow.clientWidth,'All plus seven fixed airline chips should overflow horizontally');
+      const rowStyle=win.getComputedStyle(chipRow); equal(rowStyle.overflowX,'auto'); equal(rowStyle.marginLeft,'-14px'); equal(rowStyle.paddingLeft,'14px'); equal(rowStyle.scrollbarWidth,'none');
+      equal([...doc.querySelectorAll('.picker-airline-group-heading h2')].map(h=>h.textContent).join(','),'United,Southwest');
+      const hawaiian=doc.querySelector('[data-airline-filter="Hawaiian"]'); hawaiian.focus(); await afterRender(win); assert(chipRow.scrollLeft>0,'A focused offscreen chip should scroll into view');
+      const delta=doc.querySelector('[data-airline-filter="Delta"]'); delta.click(); await afterRender(win);
+      equal(doc.querySelector('.picker-page-hint').textContent,'filtered to Delta'); equal(doc.querySelector('[data-airline-filter="Delta"]').getAttribute('aria-pressed'),'true');
+      equal([...doc.querySelectorAll('.picker-airline-group-heading h2')].map(h=>h.textContent).join(','),'Delta');
+      equal(doc.querySelectorAll('.picker-card-grid.is-airline-group .picker-card-tile').length,1); assert(doc.querySelector('.picker-card-tile').textContent.includes('Custom Delta card'));
+      assert(!doc.querySelector('.picker-card-grid.is-airline-group .picker-card-art:not(.picker-art-placeholder)'),'No unverified Delta card should render');
+    });
+  });
+  test('custom cards persist structured browse metadata and reappear in their category',async()=>{
+    const legacy=R.normalizeState({schemaVersion:3,custom:[{id:'cust_old',name:'Old custom',issuer:'Custom',program:'cash',rates:{other:{v:1,u:'%'}},notes:''}],myCards:['cust_old']});
+    assert(legacy.custom[0].other,'Older uncategorized custom cards should migrate into Other');
+    await withAppState({schemaVersion:4,myCards:[]},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      doc.querySelector('[data-picker-route="store"]').click(); await afterRender(win);
+      doc.querySelector('[data-picker-custom]').click(); await afterRender(win);
+      assert(doc.getElementById('sheet').textContent.includes('This card will appear under Store cards.'));
+      equal(doc.getElementById('ccissuer').tagName,'SELECT'); equal(doc.getElementById('ccbrand').tagName,'SELECT');
+      assert(doc.getElementById('cc-store').checked&&!doc.getElementById('cc-other').checked,'The Store route should prefill structured flags without free text');
+      assert([...doc.querySelectorAll('.custom-meta-check')].every(label=>label.getBoundingClientRect().height>=44),'Structured category choices should retain 44px touch targets');
+      doc.getElementById('ccname').value='Neighborhood Shop Card'; doc.getElementById('ccsave').click(); await afterRender(win);
+      const saved=JSON.parse(win.localStorage.getItem('cardrouter')), custom=saved.custom[0];
+      equal(custom.issuer,'Custom'); equal(custom.brand,''); assert(custom.store&&!custom.hotel&&!custom.biz&&!custom.other);
+      assert(saved.myCards.includes(custom.id)); assert(doc.body.textContent.includes('Neighborhood Shop Card'));
+      assert(doc.querySelector('[data-focus-id^="picker-action-cust_"].is-added'),'The new custom card should filter into the active Store page');
     });
   });
 

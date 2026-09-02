@@ -9,21 +9,22 @@ Tap a purchase category — dining, groceries, gas, flights, hotels, and more �
 ## Features
 
 - **Which card?** — tap a category and get a ranked answer. Points cards are compared against cash-back cards using cents-per-point valuations, so "3x Ultimate Rewards" and "5% cash back" compete on equal footing (shown as an effective ≈% for every card).
-- **Built-in rules database** — earn rates for ~19 popular US rewards cards, verified July 2026, including the Chase Sapphire Reserve revamp, the Amex Gold refresh, the Prime Visa, and the Citi Custom Cash closure to new applicants.
+- **Built-in rules database** — earn rates for 28 popular US rewards cards, verified July 2026, including the Chase Sapphire Reserve revamp, the Amex Gold refresh, the Prime Visa, and the Citi Custom Cash closure to new applicants.
+- **Card picker** — the My cards tab combines an ordered held-card list, live search, and issuer/category browse pages backed by optimized local card art. Search keeps every match in a six-row scrolling region; issuer and category pages keep held cards visible and marked so several cards can be added without losing context.
 - **Rotating 5% categories:** the current quarter's Chase Freedom Flex and Discover it categories are built in. Cards that need activation show an "activation required" warning until you check them off in Promos. When rates tie, activated rotating categories rank ahead of unactivated ones.
 - **Benefit Radar:** the Promos tab is one urgency-first inbox for quarterly categories and verified calendar-based card benefits. Non-retroactive work comes first; other items follow by deadline. Open Benefit Radar to mark actions complete, use the quarterly-only filter, skip a period, hide benefits you do not use, or restore hidden and skipped work.
 - **Shared completion status:** activation, enrollment, and benefit-use checkboxes stay synchronized across Benefit Radar, Benefits, and card recommendations. A completion remains in Benefit Radar until the period ends or for up to 30 days, whichever comes first, then remains in completion history for up to 24 months.
 - **Recurring charge confirmations:** for four eligible monthly card benefits, confirm that a qualifying membership, subscription, or bill is charged to the card every month. The task leaves the active inbox immediately and remains manageable under Confirmed recurring charges in full Benefit Radar. Confirmation suppresses only that benefit's routine monthly reminder, never marks it used, and is reviewed again after six months. When the six-month review is due, confirm within 30 days or monthly reminders return.
-- **Priority tie-break** — when two cards earn the same, your hand-set card order decides (drag your true favorite to the top).
+- **Priority tie-break** — when two cards earn the same, your hand-set card order decides (drag your true favorite to the top, or use the reorder handle with the arrow keys).
 - **Location guessing** — optionally let the app read your location and guess the category from the nearest merchant (via OpenStreetMap; no API key, no tracking).
-- **Everything is editable** — issuers change rules constantly. Tap ✎ on any card to override its rates, add custom cards, or adjust point valuations in Settings.
+- **Everything is editable** — issuers change rules constantly. Tap a held card row to override its rates or remove it, add custom cards with structured browse metadata, or adjust point valuations in Settings.
 - **Quarterly reminders:** download a generic `.ics` calendar file with four recurring reminders and no card or activity data.
 - **Per-device setups and setup links:** each person's setup lives in their own browser. A setup link carries cards, settings, benefit enrollments, recurring charge confirmations, items hidden from Benefit Radar, skipped periods, and current checkmarks. Imported recurring confirmations do not hide monthly reminders until confirmed again in Benefit Radar on the receiving device; completion history is omitted.
 
 ## Install on iPhone
 
 1. Host `index.html` anywhere static — GitHub Pages works free:
-   - Upload `index.html` to a repository.
+   - Upload `index.html`, `apple-touch-icon.png`, and `assets/card-picker/` to a repository without changing their relative paths.
    - Repo **Settings → Pages → Deploy from a branch → main / (root) → Save**.
    - Your app goes live at `https://<username>.github.io/<repo>/` in a minute or two.
 2. Open that URL in **Safari** on your iPhone.
@@ -65,7 +66,7 @@ Opening a setup link asks before replacing a setup already on that device. The l
 
 Card rules drift. Three maintenance points:
 
-1. **Any card's rates** — no code needed: tap ✎ on the card in the app and type the new rate (`3x` or `5%`). Overrides persist on your device.
+1. **Any card's rates** — no code needed: tap its row in My cards and type the new rate (`3x` or `5%`). Overrides persist on your device.
 2. **Rotating categories for a new quarter** — edit the `ROTATING` table near the top of the `<script>` in `index.html`:
 
 ```js
@@ -100,9 +101,9 @@ Valid category ids: `dining, groceries, gas, flights, hotels, transit, streaming
 
 ## Tech notes
 
-Single self-contained production `index.html` (no dependencies, no build step): vanilla JS, CSS custom properties with automatic dark mode, versioned `localStorage` persistence with verified session fallback, allowlisted config export via a compact base64url hash, generic `.ics` reminders with no card or activity data, browser-history Promos subviews, geolocation + [Nominatim](https://nominatim.org/) reverse geocoding. Works from any static host.
+Dependency-free static production app (no package manager or build step): one `index.html` plus local optimized card art and logo assets. It uses vanilla JS, CSS custom properties with automatic dark mode, versioned `localStorage` persistence with verified session fallback, allowlisted config export via a compact base64url hash, generic `.ics` reminders with no card or activity data, browser-history subviews, geolocation, and [Nominatim](https://nominatim.org/) reverse geocoding. Works from any static host.
 
-Pure Radar date, migration, task-building, and calendar helpers are exposed through the internal `CardRouterRadar` namespace. Serve the repository locally and open `tests/radar-tests.html` to run the dependency-free test harness.
+Pure Radar date, migration, task-building, and calendar helpers are exposed through the internal `CardRouterRadar` namespace. Serve the repository locally and open `tests/radar-tests.html` to run the dependency-free behavior and interface regression harness.
 
 Repository working agreements live in `AGENTS.md`; durable product and design principles live in `PRODUCT.md`; the implemented Benefit Radar decisions and verification record live in `docs/recurring-benefit-setups-plan.md`.
 
