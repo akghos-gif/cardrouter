@@ -700,8 +700,8 @@ document.getElementById('app').addEventListener('load',async()=>{
   });
   test('rerender navigation restores focus for onboarding, location, empty Radar, and reset',async()=>{
     await withAppState({schemaVersion:3,myCards:[]},async(win,doc)=>{
-      doc.getElementById('onboard').click(); await afterRender(win); equal(doc.activeElement.id,'add-card-heading');
-      doc.querySelector('nav button[data-tab="promos"]').click(); doc.querySelector('[data-go-cards]').click(); await afterRender(win); equal(doc.activeElement.id,'add-card-heading');
+      doc.getElementById('onboard').click(); await afterRender(win); equal(doc.activeElement.id,'pickerAddCard');
+      doc.querySelector('nav button[data-tab="promos"]').click(); doc.querySelector('[data-go-cards]').click(); await afterRender(win); equal(doc.activeElement.id,'pickerAddCard');
     });
     await withAppState({schemaVersion:3,myCards:['amex_plat']},async(win,doc)=>{
       Object.defineProperty(win.navigator,'geolocation',{configurable:true,value:{getCurrentPosition(success){success({coords:{latitude:1,longitude:1}});}}});
@@ -729,13 +729,6 @@ document.getElementById('app').addEventListener('load',async()=>{
       doc.dispatchEvent(new win.KeyboardEvent('keydown',{key:'Escape',bubbles:true})); await afterRender(win);
       assert(!doc.getElementById('modal').classList.contains('open')&&!doc.getElementById('appScroll').inert&&!doc.querySelector('nav').inert,'Escape should close the modal and restore the page'); equal(doc.activeElement,edit);
       assert(!toast.inert&&!toast.hasAttribute('aria-hidden')&&!toast.classList.contains('modal-suppressed')&&toast.classList.contains('show')&&!doc.getElementById('toastundo').hidden,'Closing the modal should restore the pending Undo and its remaining time');
-      doc.getElementById('addcustom').click(); await afterRender(win); doc.getElementById('ccsave').click(); await afterRender(win);
-      const modalError=doc.getElementById('ccerror'); assert(!modalError.hidden&&modalError.getAttribute('role')==='status'&&modalError.textContent==='Enter a card name.','Invalid modal input should show its feedback inside the dialog');
-      assert([...doc.querySelectorAll('#ccname,#ccprog')].every(control=>control.getBoundingClientRect().height>=44),'Custom-card form controls should retain 44px touch targets');
-      assert(doc.getElementById('ccname').getAttribute('aria-invalid')==='true'&&doc.activeElement===doc.getElementById('ccname'),'The invalid field should be identified and focused');
-      assert(toast.inert&&doc.getElementById('toastmsg').textContent==='Marked used'&&!doc.getElementById('toastundo').hidden,'Inline modal validation must preserve the paused Undo');
-      doc.dispatchEvent(new win.KeyboardEvent('keydown',{key:'Escape',bubbles:true})); await afterRender(win);
-      assert(!toast.inert&&toast.classList.contains('show')&&doc.getElementById('toastmsg').textContent==='Marked used'&&!doc.getElementById('toastundo').hidden,'Closing after validation should restore the original Undo');
       doc.querySelector('nav button[data-tab="settings"]').click(); assert([...doc.querySelectorAll('[data-cpp]')].every(input=>input.labels&&input.labels[0].textContent.includes('cents per point')),'Every point valuation should have a contextual label');
       assert([...doc.querySelectorAll('[data-cpp]')].every(input=>input.getBoundingClientRect().height>=44),'Settings valuation inputs should retain 44px touch targets');
     });
@@ -805,7 +798,8 @@ document.getElementById('app').addEventListener('load',async()=>{
   test('a stale open tab never overwrites newer saved schema data',async()=>{
     await withAppState({schemaVersion:3,myCards:['amex_gold']},async(win,doc)=>{
       const newer={schemaVersion:5,myCards:['csr'],futureState:{keep:true}}; win.localStorage.setItem('cardrouter',JSON.stringify(newer));
-      doc.querySelector('nav button[data-tab="cards"]').click(); const search=doc.getElementById('cardSearch'); search.value='Amex Platinum'; search.dispatchEvent(new Event('input',{bubbles:true})); await afterRender(win); doc.querySelector('[data-picker-add="amex_plat"]').click(); await afterRender(win);
+      doc.querySelector('nav button[data-tab="cards"]').click(); doc.getElementById('pickerAddCard').click(); await afterRender(win);
+      const search=doc.getElementById('cardSearch'); search.value='Amex Platinum'; search.dispatchEvent(new win.Event('input',{bubbles:true})); await afterRender(win); doc.querySelector('[data-picker-add="amex_plat"]').click(); await afterRender(win);
       equal(win.localStorage.getItem('cardrouter'),JSON.stringify(newer)); assert(!doc.getElementById('storageWarning').hidden,'Expected newer-data storage warning');
     });
   });
@@ -815,7 +809,8 @@ document.getElementById('app').addEventListener('load',async()=>{
     await withAppState(state,async(win,doc)=>{
       doc.querySelector('nav button[data-tab="cards"]').click(); doc.querySelector('[data-picker-edit="amex_plat"]').click(); await afterRender(win); doc.getElementById('removeCard').click(); await afterRender(win);
       let saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.values(saved.recurringSetups)[0].suspensionReason,'card-removed');
-      const search=doc.getElementById('cardSearch'); search.value='Amex Platinum'; search.dispatchEvent(new Event('input',{bubbles:true})); await afterRender(win); doc.querySelector('[data-picker-add="amex_plat"]').click(); await afterRender(win); doc.querySelector('nav button[data-tab="benefits"]').click(); doc.querySelector('[data-bcat="streamcr"]').click();
+      doc.getElementById('pickerAddCard').click(); await afterRender(win);
+      const search=doc.getElementById('cardSearch'); search.value='Amex Platinum'; search.dispatchEvent(new win.Event('input',{bubbles:true})); await afterRender(win); doc.querySelector('[data-picker-add="amex_plat"]').click(); await afterRender(win); doc.querySelector('nav button[data-tab="benefits"]').click(); doc.querySelector('[data-bcat="streamcr"]').click();
       const enrollment=doc.querySelector('[data-benefit-enroll="amex_plat:digital_entertainment_credit"]'); enrollment.checked=false; enrollment.dispatchEvent(new Event('change',{bubbles:true})); await afterRender(win);
       saved=JSON.parse(win.localStorage.getItem('cardrouter')); equal(Object.values(saved.recurringSetups)[0].suspensionReason,'enrollment-removed');
     });
@@ -868,17 +863,64 @@ document.getElementById('app').addEventListener('load',async()=>{
       assert(doc.querySelector('[data-focus-id="recurring-status-bcp:disney_bundle_credit"]'),'Reconfirmation should move directly to Confirmed recurring charges');
     });
   });
-  test('schema v4 saved state loads normally and renders the production-card hub',async()=>{
-    await withAppState({schemaVersion:4,myCards:['csp','amex_gold','double_cash']},async(win,doc)=>{
+  test('schema v4 saved state loads the production-card hub and its pushed Add page',async()=>{
+    await withAppState({schemaVersion:4,myCards:['csp','amex_gold','double_cash']},async(win,doc,frame)=>{
+      frame.style.width='390px'; frame.style.height='844px';
       doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
       assert(doc.getElementById('storageWarning').hidden,'Current schema data must not be mistaken for future data');
       equal([...doc.querySelectorAll('[data-picker-held]')].map(row=>row.dataset.pickerHeld).join(','),'csp,amex_gold,double_cash');
-      equal([...doc.querySelectorAll('.picker-browse-label')].map(label=>label.textContent).join(','),'Chase,Amex,Citi,Capital One,Discover,US Bank,Wells Fargo,Airline cards,Hotel cards,Store cards,Business cards,Other');
-      assert(!doc.getElementById('pickerBrowse').textContent.includes('cards available'),'Browse tiles should not show counts');
+      assert(doc.getElementById('pickerAddCard')&&!doc.getElementById('pickerAddCard').hidden,'My cards should expose the header Add control');
+      assert(!doc.getElementById('pickerBrowse'),'Browse belongs to the pushed Add page, not the wallet hub');
       const art=doc.querySelector('.picker-held-art'); assert(art.src.endsWith('/assets/card-picker/cards/card-csp-112.webp')); assert(art.srcset.includes('card-csp-360.webp 360w'));
       equal(doc.querySelector('[data-picker-held="csp"] .picker-held-best').textContent,'3× dining, streaming & gas + more');
       equal(doc.querySelector('[data-picker-held="amex_gold"] .picker-held-best').textContent,'Up to 5× hotels');
       equal(doc.querySelector('[data-picker-held="double_cash"] .picker-held-best').textContent,'2% on everything');
+      doc.getElementById('pickerAddCard').click(); await afterRender(win);
+      equal(doc.querySelector('[data-picker-page-title]').textContent,'Add a card');
+      equal([...doc.querySelectorAll('.picker-browse-label')].map(label=>label.textContent).join(','),'Chase,Amex,Citi,Capital One,Discover,US Bank,Wells Fargo,Airline cards,Store cards,Business cards,Other');
+      assert(!doc.body.textContent.includes('cards available'),'Browse tiles should never show counts');
+      assert(![...doc.querySelectorAll('.picker-browse-label')].some(label=>label.textContent==='Hotel cards'),'An empty production shelf should hide automatically');
+      assert(doc.getElementById('pickerCustomRow').textContent.includes('Create a custom card'));
+      doc.getElementById('pickerCustomRow').click(); await afterRender(win);
+      equal(doc.getElementById('customCardBank').value,''); assert(doc.getElementById('pickerBack').textContent.includes('Add a card'));
+    });
+  });
+  test('picker catalog is exactly the production 28 in design order',()=>{
+    const expected=['csr','csp','freedom_flex','cfu','ink_cash','prime_visa','united_explorer','sw_priority',
+      'amex_gold','amex_plat','bcp','bce','biz_plat','biz_gold','bbp','bbc','custom_cash','double_cash',
+      'strata_premier','venture_x','savor','discover_it','usb_cashplus','wf_autograph','wf_active','bilt','target_circle','apple_card'];
+    equal(R.pickerCatalogIds().join(','),expected.join(','));
+  });
+  test('picker subtitles derive deterministically from production and custom rates',()=>{
+    equal(R.bestForCardForState('freedom_flex'),'5% rotating categories');
+    equal(R.bestForCardForState('usb_cashplus'),'5% categories you choose');
+    equal(R.bestForCardForState('double_cash',{overrides:{double_cash:{other:{v:3,u:'%'}}}}),'3% on everything');
+    equal(R.bestForCardForState('bcp'),'Up to 6% groceries & streaming');
+    equal(R.bestForCardForState('target_circle'),'Store-only card');
+    const state={custom:[{id:'cust_test',name:'Test custom',issuer:'Custom',program:'cash',rates:{dining:{v:2.5,u:'x'}},notes:'',brand:null,hotel:false,store:false,biz:false,other:false}]};
+    equal(R.bestForCardForState('cust_test',state),'2.5× dining');
+  });
+  test('wallet filters scroll horizontally and preserve original priority numbers',async()=>{
+    const myCards=['csp','amex_gold','double_cash','united_explorer','ink_cash','prime_visa','bilt'];
+    await withAppState({schemaVersion:4,myCards},async(win,doc,frame)=>{
+      frame.style.width='390px'; frame.style.height='844px';
+      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      const filterRow=doc.querySelector('.picker-filter-row'), chips=[...filterRow.querySelectorAll('button')];
+      equal(chips.map(chip=>chip.dataset.pickerFilter).join(','),'issuer:Chase,issuer:Amex,issuer:Citi,group:airline,group:store,group:business,group:other');
+      equal(doc.querySelector('[data-picker-filter="group:store"] .picker-filter-glyph').textContent,'🏪');
+      assert(filterRow.scrollWidth>filterRow.clientWidth,'All available filters should remain reachable in one horizontal row');
+      const rowStyle=win.getComputedStyle(filterRow); equal(rowStyle.overflowX,'auto'); equal(rowStyle.scrollbarWidth,'none');
+      assert(chips.every(chip=>chip.getBoundingClientRect().height>=44),'Filter chips need unclipped 44px targets');
+      chips.at(-1).focus(); await afterRender(win); assert(filterRow.scrollLeft>0,'A focused offscreen filter should scroll into view');
+      doc.querySelector('[data-picker-filter="issuer:Chase"]').click(); await afterRender(win);
+      equal([...doc.querySelectorAll('[data-picker-held]')].map(row=>row.dataset.pickerHeld).join(','),'csp,united_explorer,ink_cash,prime_visa');
+      equal([...doc.querySelectorAll('.picker-priority')].map(node=>node.textContent).join(','),'1,4,5,6');
+      assert(!doc.querySelector('[data-picker-drag]'),'Reorder handles should hide while filtering');
+      equal(doc.querySelector('.picker-held-footer').textContent,'Showing 4 of 7 · ✕ clears the filter');
+      const active=doc.querySelector('[data-picker-filter="issuer:Chase"]');
+      assert(active.classList.contains('is-active')&&active.querySelector('.picker-filter-close'),'The active filter should carry its clear mark');
+      active.click(); await afterRender(win);
+      equal(doc.querySelectorAll('[data-picker-held]').length,7); equal(doc.querySelectorAll('[data-picker-drag]').length,7);
     });
   });
   test('held card rows open the editor and handles reorder with the keyboard',async()=>{
@@ -892,13 +934,37 @@ document.getElementById('app').addEventListener('load',async()=>{
       equal(JSON.parse(win.localStorage.getItem('cardrouter')).myCards.join(','),'amex_gold,csp,double_cash');
       equal(doc.activeElement.dataset.focusId,'picker-drag-amex_gold');
       assert(doc.getElementById('pickerLive').textContent.includes('moved to priority 1'));
+      const currentHandle=doc.querySelector('[data-picker-drag="amex_gold"]'), edit=doc.querySelector('[data-picker-edit="amex_gold"]');
+      assert(currentHandle.getBoundingClientRect().width>=44,'Reorder needs a 44px target');
+      assert(edit.getBoundingClientRect().right<=currentHandle.getBoundingClientRect().left,'Edit and reorder targets must not overlap');
     });
   });
-  test('search keeps every match in a six-row scroll region and restores the hub when cleared',async()=>{
-    await withAppState({schemaVersion:4,myCards:['csp']},async(win,doc)=>{
+  test('pointer drag reorders by live row position while pointer cancellation is a no-op',async()=>{
+    await withAppState({schemaVersion:4,myCards:['csp','amex_gold','double_cash']},async(win,doc,frame)=>{
+      frame.style.width='390px'; frame.style.height='844px';
       doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      let handle=doc.querySelector('[data-picker-drag="csp"]'), target=doc.querySelector('[data-picker-held="double_cash"]');
+      handle.setPointerCapture=()=>{};handle.releasePointerCapture=()=>{};handle.hasPointerCapture=()=>false;
+      const start=handle.getBoundingClientRect(), end=target.getBoundingClientRect();
+      handle.dispatchEvent(new win.PointerEvent('pointerdown',{bubbles:true,pointerId:1,pointerType:'touch',clientY:start.top+start.height/2}));
+      handle.dispatchEvent(new win.PointerEvent('pointermove',{bubbles:true,pointerId:1,pointerType:'touch',clientY:end.bottom-1}));
+      handle.dispatchEvent(new win.PointerEvent('pointercancel',{bubbles:true,pointerId:1,pointerType:'touch',clientY:end.bottom-1}));
+      await afterRender(win); equal(JSON.parse(win.localStorage.getItem('cardrouter')).myCards.join(','),'csp,amex_gold,double_cash');
+      handle=doc.querySelector('[data-picker-drag="csp"]'); target=doc.querySelector('[data-picker-held="double_cash"]');
+      handle.setPointerCapture=()=>{};handle.releasePointerCapture=()=>{};handle.hasPointerCapture=()=>false;
+      const start2=handle.getBoundingClientRect(), end2=target.getBoundingClientRect();
+      handle.dispatchEvent(new win.PointerEvent('pointerdown',{bubbles:true,pointerId:2,pointerType:'touch',clientY:start2.top+start2.height/2}));
+      handle.dispatchEvent(new win.PointerEvent('pointermove',{bubbles:true,pointerId:2,pointerType:'touch',clientY:end2.bottom-1}));
+      handle.dispatchEvent(new win.PointerEvent('pointerup',{bubbles:true,pointerId:2,pointerType:'touch',clientY:end2.bottom-1}));
+      await afterRender(win); equal(JSON.parse(win.localStorage.getItem('cardrouter')).myCards.join(','),'amex_gold,double_cash,csp');
+    });
+  });
+  test('search keeps every match in a six-row scroll region and restores browse when cleared',async()=>{
+    await withAppState({schemaVersion:4,myCards:['csp']},async(win,doc,frame)=>{
+      frame.style.width='390px'; frame.style.height='844px';
+      doc.querySelector('nav button[data-tab="cards"]').click(); doc.getElementById('pickerAddCard').click(); await afterRender(win);
       const input=doc.getElementById('cardSearch'); input.focus(); await afterRender(win);
-      assert(!doc.getElementById('pickerHubTop').hidden&&!doc.getElementById('pickerBrowse').hidden&&!doc.getElementById('pageHeader').hidden,'An empty focused search should retain the hub');
+      assert(!doc.getElementById('pickerBrowseContent').hidden&&!doc.getElementById('pickerBrowse').hidden,'An empty focused search should retain Add-page browse');
       input.value='a'; input.dispatchEvent(new win.Event('input',{bubbles:true})); await afterRender(win);
       const results=doc.querySelector('.picker-search-results'), rows=[...results.querySelectorAll('.picker-search-row')];
       assert(rows.length>6,'The full production match set should remain in the DOM');
@@ -906,70 +972,104 @@ document.getElementById('app').addEventListener('load',async()=>{
       assert(results.clientHeight>=330&&results.clientHeight<=336,`Expected a six-row region, received ${results.clientHeight}px`);
       assert(rows.some(row=>row.textContent.includes('Apple Card')),'A late catalog match must not be hard-capped away');
       assert(rows.every(row=>row.querySelector('mark')),'Every name match should be highlighted');
+      assert(doc.getElementById('pickerLive').textContent.includes(`${rows.length} matching cards`),'Live search should announce its result count');
+      equal(win.getComputedStyle(doc.querySelector('nav')).display,'none','Bottom navigation should hide while typing');
       doc.getElementById('pickerSearchClear').click(); await afterRender(win);
-      equal(input.value,''); assert(!doc.getElementById('pickerHubTop').hidden&&!doc.getElementById('pickerBrowse').hidden&&!doc.getElementById('pageHeader').hidden);
+      equal(input.value,''); assert(!doc.getElementById('pickerBrowseContent').hidden&&!doc.getElementById('pickerBrowse').hidden);
+      assert(win.getComputedStyle(doc.querySelector('nav')).display!=='none','Clearing should restore Add-page navigation');
     });
   });
-  test('adding from search stays in place, uses the short artwork toast, and supports Undo',async()=>{
+  test('adding from search stays in place and replaces Add with noninteractive status',async()=>{
     await withAppState({schemaVersion:4,myCards:['csp']},async(win,doc)=>{
-      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      doc.querySelector('nav button[data-tab="cards"]').click(); doc.getElementById('pickerAddCard').click(); await afterRender(win);
       const input=doc.getElementById('cardSearch'); input.value='Freedom Flex'; input.dispatchEvent(new win.Event('input',{bubbles:true})); await afterRender(win);
       doc.querySelector('[data-picker-add="freedom_flex"]').click(); await afterRender(win);
-      equal(doc.title,'ChooseMyCard · Search cards'); equal(doc.getElementById('cardSearch').value,'Freedom Flex');
-      assert(doc.querySelector('[data-focus-id="picker-action-freedom_flex"].is-added'));
-      const toast=doc.getElementById('toast'); assert(toast.classList.contains('card-picker-toast')&&toast.classList.contains('show'));
-      equal(doc.getElementById('toastmsg').textContent,'Freedom Flex added'); assert(doc.getElementById('toastart').src.endsWith('/assets/card-picker/cards/card-freedom_flex-112.webp'));
+      equal(doc.title,'ChooseMyCard · Add a card'); equal(doc.getElementById('cardSearch').value,'Freedom Flex');
+      const status=doc.querySelector('[data-focus-id="picker-action-freedom_flex"]');
+      equal(status.tagName,'SPAN'); equal(status.textContent,'✓ Added'); assert(!status.hasAttribute('disabled')&&!status.hasAttribute('aria-disabled'));
+      assert(JSON.parse(win.localStorage.getItem('cardrouter')).myCards.includes('freedom_flex'));
+      assert(!doc.getElementById('toast').classList.contains('show'),'Adding a card should not raise the retired coaching toast');
       assert(!doc.querySelector('nav .pulse'),'The retired coaching pulse must not return');
-      doc.getElementById('toastundo').click(); await afterRender(win);
-      assert(doc.querySelector('[data-picker-add="freedom_flex"]')); assert(!JSON.parse(win.localStorage.getItem('cardrouter')).myCards.includes('freedom_flex'));
-      doc.querySelector('[data-picker-add="freedom_flex"]').click(); await afterRender(win); doc.querySelector('nav button[data-tab="benefits"]').click(); await afterRender(win);
-      doc.getElementById('toastundo').click(); await afterRender(win);
-      equal(doc.title,'ChooseMyCard · Benefits'); assert(!JSON.parse(win.localStorage.getItem('cardrouter')).myCards.includes('freedom_flex'),'Undo from another tab should not replace that tab with picker content');
     });
   });
   test('issuer pages use only production cards and keep held cards visibly marked',async()=>{
     await withAppState({schemaVersion:4,myCards:['csp']},async(win,doc)=>{
-      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      doc.querySelector('nav button[data-tab="cards"]').click(); doc.getElementById('pickerAddCard').click(); await afterRender(win);
       doc.querySelector('[data-picker-route="issuer"][data-picker-value="Chase"]').click(); await afterRender(win);
       equal(doc.querySelector('[data-picker-page-title]').textContent,'Add a Chase card');
-      const tiles=[...doc.querySelectorAll('.picker-card-tile')]; equal(tiles.length,7,'Six production Chase cards plus Custom should render');
-      assert(tiles.at(-1).textContent.includes('Custom Chase card')&&tiles.at(-1).textContent.includes('issuer pre-filled'));
-      assert(doc.querySelector('[data-focus-id="picker-action-csp"].is-added').textContent.includes('In my cards'));
+      equal(doc.querySelector('.picker-page-count').textContent,'7 cards to add · co-brands appear here and under their brand');
+      const tiles=[...doc.querySelectorAll('.picker-card-tile')]; equal(tiles.length,9,'Eight production Chase cards plus Custom should render');
+      assert(tiles.at(-1).textContent.includes('Custom Chase card')&&tiles.at(-1).textContent.includes('bank pre-filled'));
+      const status=doc.querySelector('[data-focus-id="picker-action-csp"]'); equal(status.tagName,'SPAN'); equal(status.textContent,'✓ In my cards');
+      equal([...doc.querySelectorAll('[data-picker-add]')].map(button=>button.dataset.pickerAdd).join(','),'csr,freedom_flex,cfu,ink_cash,prime_visa,united_explorer,sw_priority');
       assert(!doc.body.textContent.includes('Ink Business Preferred')&&!doc.body.textContent.includes('United Quest'),'Proposed cards must not ship');
+      doc.getElementById('pickerBack').click(); await afterRender(win);
+      doc.querySelector('[data-picker-route="issuer"][data-picker-value="Amex"]').click(); await afterRender(win);
+      equal([...doc.querySelectorAll('[data-picker-add]')].map(button=>button.dataset.pickerAdd).join(','),'amex_gold,amex_plat,bcp,bce,biz_plat,biz_gold,bbp,bbc');
     });
   });
-  test('airline chips scroll, remain focusable, and Delta truthfully filters to custom only',async()=>{
-    await withAppState({schemaVersion:4,myCards:[]},async(win,doc)=>{
-      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
-      doc.querySelector('[data-picker-route="airline"]').click(); await afterRender(win);
-      const chipRow=doc.querySelector('.picker-jump-row'), chips=[...chipRow.querySelectorAll('button')];
-      equal(chips.length,8); assert(chipRow.scrollWidth>chipRow.clientWidth,'All plus seven fixed airline chips should overflow horizontally');
-      const rowStyle=win.getComputedStyle(chipRow); equal(rowStyle.overflowX,'auto'); equal(rowStyle.marginLeft,'-14px'); equal(rowStyle.paddingLeft,'14px'); equal(rowStyle.scrollbarWidth,'none');
-      equal([...doc.querySelectorAll('.picker-airline-group-heading h2')].map(h=>h.textContent).join(','),'United,Southwest');
-      const hawaiian=doc.querySelector('[data-airline-filter="Hawaiian"]'); hawaiian.focus(); await afterRender(win); assert(chipRow.scrollLeft>0,'A focused offscreen chip should scroll into view');
-      const delta=doc.querySelector('[data-airline-filter="Delta"]'); delta.click(); await afterRender(win);
-      equal(doc.querySelector('.picker-page-hint').textContent,'filtered to Delta'); equal(doc.querySelector('[data-airline-filter="Delta"]').getAttribute('aria-pressed'),'true');
-      equal([...doc.querySelectorAll('.picker-airline-group-heading h2')].map(h=>h.textContent).join(','),'Delta');
-      equal(doc.querySelectorAll('.picker-card-grid.is-airline-group .picker-card-tile').length,1); assert(doc.querySelector('.picker-card-tile').textContent.includes('Custom Delta card'));
-      assert(!doc.querySelector('.picker-card-grid.is-airline-group .picker-card-art:not(.picker-art-placeholder)'),'No unverified Delta card should render');
+  test('category pages are generic, production-only shelves with Custom last',async()=>{
+    await withAppState({schemaVersion:4,myCards:[]},async(win,doc,frame)=>{
+      frame.style.width='390px'; frame.style.height='844px'; await afterRender(win);
+      doc.querySelector('nav button[data-tab="cards"]').click(); doc.getElementById('pickerAddCard').click(); await afterRender(win);
+      doc.querySelector('[data-picker-route="category"][data-picker-value="business"]').click(); await afterRender(win);
+      equal(doc.querySelector('[data-picker-page-title]').textContent,'Business cards'); equal(doc.querySelector('.picker-page-count').textContent,'5 cards');
+      equal([...doc.querySelectorAll('[data-picker-add]')].map(button=>button.dataset.pickerAdd).join(','),'ink_cash,biz_plat,biz_gold,bbp,bbc');
+      const tiles=[...doc.querySelectorAll('.picker-card-tile')]; equal(tiles.length,6); assert(tiles.at(-1).textContent.includes('Custom card'));
     });
   });
-  test('custom cards persist structured browse metadata and reappear in their category',async()=>{
+  test('custom card step derives hidden metadata and keeps shared shelves production-only',async()=>{
     const legacy=R.normalizeState({schemaVersion:3,custom:[{id:'cust_old',name:'Old custom',issuer:'Custom',program:'cash',rates:{other:{v:1,u:'%'}},notes:''}],myCards:['cust_old']});
-    assert(legacy.custom[0].other,'Older uncategorized custom cards should migrate into Other');
-    await withAppState({schemaVersion:4,myCards:[]},async(win,doc)=>{
-      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
-      doc.querySelector('[data-picker-route="store"]').click(); await afterRender(win);
+    assert(!legacy.custom[0].other,'Missing legacy browse flags should normalize to false');
+    await withAppState({schemaVersion:4,myCards:[]},async(win,doc,frame)=>{
+      frame.style.width='390px'; frame.style.height='844px'; await afterRender(win);
+      doc.querySelector('nav button[data-tab="cards"]').click(); doc.getElementById('pickerAddCard').click(); await afterRender(win);
+      doc.querySelector('[data-picker-route="issuer"][data-picker-value="Chase"]').click(); await afterRender(win);
       doc.querySelector('[data-picker-custom]').click(); await afterRender(win);
-      assert(doc.getElementById('sheet').textContent.includes('This card will appear under Store cards.'));
-      equal(doc.getElementById('ccissuer').tagName,'SELECT'); equal(doc.getElementById('ccbrand').tagName,'SELECT');
-      assert(doc.getElementById('cc-store').checked&&!doc.getElementById('cc-other').checked,'The Store route should prefill structured flags without free text');
-      assert([...doc.querySelectorAll('.custom-meta-check')].every(label=>label.getBoundingClientRect().height>=44),'Structured category choices should retain 44px touch targets');
-      doc.getElementById('ccname').value='Neighborhood Shop Card'; doc.getElementById('ccsave').click(); await afterRender(win);
+      equal(doc.querySelector('[data-picker-page-title]').textContent,'Custom card'); equal(doc.activeElement.id,'customCardName');
+      equal(doc.getElementById('customCardBank').value,'Chase'); assert(doc.getElementById('pickerBankHint').textContent.includes('pre-filled'));
+      assert(!doc.getElementById('ccbrand')&&!doc.querySelector('.custom-meta-grid'),'Browse metadata must stay out of the custom-card UI');
+      equal(win.getComputedStyle(doc.querySelector('nav')).display,'none','The custom step should use the full page without bottom navigation');
+      assert(doc.getElementById('customCardName').getBoundingClientRect().height>=44);
+      assert(doc.getElementById('customCardBank').getBoundingClientRect().height>=44);
+      assert([...doc.querySelectorAll('[data-custom-unit]')].every(button=>button.getBoundingClientRect().height>=44),'Unit choices need 44px targets');
+      const firstCategory=doc.getElementById('customRateCategory0'), firstValue=doc.getElementById('customRateValue0');
+      equal(doc.querySelector('label[for="customRateCategory0"]').textContent,'Reward category, rate 1');
+      equal(doc.querySelector('label[for="customRateValue0"]').textContent,'Reward value, rate 1');
+      firstCategory.focus(); await afterRender(win);
+      assert(win.getComputedStyle(firstCategory.closest('.picker-rate-select-shell'),'::before').boxShadow!=='none','Rate category needs a visible focus ring');
+      firstValue.focus(); await afterRender(win);
+      assert(win.getComputedStyle(firstValue.closest('.picker-rate-value-shell'),'::before').boxShadow!=='none','Rate value needs a visible focus ring');
+      doc.getElementById('customCardName').value='Neighborhood Shop Card';
+      doc.querySelector('[data-custom-unit="x"]').click();
+      doc.getElementById('customCardForm').requestSubmit();
+      await new Promise(resolve=>win.setTimeout(resolve,100)); await afterRender(win);
       const saved=JSON.parse(win.localStorage.getItem('cardrouter')), custom=saved.custom[0];
-      equal(custom.issuer,'Custom'); equal(custom.brand,''); assert(custom.store&&!custom.hotel&&!custom.biz&&!custom.other);
+      equal(custom.issuer,'Chase'); equal(custom.program,'chase'); equal(custom.brand,null);
+      assert(!custom.store&&!custom.hotel&&!custom.biz&&!custom.other); equal(custom.rates.other.u,'x');
       assert(saved.myCards.includes(custom.id)); assert(doc.body.textContent.includes('Neighborhood Shop Card'));
-      assert(doc.querySelector('[data-focus-id^="picker-action-cust_"].is-added'),'The new custom card should filter into the active Store page');
+      doc.getElementById('pickerAddCard').click(); await afterRender(win);
+      doc.querySelector('[data-picker-route="category"][data-picker-value="other"]').click(); await afterRender(win);
+      assert(!doc.querySelector('.picker-card-grid').textContent.includes('Neighborhood Shop Card'),'A personal custom card must not enter a shared category shelf');
+    });
+  });
+  test('removing a custom card removes its private record instead of orphaning it',async()=>{
+    const custom={id:'cust_private',name:'Private custom',issuer:'Custom',program:'cash',rates:{other:{v:2,u:'%'}},notes:'',brand:null,hotel:false,store:false,biz:false,other:false};
+    await withAppState({schemaVersion:4,myCards:[custom.id],custom:[custom],overrides:{cust_private:{other:{v:3,u:'%'}}}},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      doc.querySelector('[data-picker-held="cust_private"]').click(); await afterRender(win);
+      doc.getElementById('removeCard').click(); await afterRender(win);
+      const saved=JSON.parse(win.localStorage.getItem('cardrouter'));
+      equal(saved.myCards.length,0); equal(saved.custom.length,0); assert(!saved.overrides.cust_private);
+    });
+  });
+  test('browser Forward restores the selected non-picker tab',async()=>{
+    await withAppState({schemaVersion:4,myCards:['csp']},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="cards"]').click(); doc.getElementById('pickerAddCard').click(); await afterRender(win);
+      doc.querySelector('nav button[data-tab="benefits"]').click(); await afterRender(win); equal(doc.querySelector('nav button.on').dataset.tab,'benefits');
+      win.history.back(); await new Promise(resolve=>win.setTimeout(resolve,30)); await afterRender(win);
+      win.history.forward(); await new Promise(resolve=>win.setTimeout(resolve,30)); await afterRender(win);
+      equal(doc.querySelector('nav button.on').dataset.tab,'benefits');
     });
   });
 

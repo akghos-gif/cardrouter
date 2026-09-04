@@ -17,32 +17,30 @@
     --bg:#f4f5f7; --card:#ffffff; --ink:#1a1d21; --muted:#596270; --line:#e5e7eb;
     --accent:#2563eb; --primary-bg:#2563eb; --accent-ink:#ffffff; --gold:#b45309; --good:#047857; --warn:#b91c1c;
     --chip:#eef2ff; --chip-ink:#3730a3; --radius:16px; --nav-h:74px;
-    --picker-bg:#f4f5f7; --picker-surface:#ffffff; --picker-text:#1a1d21; --picker-secondary:#6b7280;
-    --picker-placeholder:#9ca3af; --picker-border:#e5e7eb; --picker-placeholder-fill:#eef0f3;
+    --picker-bg:#f4f5f7; --picker-surface:#ffffff; --picker-field-alt:#f9fafb; --picker-text:#1a1d21; --picker-secondary:#69717f;
+    --picker-placeholder:#69717f; --picker-border:#e5e7eb; --picker-placeholder-fill:#eef0f3;
     --picker-placeholder-border:#c7cbd1; --picker-accent:#2563eb; --picker-accent-hover:#1d4ed8;
-    --picker-accent-tint:#eef2ff; --picker-accent-on-tint:#3730a3; --picker-accent-on-dark:#93c5fd;
+    --picker-primary:#2563eb; --picker-primary-hover:#1d4ed8;
+    --picker-accent-tint:#eef2ff; --picker-accent-on-tint:#3730a3;
     --picker-success:#047857; --picker-success-fill:rgba(4,120,87,.12); --picker-highlight:#fef3c7;
-    --picker-toast:#1a1d21; --picker-toast-text:#f4f5f7;
     --picker-header-glow:rgba(37,99,235,.10); --picker-logo-shadow:rgba(37,99,235,.35);
     --picker-focus-ring:rgba(37,99,235,.12); --picker-clear:#d1d5db; --picker-clear-text:#ffffff;
     --picker-nav-idle:rgba(125,125,125,.10); --picker-nav-shadow:rgba(0,0,0,.08);
     --picker-nav-active-shadow:rgba(37,99,235,.28); --picker-logo-backing:#ffffff;
-    --picker-toast-shadow:rgba(0,0,0,.25);
   }
   @media (prefers-color-scheme: dark){
     :root{ --bg:#0f1115; --card:#191c22; --ink:#f3f4f6; --muted:#aeb6c2; --line:#2a2f38;
       --accent:#3b82f6; --primary-bg:#1d4ed8; --gold:#f59e0b; --good:#34d399; --warn:#f87171; --chip:#1e2a4a; --chip-ink:#a5b4fc;
-      --picker-bg:#0f1115; --picker-surface:#191c22; --picker-text:#f3f4f6; --picker-secondary:#aeb6c2;
-      --picker-placeholder:#7f8896; --picker-border:#626b78; --picker-placeholder-fill:#22262e;
+      --picker-bg:#0f1115; --picker-surface:#191c22; --picker-field-alt:#20242b; --picker-text:#f3f4f6; --picker-secondary:#aeb6c2;
+      --picker-placeholder:#818b99; --picker-border:#626b78; --picker-placeholder-fill:#22262e;
       --picker-placeholder-border:#697381; --picker-accent:#3b82f6; --picker-accent-hover:#60a5fa;
-      --picker-accent-tint:#1e2a4a; --picker-accent-on-tint:#a5b4fc; --picker-accent-on-dark:#bfdbfe;
+      --picker-primary:#1d4ed8; --picker-primary-hover:#2563eb;
+      --picker-accent-tint:#1e2a4a; --picker-accent-on-tint:#a5b4fc;
       --picker-success:#34d399; --picker-success-fill:rgba(52,211,153,.14); --picker-highlight:#5f4b16;
-      --picker-toast:#2a2f38; --picker-toast-text:#f3f4f6;
       --picker-header-glow:rgba(59,130,246,.12); --picker-logo-shadow:rgba(59,130,246,.45);
       --picker-focus-ring:rgba(59,130,246,.24); --picker-clear:#46505d; --picker-clear-text:#f3f4f6;
       --picker-nav-idle:rgba(174,182,194,.08); --picker-nav-shadow:rgba(0,0,0,.38);
-      --picker-nav-active-shadow:rgba(59,130,246,.38); --picker-logo-backing:#ffffff;
-      --picker-toast-shadow:rgba(0,0,0,.45); }
+      --picker-nav-active-shadow:rgba(59,130,246,.38); --picker-logo-backing:#ffffff; }
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   [hidden]{display:none!important}
@@ -122,11 +120,6 @@
   .field-label{display:block; font-size:13.5px; font-weight:600; line-height:1.35}
   .field-label .tag{display:block; font-weight:400}
   .field-error{margin:0; color:var(--warn); font-size:13px; font-weight:650; line-height:1.4}
-  .custom-meta{border:1px solid var(--line); border-radius:12px; padding:10px 12px}
-  .custom-meta-title{font-size:13.5px; font-weight:600; line-height:1.35; margin-bottom:8px}
-  .custom-meta-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px 10px}
-  .custom-meta-checks{display:grid; grid-template-columns:1fr 1fr; gap:0 10px; margin-top:4px}
-  .custom-meta-check{display:flex; align-items:center; gap:8px; min-height:44px; font-size:13.5px}
   .custom-placement{margin:8px 0 0}
   .sr-only{position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important}
   .empty{color:var(--muted); text-align:center; padding:22px 10px; font-size:14px; line-height:1.5}
@@ -248,142 +241,236 @@
   body.card-picker-mode nav button.on{color:var(--picker-accent)}
   body.card-picker-mode nav button.on .em{background:var(--picker-accent-tint); border-color:var(--picker-accent);
     box-shadow:0 1px 8px var(--picker-nav-active-shadow)}
-  .picker-held-list{background:var(--picker-surface); border:1px solid var(--picker-border); border-radius:16px;
-    padding:2px 14px; margin:8px 0}
-  .picker-held-row{display:flex; align-items:center; gap:10px; padding:0; border-bottom:1px solid var(--picker-border);
-    position:relative; transition:transform .2s cubic-bezier(.16,1,.3,1)}
-  .picker-held-row.is-dragging{z-index:2; transition:none}
-  .picker-held-edit{display:grid; grid-template-columns:20px 44px minmax(0,1fr); align-items:center; gap:10px;
-    flex:1; min-width:0; margin:0; padding:7px 0; border:0; background:transparent; color:var(--picker-text);
-    font:inherit; text-align:left; cursor:pointer; border-radius:7px}
-  .picker-priority{width:20px; color:var(--picker-secondary); font-size:12px; font-weight:700; text-align:center}
-  .picker-held-art{width:44px; height:28px; border-radius:4px; object-fit:cover; display:block; flex:none}
-  .picker-held-name{display:block; font-size:14.5px; font-weight:600; overflow-wrap:anywhere}
-  .picker-held-best{display:block; color:var(--picker-secondary); font-size:12.5px; margin-top:1px; overflow-wrap:anywhere}
-  .picker-drag-handle{width:20px; height:44px; margin:0; padding:0; border:0; background:transparent;
-    color:var(--picker-placeholder); font:inherit; font-size:16px; letter-spacing:-2px; cursor:grab; position:relative;
-    touch-action:none; border-radius:6px; flex:none}
-  .picker-drag-handle::before{content:""; position:absolute; inset:-8px -12px}
-  .picker-drag-handle:active{cursor:grabbing}
-  .picker-add-heading{display:flex; align-items:baseline; justify-content:space-between; margin:6px 4px}
-  .picker-add-heading h2{font-size:16px; font-weight:700; margin:0}
-  .picker-custom-link{border:0; background:transparent; color:var(--picker-accent); font:inherit; font-size:13px;
-    font-weight:500; margin:0; padding:0; cursor:pointer; position:relative}
-  .picker-custom-link::before{content:""; position:absolute; inset:-15px -4px}
-  .picker-custom-link:hover{color:var(--picker-accent-hover)}
-  .picker-search-shell{height:44px; display:flex; align-items:center; gap:8px; padding:0 12px; position:relative;
-    color:var(--picker-placeholder); font-size:15px}
-  .picker-search-shell::before{content:""; position:absolute; inset:1px 0; border:1px solid var(--picker-border);
-    border-radius:12px; background:var(--picker-surface)}
-  .picker-search-shell:focus-within::before{border:1.5px solid var(--picker-accent);
-    box-shadow:0 0 0 3px var(--picker-focus-ring)}
-  .picker-search-icon,.picker-search-input,.picker-search-clear{position:relative; z-index:1}
-  .picker-search-icon{font-size:15px; line-height:1; flex:none}
-  .picker-search-input{flex:1; min-width:0; height:44px; padding:0; border:0; border-radius:0; outline:0!important;
-    background:transparent!important; color:var(--picker-text); font:inherit; font-size:15px; caret-color:var(--picker-accent);
-    -webkit-appearance:none; appearance:none}
-  .picker-search-input::-webkit-search-cancel-button{display:none}
-  .picker-search-input::placeholder{color:var(--picker-placeholder); opacity:1}
-  .picker-search-clear{width:18px; height:18px; margin:0; padding:0; border:0; border-radius:99px;
-    background:var(--picker-clear); color:var(--picker-clear-text); font:inherit; font-size:11px; line-height:18px; cursor:pointer; flex:none}
-  .picker-search-clear::before{content:""; position:absolute; inset:-13px}
-  .picker-search-results{background:var(--picker-surface); border:1px solid var(--picker-border); border-radius:16px;
-    padding:2px 14px; margin-top:10px; max-height:336px; overflow-y:auto; overscroll-behavior:contain}
-  .picker-search-row{display:flex; align-items:center; gap:10px; min-height:54px; padding:9px 0;
-    border-bottom:1px solid var(--picker-border)}
-  .picker-search-art{width:56px; height:36px; border-radius:5px; object-fit:cover; display:block; flex:none}
-  .picker-search-copy{flex:1; min-width:0}
-  .picker-search-name{font-size:14.5px; font-weight:600; overflow-wrap:anywhere}
-  .picker-search-name mark{background:var(--picker-highlight); color:inherit; border-radius:3px; padding:0}
-  .picker-search-best{color:var(--picker-secondary); font-size:12.5px; margin-top:1px; overflow-wrap:anywhere}
-  .picker-search-action,.picker-tile-action{width:76px; box-sizing:border-box; border-radius:99px; padding:6px 0;
-    border:1px solid var(--picker-accent); background:transparent; color:var(--picker-accent); font:inherit;
-    font-size:13.5px; font-weight:600; text-align:center; white-space:nowrap; cursor:pointer; position:relative}
-  .picker-search-action::before,.picker-tile-action::before{content:""; position:absolute; inset:-7px 0}
-  .picker-search-action.is-added,.picker-tile-action.is-added{border:0; background:var(--picker-success-fill);
-    color:var(--picker-success); font-size:12.5px; cursor:default}
-  .picker-search-action:hover:not(.is-added),.picker-tile-action:hover:not(.is-added){color:var(--picker-accent-hover); border-color:var(--picker-accent-hover)}
-  .picker-search-empty{padding:18px 0; color:var(--picker-secondary); font-size:13px; text-align:center}
-  .picker-custom-prompt{color:var(--picker-secondary); font-size:13px; line-height:1.45; margin:12px 4px}
-  .picker-custom-prompt button{border:0; background:transparent; color:var(--picker-accent); font:inherit; padding:0;
-    cursor:pointer; position:relative}
-  .picker-custom-prompt button::before{content:""; position:absolute; inset:-12px -3px}
-  .picker-hub.is-searching .picker-search-shell{margin-top:9px}
-  .picker-browse-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:8px}
-  .picker-browse-tile{display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:6px;
-    min-width:0; padding:12px 4px 10px; border:1px solid var(--picker-border); border-radius:14px;
-    background:var(--picker-surface); color:var(--picker-text); font:inherit; cursor:pointer}
-  .picker-browse-tile:hover{border-color:var(--picker-accent)}
-  .picker-browse-logo{width:34px; height:34px; object-fit:contain; border-radius:7px; display:block}
-  .picker-browse-glyph{width:34px; height:34px; border-radius:99px; background:var(--picker-accent-tint);
-    color:var(--picker-accent-on-tint); font-size:18px; display:flex; align-items:center; justify-content:center}
-  .picker-browse-label{font-size:12.5px; font-weight:600; text-align:center; line-height:1.2; overflow-wrap:anywhere}
-  .picker-page{color:var(--picker-text); padding-bottom:14px}
-  .picker-page.is-push{animation:picker-push .2s cubic-bezier(.16,1,.3,1)}
-  .picker-page.is-pop{animation:picker-pop .2s cubic-bezier(.16,1,.3,1)}
   @keyframes picker-push{from{opacity:.5;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
   @keyframes picker-pop{from{opacity:.5;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+
+  /* Seven-screen Add-a-card flow. Values mirror design/card-picker; invisible hit-area
+     extensions preserve the repository's 44px touch-target requirement. */
+  body.card-picker-mode .app-scroll{min-height:calc(100dvh - var(--nav-h) - 12px); display:flex; flex-direction:column}
+  body.card-picker-mode .card-picker-main{display:flex; flex:1; flex-direction:column; min-height:0; width:100%}
+  body.card-picker-no-nav{padding-bottom:0}
+  body.card-picker-no-nav .app-scroll{min-height:100dvh}
+  body.card-picker-no-nav nav{display:none}
+  body.card-picker-mode header{align-items:baseline; flex-wrap:nowrap}
+  body.card-picker-mode header .sub{color:var(--picker-secondary)}
+  .picker-add-button{display:flex; align-items:center; justify-content:center; width:38px; height:38px; flex:none;
+    align-self:center; margin-left:auto; padding:0; border:0; border-radius:99px; background:var(--picker-primary); color:#fff;
+    font:inherit; font-size:24px; font-weight:300; line-height:1; box-shadow:0 3px 10px rgba(37,99,235,.3);
+    cursor:pointer; position:relative}
+  .picker-add-button::before{content:""; position:absolute; inset:-3px}
+  .picker-add-button:hover{background:var(--picker-primary-hover)}
+
+  .picker-wallet{display:flex; flex:1; flex-direction:column; min-height:0; margin:0 -14px}
+  .picker-filter-row{display:flex; flex:none; gap:6px; margin:-7px 0; padding:0 18px 2px; overflow-x:auto;
+    overflow-y:visible; overscroll-behavior-x:contain; scrollbar-width:none; -webkit-overflow-scrolling:touch}
+  .picker-filter-row::-webkit-scrollbar{display:none}
+  .picker-filter-chip{display:flex; align-items:center; gap:6px; flex:none; min-height:44px; margin:0; padding:6px 11px;
+    border:0; border-radius:99px; background:transparent; color:var(--picker-text); isolation:isolate;
+    font:inherit; font-size:13px; font-weight:500; line-height:normal; white-space:nowrap; cursor:pointer; position:relative}
+  .picker-filter-chip::before{content:""; position:absolute; z-index:-1; inset:7px 0;
+    border:1px solid var(--picker-border); border-radius:99px; background:var(--picker-surface)}
+  .picker-filter-chip:focus-visible{outline-offset:-3px}
+  .picker-filter-chip.is-muted{opacity:.6}
+  .picker-filter-chip.is-active{padding:6px 10px 6px 11px; color:var(--picker-surface); font-weight:600}
+  .picker-filter-chip.is-active::before{border-color:var(--picker-text); background:var(--picker-text)}
+  .picker-filter-logo{display:block; width:15px; height:15px; border-radius:3px; object-fit:contain}
+  .picker-filter-chip.is-active .picker-filter-logo{box-sizing:content-box; padding:1px; background:var(--picker-logo-backing)}
+  .picker-filter-glyph{font-size:13px; line-height:1}
+  .picker-filter-close{margin-left:2px; font-size:11px; opacity:.8}
+  .picker-held-wrap{display:flex; flex:1; flex-direction:column; min-height:0; padding:0 14px 100px}
+  .picker-held-list{display:flex; flex:1; flex-direction:column; min-height:0; margin:8px 0; padding:2px 16px 0;
+    overflow-y:auto; overscroll-behavior-y:contain; border:1px solid var(--picker-border); border-radius:16px;
+    background:var(--picker-surface)}
+  .picker-held-row{display:flex; align-items:center; gap:11px; flex:none; padding:0;
+    border-bottom:1px solid var(--picker-border); position:relative; transition:transform .2s cubic-bezier(.16,1,.3,1)}
+  .picker-held-row.is-dragging{z-index:2; transition:none}
+  .picker-held-edit{display:grid; grid-template-columns:16px 58px minmax(0,1fr); align-items:center; gap:11px;
+    flex:1; min-width:0; margin:0; padding:11px 0; border:0; border-radius:7px; background:transparent;
+    color:var(--picker-text); font:inherit; text-align:left; cursor:pointer}
+  .picker-priority{width:16px; color:var(--picker-secondary); font-size:12px; font-weight:700; text-align:center}
+  .picker-held-art{display:block; width:58px; height:37px; flex:none; border-radius:5px; object-fit:cover}
+  .picker-held-name{display:block; font-size:14.5px; font-weight:600; overflow-wrap:anywhere}
+  .picker-held-best{display:block; margin-top:2px; color:var(--picker-secondary); font-size:12px; overflow-wrap:anywhere}
+  .picker-drag-handle{width:44px; height:44px; flex:none; margin:0 -14px 0 0; padding:0; border:0; border-radius:6px;
+    background:transparent; color:var(--picker-placeholder); font:inherit; font-size:16px; letter-spacing:-2px;
+    cursor:grab; touch-action:none; position:relative}
+  .picker-drag-handle:focus-visible{outline-offset:-3px}
+  .picker-drag-handle:active{cursor:grabbing}
+  .picker-held-footer{margin-top:auto; padding:12px 0; color:var(--picker-placeholder); font-size:12px}
+  .picker-wallet-empty{margin:auto; padding:22px 10px; color:var(--picker-secondary); font-size:14px;
+    line-height:1.5; text-align:center}
+
+  .picker-page{width:100%; padding-bottom:100px; color:var(--picker-text)}
+  .picker-page.is-push{animation:picker-push .2s cubic-bezier(.16,1,.3,1)}
+  .picker-page.is-pop{animation:picker-pop .2s cubic-bezier(.16,1,.3,1)}
   .picker-back{display:flex; align-items:center; gap:2px; width:max-content; min-height:84px; margin:0; padding:58px 0 0;
     border:0; background:transparent; color:var(--picker-accent); font:inherit; font-size:16px; cursor:pointer}
+  .picker-add-page:not(.is-searching) .picker-back{min-height:78px; padding-top:52px}
   .picker-back:hover{color:var(--picker-accent-hover)}
-  .picker-back-glyph{font-size:26px; line-height:1; margin-top:-3px}
-  .picker-page-heading{display:flex; align-items:center; gap:10px; margin:0 4px; padding:8px 0}
-  .picker-page-heading.is-airline{align-items:baseline; gap:8px}
-  .picker-page-logo{width:28px; height:28px; object-fit:contain; border-radius:6px; display:block; flex:none}
-  .picker-page-glyph{width:28px; height:28px; border-radius:6px; background:var(--picker-accent-tint);
-    color:var(--picker-accent-on-tint); display:flex; align-items:center; justify-content:center; font-size:17px; flex:none}
-  .picker-page-heading h1{font-size:22px; font-weight:700; letter-spacing:-.02em; line-height:28px; margin:0}
-  .picker-page-hint{color:var(--picker-secondary); font-size:13px; line-height:1.2}
-  .picker-card-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px}
-  .picker-card-grid.is-airline-group{margin-top:0}
-  .picker-card-tile{display:flex; flex-direction:column; gap:7px; min-width:0; padding:8px; border:1px solid var(--picker-border);
-    border-radius:14px; background:var(--picker-surface)}
+  .picker-back-glyph{margin-top:-3px; font-size:26px; line-height:1}
+  .picker-add-title{margin:0 4px; padding:4px 0}
+  .picker-add-page.is-searching .picker-add-title{padding:6px 0}
+  .picker-add-title h1,.picker-custom-title h1,.picker-page-heading h1{margin:0; font-size:22px;
+    font-weight:700; letter-spacing:-.02em}
+  .picker-add-content{width:100%}
+  .picker-search-shell{display:flex; align-items:center; gap:8px; width:100%; height:44px; padding:0 12px;
+    border:1px solid var(--picker-border); border-radius:12px; background:var(--picker-surface);
+    color:var(--picker-placeholder); font-size:15px; position:relative}
+  .picker-search-shell::before{content:none}
+  .picker-search-shell:focus-within{border:1.5px solid var(--picker-accent); box-shadow:0 0 0 3px var(--picker-focus-ring)}
+  .picker-search-icon,.picker-search-input,.picker-search-clear{position:relative; z-index:1}
+  .picker-search-icon{flex:none; font-size:15px; line-height:1}
+  .picker-search-input{flex:1; min-width:0; height:42px; margin:0; padding:0; border:0; border-radius:0;
+    outline:0!important; background:transparent!important; color:var(--picker-text); caret-color:var(--picker-accent);
+    font:inherit; font-size:15px; -webkit-appearance:none; appearance:none}
+  .picker-search-input::-webkit-search-cancel-button{display:none}
+  .picker-search-input::placeholder{color:var(--picker-placeholder); opacity:1}
+  .picker-search-clear{width:18px; height:18px; flex:none; margin:0; padding:0; border:0; border-radius:99px;
+    background:var(--picker-clear); color:var(--picker-clear-text); font:inherit; font-size:11px; line-height:18px;
+    cursor:pointer}
+  .picker-search-clear::before{content:""; position:absolute; inset:-13px}
+  .picker-browse-heading{margin:16px 4px 8px; color:var(--picker-secondary); font-size:12px; font-weight:600;
+    letter-spacing:.04em; text-transform:uppercase}
+  .picker-browse-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin:0}
+  .picker-browse-tile{display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:6px;
+    min-width:0; margin:0; padding:12px 4px 10px; border:1px solid var(--picker-border); border-radius:14px;
+    background:var(--picker-surface); color:var(--picker-text); font:inherit; cursor:pointer}
+  .picker-browse-tile:hover{border-color:var(--picker-accent)}
+  .picker-browse-logo{display:block; width:34px; height:34px; border-radius:7px; object-fit:contain}
+  .picker-browse-glyph{display:flex; align-items:center; justify-content:center; width:34px; height:34px;
+    border-radius:99px; background:var(--picker-accent-tint); color:var(--picker-accent-on-tint); font-size:18px}
+  .picker-browse-label{font-size:12.5px; font-weight:600; line-height:1.2; text-align:center; overflow-wrap:anywhere}
+  .picker-custom-row{display:flex; align-items:center; gap:11px; width:100%; margin:9px 0 0; padding:13px 14px;
+    border:1px solid var(--picker-border); border-radius:14px; background:var(--picker-surface); color:var(--picker-text);
+    font:inherit; text-align:left; cursor:pointer}
+  .picker-custom-row:hover{border-color:var(--picker-accent)}
+  .picker-custom-row-art{display:flex; align-items:center; justify-content:center; width:38px; height:26px; flex:none;
+    border:1.5px dashed var(--picker-placeholder); border-radius:5px; color:var(--picker-secondary); font-size:16px; line-height:1}
+  .picker-custom-row-copy{display:flex; flex:1; flex-direction:column; gap:2px; min-width:0}
+  .picker-custom-row-title{font-size:14.5px; font-weight:600; line-height:1.2}
+  .picker-custom-row-sub{color:var(--picker-secondary); font-size:12px; line-height:1.25}
+  .picker-custom-row-chevron{color:var(--picker-placeholder); font-size:19px; line-height:1}
+
+  .picker-search-results{max-height:336px; margin-top:10px; padding:2px 14px; overflow-y:auto;
+    overscroll-behavior:contain; border:1px solid var(--picker-border); border-radius:16px; background:var(--picker-surface)}
+  .picker-search-row{display:flex; align-items:center; gap:10px; min-height:54px; padding:9px 0;
+    border-bottom:1px solid var(--picker-border)}
+  .picker-search-art{display:block; width:56px; height:36px; flex:none; border-radius:5px; object-fit:cover}
+  .picker-search-copy{flex:1; min-width:0}
+  .picker-search-name{font-size:14.5px; font-weight:600; overflow-wrap:anywhere}
+  .picker-search-name mark{padding:0; border-radius:3px; background:var(--picker-highlight); color:inherit}
+  .picker-search-best{margin-top:1px; color:var(--picker-secondary); font-size:12.5px; overflow-wrap:anywhere}
+  .picker-search-action,.picker-tile-action,.picker-card-status{box-sizing:border-box; border-radius:99px;
+    padding:6px 0; font:inherit; font-weight:600; line-height:normal; text-align:center; white-space:nowrap}
+  .picker-search-action,.picker-tile-action{border:1px solid var(--picker-accent); background:transparent;
+    color:var(--picker-accent); font-size:13.5px; cursor:pointer; position:relative}
+  .picker-search-action{width:76px; flex:none}
+  .picker-tile-action{width:100%; margin-top:auto; font-size:13px}
+  .picker-search-action::before,.picker-tile-action::before{content:""; position:absolute; inset:-7px 0}
+  .picker-search-action:hover,.picker-tile-action:hover{border-color:var(--picker-accent-hover); color:var(--picker-accent-hover)}
+  .picker-card-status{display:block; border:0; background:var(--picker-success-fill); color:var(--picker-success);
+    font-size:12.5px}
+  .picker-search-row .picker-card-status{width:76px; flex:none}
+  .picker-card-tile .picker-card-status{width:100%; margin-top:auto}
+  .picker-search-empty{padding:18px 0; color:var(--picker-secondary); font-size:13px; text-align:center}
+  .picker-search-custom{display:inline-block; min-height:44px; margin:0 4px; padding:10px 0; border:0;
+    background:transparent; color:var(--picker-accent); font:inherit; font-size:12.5px; line-height:1.45; cursor:pointer}
+  .picker-search-custom:hover{color:var(--picker-accent-hover)}
+
+  .picker-page-heading{display:flex; align-items:center; gap:10px; margin:0 4px; padding:8px 0 2px}
+  .picker-page-logo{display:block; width:28px; height:28px; flex:none; border-radius:6px; object-fit:contain}
+  .picker-page-glyph{display:flex; align-items:center; justify-content:center; width:28px; height:28px; flex:none;
+    border-radius:99px; background:var(--picker-accent-tint); color:var(--picker-accent-on-tint); font-size:15px}
+  .picker-page-heading h1{line-height:28px}
+  .picker-page-count{margin:0 4px; padding:0 0 6px; color:var(--picker-secondary); font-size:13px}
+  .picker-card-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px}
+  .picker-card-tile{display:flex; flex-direction:column; gap:6px; min-width:0; padding:8px;
+    border:1px solid var(--picker-border); border-radius:14px; background:var(--picker-surface)}
   .picker-card-art{display:block; width:100%; aspect-ratio:1.586; border-radius:7px; object-fit:cover}
   .picker-card-placeholder{display:flex; align-items:center; justify-content:center; width:100%; aspect-ratio:1.586;
-    border:1.5px dashed var(--picker-placeholder-border); border-radius:7px; background:var(--picker-placeholder-fill);
-    color:var(--picker-placeholder); font-size:28px; line-height:1; font-weight:300}
+    box-sizing:border-box; border:1.5px dashed var(--picker-placeholder-border); border-radius:7px;
+    background:var(--picker-placeholder-fill); color:var(--picker-placeholder); font-size:28px; font-weight:300; line-height:1}
   .picker-art-placeholder{display:flex; align-items:center; justify-content:center; border:1px dashed var(--picker-placeholder-border);
     background:var(--picker-placeholder-fill); color:var(--picker-placeholder); font-weight:500; line-height:1}
   .picker-card-name{font-size:13px; font-weight:600; line-height:1.25; overflow-wrap:anywhere}
-  .picker-card-subline{display:block; color:var(--picker-secondary); font-size:11.5px; font-weight:400; margin-top:1px}
-  .picker-tile-action{width:100%; margin-top:auto; font-size:13px}
-  .picker-tile-action.is-added{font-size:12.5px}
-  .picker-jump-row{display:flex; gap:6px; overflow-x:auto; margin:4px -14px 0; padding:0 14px;
-    overscroll-behavior-x:contain; scrollbar-width:none; -webkit-overflow-scrolling:touch}
-  .picker-jump-row::-webkit-scrollbar{display:none}
-  .picker-jump-chip{display:flex; align-items:center; gap:6px; flex:none; border:1px solid var(--picker-border);
-    border-radius:99px; padding:5px 11px 5px 6px; background:var(--picker-surface); color:var(--picker-text);
-    font:inherit; font-size:13px; font-weight:500; white-space:nowrap; cursor:pointer; position:relative}
-  .picker-jump-chip::before{content:""; position:absolute; inset:-7px 0}
-  .picker-jump-chip.is-all{padding:5px 12px}
-  .picker-jump-chip.is-active{border-color:var(--picker-text); background:var(--picker-text); color:var(--picker-surface); font-weight:600}
-  .picker-jump-chip.is-muted{opacity:.6}
-  .picker-jump-logo{width:18px; height:18px; object-fit:contain; border-radius:4px; display:block}
-  .picker-jump-chip.is-active .picker-jump-logo{background:var(--picker-logo-backing); padding:1px; box-sizing:border-box}
-  .picker-chip-close{font-size:11px; opacity:.8; margin-left:2px}
-  .picker-airline-group-heading{display:flex; align-items:center; gap:8px; margin:14px 4px 6px; min-width:0}
-  .picker-airline-group-logo{width:22px; height:22px; object-fit:contain; border-radius:5px; display:block; flex:none}
-  .picker-airline-group-heading h2{font-size:16px; font-weight:700; line-height:1.2; margin:0}
-  .picker-airline-meta{color:var(--picker-secondary); font-size:12.5px; line-height:1.2; min-width:0; overflow-wrap:anywhere}
-  .picker-empty-group{color:var(--picker-secondary); font-size:13px; line-height:1.45; margin:12px 4px}
-  #toastart{display:none}
-  .toast.card-picker-toast{left:50%; right:auto; bottom:max(104px,calc(var(--nav-h) + 22px));
-    width:min(532px,calc(100vw - 28px)); max-width:none; padding:12px 14px; border-radius:14px;
-    background:var(--picker-toast); color:var(--picker-toast-text); font-size:14px; text-align:left;
-    box-shadow:0 8px 24px var(--picker-toast-shadow);
-    transform:translate(-50%,8px); opacity:0; transition:opacity .2s cubic-bezier(.16,1,.3,1),transform .2s cubic-bezier(.16,1,.3,1)}
-  .toast.card-picker-toast.show{opacity:1; transform:translate(-50%,0)}
-  .toast.card-picker-toast #toastart{display:block; width:40px; height:26px; border-radius:3px; object-fit:cover; flex:none}
-  .toast.card-picker-toast #toastmsg{flex:1; line-height:1.3}
-  .toast.card-picker-toast button{min-width:0; min-height:0; padding:0; border:0; border-radius:0; position:relative;
-    background:transparent; color:var(--picker-accent-on-dark); font-size:13px; font-weight:600}
-  .toast.card-picker-toast button::before{content:""; position:absolute; inset:-15px -7px}
+  .picker-card-subline{color:var(--picker-secondary); font-size:11.5px; font-weight:400; line-height:1.25; overflow-wrap:anywhere}
+
+  .picker-custom-page{padding-bottom:24px}
+  .picker-custom-title{margin:0 4px; padding:8px 0 2px}
+  .picker-custom-stack{display:flex; flex-direction:column; gap:12px}
+  .picker-custom-card{display:flex; flex-direction:column; gap:13px; padding:14px;
+    border:1px solid var(--picker-border); border-radius:16px; background:var(--picker-surface)}
+  .picker-custom-card.is-rates{gap:11px}
+  .picker-field-group{display:flex; flex-direction:column; gap:6px}
+  .picker-field-label,.picker-rates-label{color:var(--picker-secondary); font-size:11.5px; font-weight:600;
+    letter-spacing:.03em; text-transform:uppercase}
+  .picker-custom-input-shell,.picker-bank-shell{height:44px; position:relative}
+  .picker-custom-input-shell::before,.picker-bank-shell::before{content:""; position:absolute; inset:1px 0;
+    border:1px solid var(--picker-border); border-radius:11px; background:var(--picker-surface); pointer-events:none}
+  .picker-custom-input-shell:focus-within::before{border:1.5px solid var(--picker-accent); box-shadow:0 0 0 3px var(--picker-focus-ring)}
+  .picker-bank-shell:focus-within::before{border-color:var(--picker-accent); box-shadow:0 0 0 3px var(--picker-focus-ring)}
+  input.picker-custom-name{position:relative; z-index:1; width:100%; height:44px; min-height:0; margin:0; padding:0 12px;
+    border:0; border-radius:11px; outline:0!important; background:transparent; color:var(--picker-text);
+    caret-color:var(--picker-accent); font:inherit; font-size:15px}
+  input.picker-custom-name::placeholder{color:var(--picker-placeholder); opacity:1}
+  .picker-bank-shell::before{background:var(--picker-field-alt)}
+  .picker-bank-display{position:absolute; z-index:1; inset:0; display:flex; align-items:center; justify-content:space-between;
+    gap:8px; padding:0 12px; color:var(--picker-text); font-size:15px; pointer-events:none}
+  .picker-bank-value{display:flex; align-items:center; gap:8px; min-width:0}
+  .picker-bank-logo{display:block; width:20px; height:20px; flex:none; border-radius:4px; object-fit:contain}
+  .picker-bank-placeholder{color:var(--picker-placeholder)}
+  .picker-bank-hint{flex:none; color:var(--picker-placeholder); font-size:12px}
+  select.picker-bank-select{position:absolute; z-index:2; inset:0; width:100%; height:44px; min-height:0; margin:0;
+    padding:0; border:0; opacity:0; cursor:pointer}
+  .picker-rates-head{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
+  .picker-add-rate{min-height:44px; margin:-12px 0; padding:12px 0; border:0; background:transparent;
+    color:var(--picker-accent); font:inherit; font-size:12.5px; font-weight:500; cursor:pointer}
+  .picker-unit-toggle{display:flex; height:44px; padding:0 2px; position:relative}
+  .picker-unit-toggle::before{content:""; position:absolute; inset:5px 0; border:1px solid var(--picker-border);
+    border-radius:10px; background:var(--picker-bg)}
+  .picker-unit-button{flex:1; z-index:1; height:44px; margin:0; padding:0; border:0; border-radius:8px;
+    background:transparent; color:var(--picker-secondary); font:inherit; font-size:13px; font-weight:500;
+    cursor:pointer; position:relative; isolation:isolate}
+  .picker-unit-button::before{content:""; position:absolute; z-index:-1; inset:5px 0; border-radius:8px}
+  .picker-unit-button.is-active{color:var(--picker-text); font-weight:600}
+  .picker-unit-button.is-active::before{background:var(--picker-surface); box-shadow:0 1px 3px rgba(0,0,0,.10)}
+  #pickerRateRows{display:contents}
+  .picker-rate-row{display:flex; align-items:center; gap:8px; min-height:44px}
+  .picker-rate-select-shell,.picker-rate-value-shell{height:44px; position:relative}
+  .picker-rate-select-shell{flex:1; min-width:0}
+  .picker-rate-value-shell{width:74px; flex:none}
+  .picker-rate-select-shell::before,.picker-rate-value-shell::before{content:""; position:absolute; inset:3px 0;
+    border:1px solid var(--picker-border); border-radius:10px; background:var(--picker-surface); pointer-events:none}
+  .picker-rate-select-shell:focus-within::before,.picker-rate-value-shell:focus-within::before{
+    border:1.5px solid var(--picker-accent); box-shadow:0 0 0 3px var(--picker-focus-ring)}
+  select.picker-rate-category{position:relative; z-index:1; width:100%; height:44px; min-height:0; margin:0;
+    padding:0 28px 0 11px; border:0; border-radius:10px; outline:0; background:transparent;
+    color:var(--picker-text); font:inherit; font-size:14px; -webkit-appearance:none; appearance:none; cursor:pointer}
+  .picker-rate-select-shell::after{content:"▾"; position:absolute; z-index:1; right:11px; top:50%;
+    transform:translateY(-50%); color:var(--picker-placeholder); font-size:12px; pointer-events:none}
+  .picker-rate-category.is-placeholder{color:var(--picker-placeholder)}
+  input.picker-rate-value{position:relative; z-index:1; width:100%; height:44px; min-height:0; margin:0;
+    padding:0 11px 0 0; border:0; border-radius:10px; outline:0; background:transparent;
+    color:var(--picker-text); font:inherit; font-size:14px; font-weight:600; text-align:center}
+  input.picker-rate-value::placeholder{color:var(--picker-placeholder); opacity:1; text-align:center}
+  input.picker-rate-value:placeholder-shown{padding:0}
+  .picker-rate-suffix{position:absolute; z-index:1; left:calc(50% + 8px); top:50%; transform:translateY(-50%);
+    color:var(--picker-secondary); font-size:12.5px; pointer-events:none}
+  .picker-rate-value:placeholder-shown + .picker-rate-suffix{display:none}
+  .picker-custom-error{margin:0; color:var(--warn); font-size:13px; font-weight:650; line-height:1.4}
+  .picker-save-custom{display:flex; align-items:center; justify-content:center; width:100%; height:48px; margin:0;
+    padding:0; border:0; border-radius:14px; background:var(--picker-primary); color:#fff;
+    font:inherit; font-size:15.5px; font-weight:600; box-shadow:0 3px 10px rgba(37,99,235,.3); cursor:pointer}
+  .picker-save-custom:hover{background:var(--picker-primary-hover)}
+
+  html.ios-scroll-shell body.card-picker-mode .app-scroll{min-height:0; padding-bottom:0}
+  html.ios-scroll-shell .picker-held-wrap{padding-bottom:19px}
+  html.ios-scroll-shell .picker-page:not(.picker-custom-page){padding-bottom:16px}
   @media (max-width:260px){
     .picker-held-list{padding-inline:10px}
     .picker-held-row{gap:4px}
-    .picker-held-edit{grid-template-columns:20px minmax(0,1fr); gap:8px}
+    .picker-held-edit{grid-template-columns:16px minmax(0,1fr); gap:8px}
     .picker-held-art{display:none}
-    .picker-add-heading{align-items:center; flex-wrap:wrap; gap:4px 8px}
     .picker-search-results{padding-inline:8px}
     .picker-search-row{gap:6px}
     .picker-search-art{display:none}
@@ -391,9 +478,9 @@
     .picker-browse-grid{grid-template-columns:1fr 1fr}
     .picker-card-grid{grid-template-columns:1fr}
     .picker-page-heading{align-items:flex-start; flex-wrap:wrap}
-    .picker-page-heading.is-airline{align-items:flex-start}
-    .picker-page-hint{width:100%; margin-left:38px}
-    .toast.card-picker-toast #toastart{display:none}
+    .picker-rates-head{align-items:flex-start; flex-wrap:wrap}
+    .picker-rate-row{align-items:stretch; flex-direction:column; gap:2px}
+    .picker-rate-select-shell,.picker-rate-value-shell{width:100%}
     body.card-picker-mode nav{flex-wrap:wrap}
     body.card-picker-mode nav button{flex-basis:30%; overflow-wrap:normal}
   }
@@ -420,7 +507,6 @@
     .toast{border-radius:16px; align-items:center; text-align:left; flex-wrap:nowrap}
     .review-confirm{white-space:normal}
   }
-  @media (max-width:320px){.custom-meta-grid{grid-template-columns:1fr}}
   @media (max-width:520px){
     .recurring-setup{grid-template-columns:1fr; align-items:start}
     .recurring-setup .pill{width:max-content; max-width:100%; justify-self:start}
@@ -442,6 +528,7 @@
 <header id="pageHeader">
   <h1 id="hdr" tabindex="-1">Which card?</h1>
   <span class="sub" id="hdrsub" hidden></span>
+  <button class="picker-add-button" id="pickerAddCard" type="button" aria-label="Add a card" hidden><span aria-hidden="true">+</span></button>
   <button class="header-action" id="radar-view-all" aria-label="View all Benefit Radar items" hidden>View all <span aria-hidden="true">›</span></button>
 </header>
 <div class="storage-warning" id="storageWarning" role="status" hidden>
@@ -461,7 +548,7 @@
 
 <div class="modal" id="modal"><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" tabindex="-1"></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
-  <img id="toastart" alt="" hidden><span id="toastmsg"></span><button id="toastundo" hidden>Undo</button>
+  <span id="toastmsg"></span><button id="toastundo" hidden>Undo</button>
 </div>
 <div class="sr-only" id="pickerLive" role="status" aria-live="polite" aria-atomic="true"></div>
 
@@ -769,21 +856,18 @@ const PICKER_ISSUERS = [
   {name:'US Bank',logo:'issuer-us-bank.svg'},
   {name:'Wells Fargo',logo:'issuer-wells-fargo.svg'},
 ];
-const PICKER_GROUPS = [
-  {route:'airline',label:'Airline cards',glyph:'✈️'},
-  {route:'hotel',label:'Hotel cards',glyph:'🏨'},
-  {route:'store',label:'Store cards',glyph:'🛍️'},
-  {route:'business',label:'Business cards',glyph:'💼'},
-  {route:'other',label:'Other',glyph:'…'},
+const PICKER_CARD_ORDER = [
+  'csr','csp','freedom_flex','cfu','ink_cash','prime_visa','united_explorer','sw_priority',
+  'amex_gold','amex_plat','bcp','bce','biz_plat','biz_gold','bbp','bbc',
+  'custom_cash','double_cash','strata_premier','venture_x','savor','discover_it','usb_cashplus',
+  'wf_autograph','wf_active','bilt','target_circle','apple_card',
 ];
-const PICKER_AIRLINES = [
-  {name:'United',logo:'airline-united.png'},
-  {name:'Southwest',logo:'airline-southwest.svg'},
-  {name:'Delta',logo:'airline-delta.svg'},
-  {name:'American',logo:'airline-american.svg'},
-  {name:'Alaska',logo:'airline-alaska.svg'},
-  {name:'JetBlue',logo:'airline-jetblue.svg'},
-  {name:'Hawaiian',logo:'airline-hawaiian.svg'},
+const PICKER_GROUPS = [
+  {route:'airline',label:'Airline cards',glyph:'✈️',flag:'brand'},
+  {route:'hotel',label:'Hotel cards',glyph:'🏨',flag:'hotel'},
+  {route:'store',label:'Store cards',glyph:'🛍️',chipGlyph:'🏪',flag:'store'},
+  {route:'business',label:'Business cards',glyph:'💼',flag:'biz'},
+  {route:'other',label:'Other',glyph:'…',flag:'other'},
 ];
 const PICKER_CATEGORY_LABELS = {
   dining:'dining',groceries:'groceries',gas:'gas',flights:'flights',hotels:'hotels',transit:'transit',
@@ -1007,9 +1091,9 @@ function normalizeState(raw,now=new Date(),options={}){
   out.custom=Array.isArray(raw.custom)?raw.custom.slice(0,25).map(c=>{
     if(!plainObject(c)) return null; const id=cleanId(c.id), name=cleanText(c.name,120), program=cleanId(c.program);
     if(!id||!name||!PROGRAMS[program]) return null;
-    const brand=cleanText(c.brand,120), hotel=!!c.hotel, store=!!c.store, biz=!!c.biz;
+    const brand=c.brand==null?null:(cleanText(c.brand,120)||null), hotel=!!c.hotel, store=!!c.store, biz=!!c.biz;
     return {id,name,issuer:cleanText(c.issuer||'Custom',120),program,rates:sanitizeRates(c.rates),notes:cleanText(c.notes,500),
-      brand,hotel,store,biz,other:c.other==null?!(brand||hotel||store||biz):!!c.other};
+      brand,hotel,store,biz,other:!!c.other};
   }).filter(Boolean):[];
   const knownIds=new Set([...CARD_DB.map(c=>c.id),...out.custom.map(c=>c.id)]);
   out.myCards=[...new Set(out.myCards.filter(id=>knownIds.has(id)))];
@@ -1326,16 +1410,12 @@ function bestForCard(card,state=S){
   }
   return shown.map(item=>`${item.rate.note||item.rate.cap?'Up to ':''}${formatPickerRate(item.rate)} ${PICKER_CATEGORY_LABELS[item.category]||CAT[item.category]?.name||item.category}`).join(' · ');
 }
-function shortPickerCardName(card){
-  const prefix=`${card.issuer} `;
-  return card.name.startsWith(prefix)?card.name.slice(prefix.length):card.name;
-}
 let pendingUndo=null;
 function clearToast(){
-  const t=document.getElementById('toast'), text=document.getElementById('toastmsg'), undo=document.getElementById('toastundo'), art=document.getElementById('toastart');
+  const t=document.getElementById('toast'), text=document.getElementById('toastmsg'), undo=document.getElementById('toastundo');
   pendingUndo=null; clearTimeout(t._h); t._dismiss=null; t._expiresAt=0; t._remaining=0; undo.hidden=true;
-  art.hidden=true; art.removeAttribute('src'); text.textContent=''; t.inert=false; t.removeAttribute('aria-hidden');
-  t.classList.remove('show','has-undo','wide','modal-suppressed','card-picker-toast');
+  text.textContent=''; t.inert=false; t.removeAttribute('aria-hidden');
+  t.classList.remove('show','has-undo','wide','modal-suppressed');
   scheduleFloatingUi();
 }
 function setToastModalSuppressed(suppressed){
@@ -1358,7 +1438,8 @@ function keepFocusedControlVisible(){
     const inSheet=!!target&&sheet.contains(target), inMain=!!target&&mainEl.contains(target);
     if(!inSheet&&!inMain) return;
     const viewport=window.visualViewport, viewportTop=viewport?.offsetTop||0, viewportBottom=viewportTop+(viewport?.height||window.innerHeight);
-    const rect=target.getBoundingClientRect(), navTop=nav?.getBoundingClientRect().top??viewportBottom, sheetRect=inSheet?sheet.getBoundingClientRect():null;
+    const navVisible=!!nav&&getComputedStyle(nav).display!=='none'&&nav.getClientRects().length>0;
+    const rect=target.getBoundingClientRect(), navTop=navVisible?nav.getBoundingClientRect().top:viewportBottom, sheetRect=inSheet?sheet.getBoundingClientRect():null;
     const toastTop=toastEl.classList.contains('show')?toastEl.getBoundingClientRect().top:viewportBottom;
     const safeBottom=inSheet?Math.min(viewportBottom-12,sheetRect.bottom-12,toastTop-12):Math.min(viewportBottom-12,navTop-12,toastTop-12);
     const safeTop=inSheet?Math.max(viewportTop+12,sheetRect.top+12):viewportTop+12;
@@ -1367,18 +1448,17 @@ function keepFocusedControlVisible(){
     else if(rect.top<safeTop) scrollBy({top:rect.top-safeTop,behavior:'auto'});
   }));
 }
-function toast(msg,ms,undoFn,{wide=false,art='',cardPicker=false}={}){
-  const t=document.getElementById('toast'), text=document.getElementById('toastmsg'), undo=document.getElementById('toastundo'), artEl=document.getElementById('toastart');
-  text.textContent=msg; pendingUndo=undoFn||null; undo.hidden=!undoFn; artEl.hidden=!art;
-  if(art) artEl.src=art; else artEl.removeAttribute('src');
-  t.classList.toggle('has-undo',!!undoFn); t.classList.toggle('wide',wide); t.classList.toggle('card-picker-toast',cardPicker); t.classList.add('show'); clearTimeout(t._h);
+function toast(msg,ms,undoFn,{wide=false}={}){
+  const t=document.getElementById('toast'), text=document.getElementById('toastmsg'), undo=document.getElementById('toastundo');
+  text.textContent=msg; pendingUndo=undoFn||null; undo.hidden=!undoFn;
+  t.classList.toggle('has-undo',!!undoFn); t.classList.toggle('wide',wide); t.classList.add('show'); clearTimeout(t._h);
   scheduleFloatingUi();
   keepFocusedControlVisible();
   undo.onclick=()=>{ if(!pendingUndo) return; const fn=pendingUndo; pendingUndo=null; undo.hidden=true; fn(); };
   const dismiss=()=>{
     if(document.activeElement===undo){ t._h=setTimeout(dismiss,1000); return; }
-    pendingUndo=null; text.textContent=''; undo.hidden=true; artEl.hidden=true; artEl.removeAttribute('src');
-    t._dismiss=null; t._expiresAt=0; t._remaining=0; t.classList.remove('show','has-undo','wide','card-picker-toast');
+    pendingUndo=null; text.textContent=''; undo.hidden=true;
+    t._dismiss=null; t._expiresAt=0; t._remaining=0; t.classList.remove('show','has-undo','wide');
   };
   const duration=ms||2600; t._dismiss=dismiss; t._expiresAt=Date.now()+duration; t._remaining=0; t._h=setTimeout(dismiss,duration);
   if(document.getElementById('modal').classList.contains('open')) setToastModalSuppressed(true);
@@ -1659,7 +1739,12 @@ window.CardRouterRadar={normalizeState,periodInfo,periodEndFromKey,calendarDays,
   buildRadarTasks:(state,now=new Date())=>buildRadarTasks(now,normalizeState(state,now)),
   recurringSetupStatus:(state,cardId,benefitId,now=new Date())=>recurringSetupStatus(cardId,benefitId,normalizeState(state,now),now),
   recurringSetupsForState:(state,now=new Date())=>recurringSetupsForState(normalizeState(state,now),now),
-  rankForState:(state,catId,now=new Date())=>rankCardsForState(normalizeState(state,now),catId,now)};
+  rankForState:(state,catId,now=new Date())=>rankCardsForState(normalizeState(state,now),catId,now),
+  pickerCatalogIds:()=>pickerProductionCards().map(card=>card.id),
+  bestForCardForState:(cardId,state={})=>{
+    const normalized=normalizeState(state), card=allCardsFor(normalized).find(item=>item.id===cardId);
+    return card?bestForCard(card,normalized):null;
+  }};
 
 /* Effective % return for card on category. */
 function evaluateForState(card,catId,state,now=new Date()){
@@ -1714,7 +1799,7 @@ function normalizePromosHistory(state){
 const initialPromosHistory=normalizePromosHistory(history.state);
 let TAB=initialPromosHistory.view==='overview'?'which':'promos', selectedCat=null, PROMOS_VIEW=initialPromosHistory.view, RADAR_FILTER=initialPromosHistory.filter,
   radarHistoryOpen=false, notShownOpen=false, historyLimit=20;
-let CARD_PICKER_ROUTE={kind:'hub',value:''}, AIRLINE_FILTER=null, CARD_QUERY='', PICKER_ROUTE_MOTION='';
+let CARD_PICKER_ROUTE={kind:'hub',value:''}, CARD_QUERY='', CARD_FILTER=null, PICKER_ROUTE_MOTION='';
 let recurringReviewSession=null;
 let promosVisitToken='';
 let renderedDayKey=localIsoDate(localDay(new Date())), renderedMonthKey=periodInfo('month',new Date()).key;
@@ -1722,9 +1807,14 @@ let renderedDayKey=localIsoDate(localDay(new Date())), renderedMonthKey=periodIn
 function render(){
   renderedDayKey=localIsoDate(localDay(new Date()));
   renderedMonthKey=periodInfo('month',new Date()).key;
-  const cardPickerMode=TAB==='cards', brand=document.getElementById('brand'), pageHeader=document.getElementById('pageHeader'), appScroll=document.getElementById('appScroll');
+  const cardPickerMode=TAB==='cards', brand=document.getElementById('brand'), pageHeader=document.getElementById('pageHeader'), appScroll=document.getElementById('appScroll'),
+    pickerAdd=document.getElementById('pickerAddCard');
   document.body.classList.toggle('card-picker-mode',cardPickerMode); mainEl.classList.toggle('card-picker-main',cardPickerMode);
-  if(!cardPickerMode){brand.hidden=false;pageHeader.hidden=false;appScroll.classList.remove('picker-subpage','picker-searching');}
+  if(!cardPickerMode){
+    brand.hidden=false; pageHeader.hidden=false; pickerAdd.hidden=true;
+    document.body.classList.remove('card-picker-no-nav','card-picker-searching');
+    appScroll.classList.remove('picker-subpage','picker-searching');
+  }
   document.querySelectorAll('nav button').forEach(b=>{
     const on=b.dataset.tab===TAB; b.classList.toggle('on',on);
     if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
@@ -1732,7 +1822,7 @@ function render(){
   const hdr = document.getElementById('hdr'), sub=document.getElementById('hdrsub'), headerAction=document.getElementById('radar-view-all');
   headerAction.hidden=!(TAB==='promos'&&PROMOS_VIEW==='overview');
   if(TAB==='which'){ hdr.textContent='Which card?'; sub.textContent = S.myCards.length? '' : 'set up your cards first'; renderWhich(); }
-  if(TAB==='cards'){ hdr.textContent='My cards'; sub.textContent='priority order breaks ties'; renderCards(); }
+  if(TAB==='cards'){ hdr.textContent='My cards'; sub.textContent='order breaks ties'; renderCards(); }
   if(TAB==='benefits'){ hdr.textContent='Benefits'; sub.textContent='what your cards give you'; renderBenefits(); }
   if(TAB==='promos'){
     if(PROMOS_VIEW==='radar'){ hdr.innerHTML='<span class="title-icon" aria-hidden="true">📡</span>Benefit Radar'; sub.textContent='what needs attention'; }
@@ -1742,7 +1832,7 @@ function render(){
   if(TAB==='settings'){ hdr.textContent='Settings'; sub.textContent=''; renderSettings(); }
   sub.hidden=!sub.textContent;
   const titleIcon=hdr.querySelector('.title-icon'), pickerTitle=mainEl.querySelector('[data-picker-page-title]')?.textContent;
-  const pageTitle=cardPickerMode?(CARD_QUERY.trim()?'Search cards':pickerTitle||'My cards'):(titleIcon?hdr.textContent.slice(titleIcon.textContent.length).trim():hdr.textContent);
+  const pageTitle=cardPickerMode?(pickerTitle||'My cards'):(titleIcon?hdr.textContent.slice(titleIcon.textContent.length).trim():hdr.textContent);
   document.title=`ChooseMyCard · ${pageTitle}`;
   updateStorageWarning();
 }
@@ -1755,8 +1845,8 @@ function renderWhich(){
       <p class="hint" style="margin:0 0 16px">Pick the credit cards you carry and set their priority — then this screen tells you which one to tap for every kind of purchase. Your picks stay on <b>this device only</b>, so everyone who uses this app sets up their own.</p>
       <button class="pill primary" id="onboard" style="font-size:15px; padding:11px 22px">Pick my cards →</button>
     </div>`;
-    document.getElementById('onboard').onclick=()=>{ TAB='cards'; CARD_PICKER_ROUTE={kind:'hub',value:''}; CARD_QUERY=''; AIRLINE_FILTER=null;
-      history.replaceState({view:'cards'},'',location.pathname+location.search); render(); restoreFocus('add-card-heading'); };
+    document.getElementById('onboard').onclick=()=>{ TAB='cards'; CARD_PICKER_ROUTE={kind:'hub',value:''}; CARD_QUERY=''; CARD_FILTER=null;
+      history.replaceState({view:'cards'},'',location.pathname+location.search); render(); restoreFocus('pickerAddCard'); };
     return;
   }
   let html = `<div class="panel"><div class="catgrid">` +
@@ -1819,27 +1909,70 @@ function guessFromLocation(){
   }, ()=>{ toast('Location permission denied'); render(); restoreFocus('location-guess'); }, {enableHighAccuracy:true, timeout:8000});
 }
 
+function pickerProductionCards(){
+  return PICKER_CARD_ORDER.map(id=>CARD_DB.find(card=>card.id===id)).filter(Boolean);
+}
+function pickerCatalogGroupCards(route){
+  const group=PICKER_GROUPS.find(item=>item.route===route);
+  return group?pickerProductionCards().filter(card=>group.flag==='brand'?!!card.brand:!!card[group.flag]):[];
+}
+function pickerFilterDefinitions(){
+  return [
+    ...PICKER_ISSUERS.map(issuer=>({key:`issuer:${issuer.name}`,label:issuer.name,logo:issuer.logo,
+      match:card=>card.issuer===issuer.name})),
+    ...PICKER_GROUPS.map(group=>({key:`group:${group.route}`,label:group.label,glyph:group.chipGlyph||group.glyph,
+      match:card=>CARD_DB.some(item=>item.id===card.id)&&(group.flag==='brand'?!!card.brand:!!card[group.flag])})),
+  ];
+}
+function pickerFilterMarkup(held){
+  const filters=pickerFilterDefinitions().filter(filter=>held.some(filter.match));
+  if(CARD_FILTER&&!filters.some(filter=>filter.key===CARD_FILTER)) CARD_FILTER=null;
+  return filters.map(filter=>{
+    const active=filter.key===CARD_FILTER, muted=!!CARD_FILTER&&!active;
+    const icon=filter.logo?`<img class="picker-filter-logo" src="${pickerLogoPath(filter.logo)}" alt="">`:
+      `<span class="picker-filter-glyph" aria-hidden="true">${filter.glyph}</span>`;
+    return `<button class="picker-filter-chip${active?' is-active':''}${muted?' is-muted':''}" type="button"
+      data-picker-filter="${esc(filter.key)}" data-focus-id="picker-filter-${esc(filter.key)}" aria-pressed="${active}">${icon}${esc(filter.label)}${active?'<span class="picker-filter-close" aria-hidden="true">✕</span>':''}</button>`;
+  }).join('');
+}
 function pickerHeldMarkup(){
-  const held=S.myCards.map(getCard).filter(Boolean);
-  if(!held.length) return '';
-  return `<div class="picker-held-list">${held.map((card,index)=>`
+  const held=S.myCards.map(getCard).filter(Boolean), availableFilters=pickerFilterDefinitions().filter(item=>held.some(item.match));
+  if(CARD_FILTER&&!availableFilters.some(item=>item.key===CARD_FILTER)) CARD_FILTER=null;
+  const filter=availableFilters.find(item=>item.key===CARD_FILTER);
+  const visible=held.map((card,index)=>({card,index})).filter(item=>!filter||filter.match(item.card));
+  const rows=visible.map(({card,index})=>`
     <div class="picker-held-row" data-picker-held="${card.id}">
-      <button class="picker-held-edit" data-picker-edit="${card.id}" data-focus-id="card-row-${card.id}" aria-label="Edit ${esc(card.name)} rates">
+      <button class="picker-held-edit" type="button" data-picker-edit="${card.id}" data-focus-id="card-row-${card.id}" aria-label="Edit ${esc(card.name)} rates">
         <span class="picker-priority" aria-hidden="true">${index+1}</span>
-        ${pickerArtMarkup(card,'picker-held-art','44px')}
+        ${pickerArtMarkup(card,'picker-held-art','58px')}
         <span><span class="picker-held-name">${esc(card.name)}</span><span class="picker-held-best">${esc(bestForCard(card))}</span></span>
       </button>
-      <button class="picker-drag-handle" data-picker-drag="${card.id}" data-focus-id="picker-drag-${card.id}"
+      ${filter?'':`<button class="picker-drag-handle" type="button" data-picker-drag="${card.id}" data-focus-id="picker-drag-${card.id}"
         aria-label="Reorder ${esc(card.name)}, priority ${index+1} of ${held.length}. Use the up and down arrow keys, or drag."
-        aria-keyshortcuts="ArrowUp ArrowDown"><span aria-hidden="true">⋮⋮</span></button>
-    </div>`).join('')}</div>`;
+        aria-keyshortcuts="ArrowUp ArrowDown"><span aria-hidden="true">⋮⋮</span></button>`}
+    </div>`).join('');
+  const footer=filter?`Showing ${visible.length} of ${held.length} · ✕ clears the filter`:'Drag to reorder · tap to edit rates';
+  return `<section class="picker-wallet" aria-label="My cards">
+    ${held.length?`<div class="picker-filter-row" aria-label="Filter My cards">${pickerFilterMarkup(held)}</div>`:''}
+    <div class="picker-held-wrap"><div class="picker-held-list">
+      ${rows||'<div class="picker-wallet-empty">Add a card to start your wallet.</div>'}
+      <div class="picker-held-footer">${esc(footer)}</div>
+    </div></div>
+  </section>`;
 }
 function pickerBrowseMarkup(){
-  const issuers=PICKER_ISSUERS.map(item=>`<button class="picker-browse-tile" data-picker-route="issuer" data-picker-value="${esc(item.name)}">
-    <img class="picker-browse-logo" src="${pickerLogoPath(item.logo)}" alt=""><span class="picker-browse-label">${esc(item.name)}</span></button>`).join('');
-  const groups=PICKER_GROUPS.map(item=>`<button class="picker-browse-tile" data-picker-route="${item.route}">
-    <span class="picker-browse-glyph" aria-hidden="true">${item.glyph}</span><span class="picker-browse-label">${esc(item.label)}</span></button>`).join('');
-  return `<div class="picker-browse-grid" id="pickerBrowse">${issuers}${groups}</div>`;
+  const issuers=PICKER_ISSUERS.filter(item=>CARD_DB.some(card=>card.issuer===item.name)).map(item=>
+    `<button class="picker-browse-tile" type="button" data-picker-route="issuer" data-picker-value="${esc(item.name)}">
+      <img class="picker-browse-logo" src="${pickerLogoPath(item.logo)}" alt=""><span class="picker-browse-label">${esc(item.name)}</span></button>`).join('');
+  const groups=PICKER_GROUPS.filter(item=>pickerCatalogGroupCards(item.route).length).map(item=>
+    `<button class="picker-browse-tile" type="button" data-picker-route="category" data-picker-value="${item.route}">
+      <span class="picker-browse-glyph" aria-hidden="true">${item.glyph}</span><span class="picker-browse-label">${esc(item.label)}</span></button>`).join('');
+  return `<div class="picker-browse-heading">Or browse</div><div class="picker-browse-grid" id="pickerBrowse">${issuers}${groups}</div>
+    <button class="picker-custom-row" id="pickerCustomRow" type="button">
+      <span class="picker-custom-row-art" aria-hidden="true">+</span><span class="picker-custom-row-copy">
+        <span class="picker-custom-row-title">Create a custom card</span><span class="picker-custom-row-sub">For a card that isn’t listed</span>
+      </span><span class="picker-custom-row-chevron" aria-hidden="true">›</span>
+    </button>`;
 }
 function highlightPickerName(name,query){
   const index=name.toLowerCase().indexOf(query.toLowerCase());
@@ -1848,50 +1981,64 @@ function highlightPickerName(name,query){
 }
 function pickerActionMarkup(card,context){
   const added=S.myCards.includes(card.id), label=context==='search'?(added?'✓ Added':'Add'):(added?'✓ In my cards':'Add');
-  return `<button class="${context==='search'?'picker-search-action':'picker-tile-action'}${added?' is-added':''}"
-    ${added?'aria-disabled="true"':`data-picker-add="${card.id}"`} data-focus-id="picker-action-${card.id}"
-    aria-label="${added?`${esc(card.name)} is in My cards`:`Add ${esc(card.name)}`}">${label}</button>`;
+  if(added) return `<span class="picker-card-status" role="status" tabindex="-1" data-focus-id="picker-action-${card.id}">${label}</span>`;
+  return `<button class="${context==='search'?'picker-search-action':'picker-tile-action'}" type="button"
+    data-picker-add="${card.id}" data-picker-context="${context}" data-focus-id="picker-action-${card.id}"
+    aria-label="Add ${esc(card.name)}">${label}</button>`;
 }
 function pickerSearchResultsMarkup(query){
-  const lower=query.toLowerCase(), matches=allCards().filter(card=>card.name.toLowerCase().includes(lower));
+  const lower=query.toLowerCase(), matches=pickerProductionCards().filter(card=>card.name.toLowerCase().includes(lower));
   const rows=matches.length?matches.map(card=>`<div class="picker-search-row" role="listitem">
     ${pickerArtMarkup(card,'picker-search-art','56px')}
     <div class="picker-search-copy"><div class="picker-search-name">${highlightPickerName(card.name,query)}</div><div class="picker-search-best">${esc(bestForCard(card))}</div></div>
     ${pickerActionMarkup(card,'search')}</div>`).join(''):'<div class="picker-search-empty">No matching cards</div>';
   return `<div class="picker-search-results" role="list" aria-label="Matching cards">${rows}</div>
-    <div class="picker-custom-prompt">Not listed? <button type="button" id="pickerSearchCustom">Create a custom card</button> named “${esc(query)}”.</div>`;
+    <button class="picker-search-custom" type="button" id="pickerSearchCustom">Create a custom card</button>`;
 }
 function updatePickerSearch(){
   const input=document.getElementById('cardSearch'); if(!input) return;
   CARD_QUERY=input.value; const query=CARD_QUERY.trim(), searching=!!query;
-  document.getElementById('pickerHubTop').hidden=searching;
-  document.getElementById('pickerBrowse').hidden=searching;
-  document.getElementById('pickerSearchContent').hidden=!searching;
+  document.getElementById('pickerBrowseContent').hidden=searching;
+  const searchContent=document.getElementById('pickerSearchContent'); searchContent.hidden=!searching;
   document.getElementById('pickerSearchClear').hidden=!searching;
-  document.getElementById('pickerHub').classList.toggle('is-searching',searching);
-  document.getElementById('pageHeader').hidden=searching;
+  document.getElementById('pickerAddPage').classList.toggle('is-searching',searching);
+  document.body.classList.toggle('card-picker-searching',searching);
+  document.body.classList.toggle('card-picker-no-nav',searching);
   document.getElementById('appScroll').classList.toggle('picker-searching',searching);
   if(searching){
-    document.getElementById('pickerSearchContent').innerHTML=pickerSearchResultsMarkup(query);
-    bindPickerAddButtons(document.getElementById('pickerSearchContent'));
-    document.getElementById('pickerSearchCustom').onclick=event=>openCustomCard(event.currentTarget,{name:query,other:true});
-  }else document.getElementById('pickerSearchContent').innerHTML='';
-  document.title=`ChooseMyCard · ${searching?'Search cards':'My cards'}`;
+    searchContent.innerHTML=pickerSearchResultsMarkup(query);
+    bindPickerAddButtons(searchContent);
+    document.getElementById('pickerSearchCustom').onclick=()=>openCustomCardStep({backLabel:'Add a card'});
+    const count=searchContent.querySelectorAll('.picker-search-row').length;
+    announcePicker(`${count} matching ${count===1?'card':'cards'}`);
+  }else searchContent.innerHTML='';
+  if(history.state?.view==='cards') history.replaceState({...history.state,cardQuery:CARD_QUERY},'',location.pathname+location.search);
+  document.title='ChooseMyCard · Add a card';
 }
 function renderPickerHub(){
   document.getElementById('brand').hidden=false; document.getElementById('pageHeader').hidden=false;
-  document.getElementById('appScroll').classList.remove('picker-subpage');
-  mainEl.innerHTML=`<section class="picker-hub" id="pickerHub">
-    <div id="pickerHubTop"><div id="pickerHeldSlot">${pickerHeldMarkup()}</div>
-      <div class="picker-add-heading"><h2 id="add-card-heading" tabindex="-1" data-focus-id="add-card-heading">Add a card</h2>
-        <button class="picker-custom-link" id="addcustom">+ Custom card</button></div></div>
-    <div class="picker-search-shell" role="search"><span class="picker-search-icon" aria-hidden="true">🔍</span>
+  document.getElementById('pickerAddCard').hidden=false;
+  document.body.classList.remove('card-picker-no-nav','card-picker-searching');
+  document.getElementById('appScroll').classList.remove('picker-subpage','picker-searching');
+  mainEl.innerHTML=pickerHeldMarkup();
+  bindPickerHeldRows(mainEl);
+}
+function renderPickerAddPage(){
+  const motion=PICKER_ROUTE_MOTION?` is-${PICKER_ROUTE_MOTION}`:'';
+  document.getElementById('brand').hidden=true; document.getElementById('pageHeader').hidden=true; document.getElementById('pickerAddCard').hidden=true;
+  document.getElementById('appScroll').classList.add('picker-subpage');
+  mainEl.innerHTML=`<section class="picker-page picker-add-page${motion}" id="pickerAddPage">
+    <button class="picker-back" id="pickerBack" type="button" data-focus-id="picker-back"><span class="picker-back-glyph" aria-hidden="true">‹</span>My cards</button>
+    <div class="picker-add-title"><h1 tabindex="-1" data-picker-page-title data-focus-id="picker-page-title">Add a card</h1></div>
+    <div class="picker-add-content"><div class="picker-search-shell" role="search"><span class="picker-search-icon" aria-hidden="true">🔍</span>
       <input class="picker-search-input" id="cardSearch" type="search" value="${esc(CARD_QUERY)}" placeholder="Search cards, banks, airlines…" autocomplete="off" spellcheck="false" aria-label="Search cards, banks, and airlines">
       <button class="picker-search-clear" id="pickerSearchClear" type="button" aria-label="Clear card search" hidden>✕</button></div>
-    <div id="pickerSearchContent" hidden></div>${pickerBrowseMarkup()}</section>`;
-  bindPickerHeldRows(mainEl);
-  document.getElementById('addcustom').onclick=event=>openCustomCard(event.currentTarget,{other:true});
+      <div id="pickerBrowseContent">${pickerBrowseMarkup()}</div><div id="pickerSearchContent" hidden></div>
+    </div></section>`;
+  PICKER_ROUTE_MOTION='';
+  document.getElementById('pickerBack').onclick=closePickerRoute;
   mainEl.querySelectorAll('[data-picker-route]').forEach(button=>button.onclick=()=>openPickerRoute(button.dataset.pickerRoute,button.dataset.pickerValue||''));
+  document.getElementById('pickerCustomRow').onclick=()=>openCustomCardStep({backLabel:'Add a card'});
   const input=document.getElementById('cardSearch'); input.oninput=updatePickerSearch;
   input.onkeydown=event=>{ if(event.key==='Escape'&&input.value){event.preventDefault();input.value='';updatePickerSearch();} };
   document.getElementById('pickerSearchClear').onclick=()=>{input.value='';updatePickerSearch();input.focus();};
@@ -1899,87 +2046,73 @@ function renderPickerHub(){
 }
 function pickerCustomTileMarkup(label,subline){
   return `<div class="picker-card-tile"><div class="picker-card-placeholder" aria-hidden="true">+</div>
-    <div class="picker-card-name">${esc(label)}<span class="picker-card-subline">${esc(subline)}</span></div>
-    <button class="picker-tile-action" data-picker-custom>Create</button></div>`;
+    <div class="picker-card-name">${esc(label)}</div>${subline?`<div class="picker-card-subline">${esc(subline)}</div>`:''}
+    <button class="picker-tile-action" type="button" data-picker-custom>Create</button></div>`;
 }
 function pickerCardTileMarkup(card){
   return `<div class="picker-card-tile">${pickerArtMarkup(card,'picker-card-art','(max-width:560px) calc((100vw - 52px)/2), 250px')}
-    <div class="picker-card-name">${esc(card.name)}</div>${pickerActionMarkup(card,'tile')}</div>`;
+    <div class="picker-card-name">${esc(card.name)}</div><div class="picker-card-subline">${esc(bestForCard(card))}</div>${pickerActionMarkup(card,'tile')}</div>`;
 }
 function genericPickerRouteDetails(){
   const route=CARD_PICKER_ROUTE;
   if(route.kind==='issuer'){
     const issuer=PICKER_ISSUERS.find(item=>item.name===route.value), article=route.value==='Amex'?'an':'a';
-    return {title:`Add ${article} ${route.value} card`,logo:issuer?.logo||'',cards:allCards().filter(card=>card.issuer===route.value&&!card.brand&&!card.hotel),
-      customLabel:`Custom ${route.value} card`,customSub:'not listed? issuer pre-filled',preset:{issuer:route.value,other:false}};
+    const cards=pickerProductionCards().filter(card=>card.issuer===route.value), available=cards.filter(card=>!S.myCards.includes(card.id)).length;
+    return {title:`Add ${article} ${route.value} card`,logo:issuer?.logo||'',cards,
+      count:`${available} ${available===1?'card':'cards'} to add · co-brands appear here and under their brand`,
+      customLabel:`Custom ${route.value} card`,customSub:'bank pre-filled',preset:{issuer:route.value,backLabel:route.value}};
   }
-  const details={
-    hotel:{title:'Add a hotel card',glyph:'🏨',filter:card=>card.hotel,label:'Custom hotel card',sub:'not listed? hotel pre-filled',preset:{hotel:true,other:false}},
-    store:{title:'Add a store card',glyph:'🛍️',filter:card=>card.store,label:'Custom store card',sub:'not listed? store pre-filled',preset:{store:true,other:false}},
-    business:{title:'Add a business card',glyph:'💼',filter:card=>card.biz,label:'Custom business card',sub:'not listed? business pre-filled',preset:{biz:true,other:false}},
-    other:{title:'Add another card',glyph:'…',filter:card=>card.other,label:'Custom card',sub:'not listed? Other pre-filled',preset:{other:true}},
-  }[route.kind];
-  return {...details,cards:allCards().filter(details.filter),customLabel:details.label,customSub:details.sub};
+  const group=PICKER_GROUPS.find(item=>item.route===route.value), cards=pickerCatalogGroupCards(route.value);
+  return {title:group?.label||'Cards',glyph:group?.glyph||'…',cards,
+    count:`${cards.length} ${cards.length===1?'card':'cards'}`,customLabel:'Custom card',customSub:'',
+    preset:{backLabel:group?.label||'Add a card'}};
 }
 function renderGenericPickerPage(){
   const details=genericPickerRouteDetails(), motion=PICKER_ROUTE_MOTION?` is-${PICKER_ROUTE_MOTION}`:'';
   const icon=details.logo?`<img class="picker-page-logo" src="${pickerLogoPath(details.logo)}" alt="">`:`<span class="picker-page-glyph" aria-hidden="true">${details.glyph}</span>`;
-  mainEl.innerHTML=`<section class="picker-page${motion}"><button class="picker-back" id="pickerBack" data-focus-id="picker-back"><span class="picker-back-glyph" aria-hidden="true">‹</span>My cards</button>
-    <div class="picker-page-heading">${icon}<h1 data-picker-page-title>${esc(details.title)}</h1></div>
+  mainEl.innerHTML=`<section class="picker-page picker-catalog-page${motion}"><button class="picker-back" id="pickerBack" type="button" data-focus-id="picker-back"><span class="picker-back-glyph" aria-hidden="true">‹</span>Add a card</button>
+    <div class="picker-page-heading">${icon}<h1 tabindex="-1" data-picker-page-title data-focus-id="picker-page-title">${esc(details.title)}</h1></div>
+    <div class="picker-page-count">${esc(details.count)}</div>
     <div class="picker-card-grid">${details.cards.map(pickerCardTileMarkup).join('')}${pickerCustomTileMarkup(details.customLabel,details.customSub)}</div></section>`;
   PICKER_ROUTE_MOTION=''; bindPickerSubpage(details.preset);
 }
-function airlineGroupMarkup(airline,includeCustom){
-  const cards=allCards().filter(card=>card.brand===airline.name), catalogCard=cards.find(card=>CARD_DB.some(item=>item.id===card.id));
-  if(!cards.length&&!includeCustom) return '';
-  const meta=catalogCard?`${PROGRAMS[catalogCard.program].name} · ${catalogCard.issuer}`:'';
-  return `<section><div class="picker-airline-group-heading"><img class="picker-airline-group-logo" src="${pickerLogoPath(airline.logo)}" alt="">
-    <h2>${esc(airline.name)}</h2>${meta?`<span class="picker-airline-meta">${esc(meta)}</span>`:''}</div>
-    <div class="picker-card-grid is-airline-group">${cards.map(pickerCardTileMarkup).join('')}${includeCustom?pickerCustomTileMarkup(`Custom ${airline.name} card`,'not listed? airline pre-filled'):''}</div></section>`;
-}
-function renderAirlinePickerPage(){
-  const filtered=PICKER_AIRLINES.find(item=>item.name===AIRLINE_FILTER), motion=PICKER_ROUTE_MOTION?` is-${PICKER_ROUTE_MOTION}`:'';
-  const chips=[`<button class="picker-jump-chip is-all${filtered?'':' is-active'}" data-airline-filter="" aria-pressed="${!filtered}">All</button>`,
-    ...PICKER_AIRLINES.map(item=>{const active=item.name===AIRLINE_FILTER;return `<button class="picker-jump-chip${active?' is-active':filtered?' is-muted':''}" data-airline-filter="${esc(item.name)}" aria-pressed="${active}">
-      <img class="picker-jump-logo" src="${pickerLogoPath(item.logo)}" alt="">${esc(item.name)}${active?'<span class="picker-chip-close" aria-hidden="true">✕</span>':''}</button>`;})].join('');
-  const groups=filtered?airlineGroupMarkup(filtered,true):PICKER_AIRLINES.map(item=>airlineGroupMarkup(item,false)).join('');
-  mainEl.innerHTML=`<section class="picker-page${motion}"><button class="picker-back" id="pickerBack" data-focus-id="picker-back"><span class="picker-back-glyph" aria-hidden="true">‹</span>My cards</button>
-    <div class="picker-page-heading is-airline"><h1 data-picker-page-title>Add an airline card</h1><span class="picker-page-hint">${filtered?`filtered to ${esc(filtered.name)}`:'grouped by airline'}</span></div>
-    <div class="picker-jump-row" aria-label="Filter cards by airline">${chips}</div>${groups}</section>`;
-  PICKER_ROUTE_MOTION='';
-  document.getElementById('pickerBack').onclick=closePickerRoute;
-  mainEl.querySelectorAll('[data-airline-filter]').forEach(button=>{
-    button.dataset.focusId=`airline-filter-${button.dataset.airlineFilter||'all'}`;
-    button.addEventListener('focus',()=>button.scrollIntoView({block:'nearest',inline:'nearest'}));
-    button.onclick=()=>{
-      const next=button.dataset.airlineFilter||null; AIRLINE_FILTER=next===AIRLINE_FILTER?null:next; renderCards(); restoreFocus(`airline-filter-${AIRLINE_FILTER||'all'}`);
-    };
-  });
-  bindPickerAddButtons(mainEl);
-  const custom=mainEl.querySelector('[data-picker-custom]');
-  if(custom&&filtered) custom.onclick=event=>openCustomCard(event.currentTarget,{brand:filtered.name,other:false});
-}
 function bindPickerSubpage(customPreset){
   document.getElementById('pickerBack').onclick=closePickerRoute; bindPickerAddButtons(mainEl);
-  const custom=mainEl.querySelector('[data-picker-custom]'); if(custom) custom.onclick=event=>openCustomCard(event.currentTarget,customPreset);
+  const custom=mainEl.querySelector('[data-picker-custom]'); if(custom) custom.onclick=()=>openCustomCardStep(customPreset);
 }
 function renderCards(){
-  document.getElementById('appScroll').classList.toggle('picker-subpage',CARD_PICKER_ROUTE.kind!=='hub');
+  const route=CARD_PICKER_ROUTE.kind;
+  document.getElementById('appScroll').classList.toggle('picker-subpage',route!=='hub');
   document.getElementById('appScroll').classList.remove('picker-searching');
-  if(CARD_PICKER_ROUTE.kind==='hub') renderPickerHub();
+  document.body.classList.toggle('card-picker-no-nav',route==='custom');
+  document.body.classList.remove('card-picker-searching');
+  if(route==='hub') renderPickerHub();
   else{
-    document.getElementById('brand').hidden=true; document.getElementById('pageHeader').hidden=true;
-    if(CARD_PICKER_ROUTE.kind==='airline') renderAirlinePickerPage(); else renderGenericPickerPage();
+    document.getElementById('brand').hidden=true; document.getElementById('pageHeader').hidden=true; document.getElementById('pickerAddCard').hidden=true;
+    if(route==='add') renderPickerAddPage();
+    else if(route==='custom') renderCustomCardPage();
+    else renderGenericPickerPage();
   }
 }
-function openPickerRoute(kind,value=''){
-  CARD_PICKER_ROUTE={kind,value}; AIRLINE_FILTER=null; CARD_QUERY=''; PICKER_ROUTE_MOTION='push';
-  history.pushState({view:'cards',cardPickerRoute:{...CARD_PICKER_ROUTE}},'',location.pathname+location.search);
-  render(); scrollAppTo({top:0,behavior:'auto'}); restoreFocus('picker-back');
+function openPickerRoute(kind,value='',extra={}){
+  if(kind==='add') CARD_QUERY='';
+  CARD_PICKER_ROUTE={kind,value,...extra}; PICKER_ROUTE_MOTION='push';
+  const depth=(Number(history.state?.pickerDepth)||0)+1;
+  history.pushState({view:'cards',cardPickerRoute:{...CARD_PICKER_ROUTE},cardQuery:CARD_QUERY,pickerDepth:depth},'',location.pathname+location.search);
+  render(); scrollAppTo({top:0,behavior:'auto'});
+  if(kind==='custom') document.getElementById('customCardName')?.focus({preventScroll:true}); else restoreFocus('picker-page-title');
+}
+function openCustomCardStep(preset={}){
+  const parent={kind:CARD_PICKER_ROUTE.kind,value:CARD_PICKER_ROUTE.value||''};
+  openPickerRoute('custom',preset.issuer||'',{issuer:preset.issuer||'',backLabel:preset.backLabel||'Add a card',parent});
 }
 function closePickerRoute(){
   if(history.state?.view==='cards'&&history.state?.cardPickerRoute) history.back();
-  else{CARD_PICKER_ROUTE={kind:'hub',value:''};AIRLINE_FILTER=null;PICKER_ROUTE_MOTION='pop';render();scrollAppTo({top:0,behavior:'auto'});restoreFocus('add-card-heading');}
+  else{
+    const route=CARD_PICKER_ROUTE, parent=route.kind==='custom'&&route.parent?route.parent:route.kind==='add'?{kind:'hub',value:''}:{kind:'add',value:''};
+    CARD_PICKER_ROUTE={...parent}; PICKER_ROUTE_MOTION='pop'; render(); scrollAppTo({top:0,behavior:'auto'});
+    restoreFocus(parent.kind==='hub'?'pickerAddCard':'picker-page-title');
+  }
 }
 function announcePicker(message){
   const live=document.getElementById('pickerLive'); live.textContent=''; requestAnimationFrame(()=>live.textContent=message);
@@ -1990,6 +2123,12 @@ function movePickerCardTo(id,targetIndex){
   announcePicker(`${getCard(id).name} moved to priority ${to+1}`);
 }
 function bindPickerHeldRows(scope){
+  scope.querySelectorAll('[data-picker-filter]').forEach(button=>{
+    button.addEventListener('focus',()=>button.scrollIntoView({block:'nearest',inline:'nearest'}));
+    button.onclick=()=>{
+      const key=button.dataset.pickerFilter; CARD_FILTER=CARD_FILTER===key?null:key; renderCards(); restoreFocus(`picker-filter-${key}`);
+    };
+  });
   scope.querySelectorAll('[data-picker-edit]').forEach(button=>button.onclick=()=>openEditor(button.dataset.pickerEdit,button));
   scope.querySelectorAll('[data-picker-held]').forEach(row=>row.onclick=event=>{
     if(event.target.closest('[data-picker-edit],[data-picker-drag]')) return;
@@ -2003,33 +2142,52 @@ function bindPickerHeldRows(scope){
     };
     handle.onpointerdown=event=>{
       if(event.pointerType==='mouse'&&event.button!==0) return;
-      const row=handle.closest('.picker-held-row'), startY=event.clientY, startIndex=S.myCards.indexOf(id), rowHeight=row.getBoundingClientRect().height;
-      row.classList.add('is-dragging'); handle.setPointerCapture(event.pointerId); event.preventDefault();
-      const moveEvent=move=>{const delta=move.clientY-startY;row.style.transform=`translateY(${delta}px)`;};
-      const finish=end=>{
-        if(handle.hasPointerCapture(end.pointerId)) handle.releasePointerCapture(end.pointerId);
-        handle.removeEventListener('pointermove',moveEvent); handle.removeEventListener('pointerup',finish); handle.removeEventListener('pointercancel',finish);
-        row.classList.remove('is-dragging'); row.style.removeProperty('transform');
-        movePickerCardTo(id,startIndex+Math.round((end.clientY-startY)/Math.max(1,rowHeight)));
+      const row=handle.closest('.picker-held-row'), list=handle.closest('.picker-held-list'), startY=event.clientY;
+      const startScrollTop=list.scrollTop, rows=[...list.querySelectorAll('[data-picker-held]')];
+      let currentY=startY, targetIndex=S.myCards.indexOf(id), frame=0, active=true;
+      const paint=()=>{row.style.transform=`translateY(${currentY-startY+(list.scrollTop-startScrollTop)}px)`;};
+      const updateTarget=()=>{
+        targetIndex=rows.filter(candidate=>candidate!==row&&currentY>candidate.getBoundingClientRect().top+candidate.getBoundingClientRect().height/2).length;
       };
-      handle.addEventListener('pointermove',moveEvent); handle.addEventListener('pointerup',finish); handle.addEventListener('pointercancel',finish);
+      const autoScroll=()=>{
+        if(!active) return;
+        const rect=list.getBoundingClientRect(), edge=Math.min(44,rect.height/4);
+        const delta=currentY<rect.top+edge?-10:currentY>rect.bottom-edge?10:0;
+        if(delta){list.scrollBy({top:delta,behavior:'auto'});paint();updateTarget();}
+        frame=requestAnimationFrame(autoScroll);
+      };
+      const cleanup=end=>{
+        active=false; cancelAnimationFrame(frame);
+        try{if(handle.hasPointerCapture(end.pointerId)) handle.releasePointerCapture(end.pointerId);}catch(ignore){}
+        handle.removeEventListener('pointermove',moveEvent); handle.removeEventListener('pointerup',finish); handle.removeEventListener('pointercancel',cancel);
+        row.classList.remove('is-dragging'); row.style.removeProperty('transform');
+      };
+      const moveEvent=move=>{currentY=move.clientY;paint();updateTarget();};
+      const finish=end=>{currentY=end.clientY;updateTarget();cleanup(end);movePickerCardTo(id,targetIndex);};
+      const cancel=end=>cleanup(end);
+      row.classList.add('is-dragging');
+      try{handle.setPointerCapture(event.pointerId);}catch(ignore){}
+      event.preventDefault(); updateTarget(); frame=requestAnimationFrame(autoScroll);
+      handle.addEventListener('pointermove',moveEvent); handle.addEventListener('pointerup',finish); handle.addEventListener('pointercancel',cancel);
     };
   });
 }
 function bindPickerAddButtons(scope){ scope.querySelectorAll('[data-picker-add]').forEach(button=>button.onclick=()=>addPickerCard(button.dataset.pickerAdd)); }
 function addPickerCard(cardId){
   const card=getCard(cardId); if(!card||S.myCards.includes(cardId)) return;
-  S.myCards.push(cardId); saveState(S); renderCards(); restoreFocus(`picker-action-${cardId}`);
-  toast(`${shortPickerCardName(card)} added`,4000,()=>{
-    clearToast(); S.myCards=S.myCards.filter(id=>id!==cardId); saveState(S); render();
-    if(TAB==='cards') restoreFocus(document.querySelector(`[data-focus-id="picker-action-${CSS.escape(cardId)}"]`)?`picker-action-${cardId}`:'add-card-heading');
-    announcePicker(`${card.name} removed`);
-  },{art:CARD_DB.some(item=>item.id===cardId)?pickerCardArtPath(cardId):'',cardPicker:true});
+  S.myCards.push(cardId); saveState(S);
+  if(CARD_PICKER_ROUTE.kind==='add'&&CARD_QUERY.trim()) updatePickerSearch(); else renderCards();
+  restoreFocus(`picker-action-${cardId}`); announcePicker(`${card.name} added to My cards`);
 }
 function removeCardFromLineup(cardId){
   const mutationNow=new Date(), card=getCard(cardId), heldIds=[...S.myCards], index=heldIds.indexOf(cardId), nextId=heldIds[index+1]||heldIds[index-1];
   for(const record of Object.values(S.recurringSetups)) if(record.cardId===cardId) suspendRecurringSetup(record.cardId,record.benefitId,'card-removed',mutationNow);
-  S.myCards=S.myCards.filter(id=>id!==cardId); saveState(S,mutationNow); render(); restoreFocus(nextId?`card-row-${nextId}`:'add-card-heading'); toast(`${card.name} removed`);
+  S.myCards=S.myCards.filter(id=>id!==cardId);
+  if(S.custom.some(item=>item.id===cardId)){
+    S.custom=S.custom.filter(item=>item.id!==cardId);
+    delete S.overrides[cardId];
+  }
+  saveState(S,mutationNow); render(); restoreFocus(nextId?`card-row-${nextId}`:'pickerAddCard'); toast(`${card.name} removed`);
 }
 
 function openEditor(id,opener){
@@ -2058,58 +2216,107 @@ function openEditor(id,opener){
   };
   document.getElementById('removeCard').onclick=()=>{closeModal(false);removeCardFromLineup(id);};
 }
-function customPlacementLabels(metadata){
-  const labels=[];
-  if(PICKER_ISSUERS.some(item=>item.name===metadata.issuer)) labels.push(metadata.issuer);
-  if(metadata.brand) labels.push(`${metadata.brand} airline cards`);
-  if(metadata.hotel) labels.push('Hotel cards');
-  if(metadata.store) labels.push('Store cards');
-  if(metadata.biz) labels.push('Business cards');
-  if(metadata.other) labels.push('Other');
-  return labels.length?labels:['My cards only'];
+const PICKER_BANK_PROGRAM={Chase:'chase',Amex:'amex',Citi:'citi','Capital One':'c1','Wells Fargo':'wf'};
+function pickerCustomRateRow(index,category='',value=''){
+  const options=[`<option value=""${category?'':' selected'}>Pick a category</option>`,...CATS.map(cat=>
+    `<option value="${cat.id}"${category===cat.id?' selected':''}>${cat.id==='other'?'Everything else':cat.name}</option>`)].join('');
+  return `<div class="picker-rate-row" data-custom-rate-row>
+    <div class="picker-rate-select-shell"><label class="sr-only" for="customRateCategory${index}">Reward category, rate ${index+1}</label>
+      <select class="picker-rate-category${category?'':' is-placeholder'}" id="customRateCategory${index}" data-custom-rate-category>${options}</select></div>
+    <div class="picker-rate-value-shell"><label class="sr-only" for="customRateValue${index}">Reward value, rate ${index+1}</label>
+      <input class="picker-rate-value" id="customRateValue${index}" data-custom-rate-value type="number" inputmode="decimal"
+        min="0" step="0.1" value="${esc(value)}" placeholder="—"><span class="picker-rate-suffix" data-custom-rate-suffix>%</span></div>
+  </div>`;
 }
-function openCustomCard(opener,preset={}){
-  const metadata={issuer:preset.issuer||'Custom',brand:preset.brand||'',hotel:!!preset.hotel,store:!!preset.store,biz:!!preset.biz,other:preset.other==null?true:!!preset.other};
-  const issuerProgram={Chase:'chase',Amex:'amex',Citi:'citi','Capital One':'c1','Wells Fargo':'wf'}[metadata.issuer]||'cash';
-  const sheet=document.getElementById('sheet');
-  sheet.innerHTML = `<div class="sheet-head"><h3 id="sheet-title">Custom card</h3><button class="iconbtn" id="closex" aria-label="Close custom card editor"><span aria-hidden="true">✕</span></button></div>
-    <div style="display:grid; gap:8px">
-      <label class="field-label" for="ccname">Card name</label><input type="text" id="ccname" maxlength="120" value="${esc(preset.name||'')}">
-      <label class="field-label" for="ccprog">Rewards program</label><select id="ccprog">${Object.entries(PROGRAMS).map(([k,p])=>`<option value="${k}"${k===issuerProgram?' selected':''}>${p.name}</option>`).join('')}</select>
-      <fieldset class="custom-meta"><legend class="custom-meta-title">Browse metadata</legend>
-        <div class="custom-meta-grid">
-          <label class="field-label" for="ccissuer">Issuer<select id="ccissuer"><option value="Custom">Custom or another issuer</option>${PICKER_ISSUERS.map(item=>`<option value="${esc(item.name)}"${item.name===metadata.issuer?' selected':''}>${esc(item.name)}</option>`).join('')}</select></label>
-          <label class="field-label" for="ccbrand">Airline<select id="ccbrand"><option value="">Not an airline card</option>${PICKER_AIRLINES.map(item=>`<option value="${esc(item.name)}"${item.name===metadata.brand?' selected':''}>${esc(item.name)}</option>`).join('')}</select></label>
-        </div>
-        <div class="custom-meta-checks">
-          ${[['hotel','Hotel'],['store','Store'],['biz','Business'],['other','Other']].map(([key,label])=>`<label class="custom-meta-check"><input type="checkbox" id="cc-${key}"${metadata[key]?' checked':''}>${label}</label>`).join('')}
-        </div>
-        <p class="hint custom-placement" id="ccplacement">This card will appear under <b>${esc(customPlacementLabels(metadata).join(', '))}</b>.</p>
-      </fieldset>
-      <p class="field-error" id="ccerror" role="status" aria-live="polite" tabindex="-1" hidden></p>
-      <button class="pill primary" id="ccsave">Create card</button></div>`;
-  openModal('#ccname',opener);
-  document.getElementById('closex').onclick=closeModal;
-  const readMetadata=()=>({issuer:document.getElementById('ccissuer').value,brand:document.getElementById('ccbrand').value,
-    hotel:document.getElementById('cc-hotel').checked,store:document.getElementById('cc-store').checked,
-    biz:document.getElementById('cc-biz').checked,other:document.getElementById('cc-other').checked});
-  const updatePlacement=()=>{document.getElementById('ccplacement').innerHTML=`This card will appear under <b>${esc(customPlacementLabels(readMetadata()).join(', '))}</b>.`;};
-  sheet.querySelectorAll('#ccissuer,#ccbrand,#cc-hotel,#cc-store,#cc-biz,#cc-other').forEach(control=>control.addEventListener('change',updatePlacement));
-  document.getElementById('ccname').addEventListener('input',event=>{
-    event.currentTarget.removeAttribute('aria-invalid'); event.currentTarget.removeAttribute('aria-describedby'); document.getElementById('ccerror').hidden=true;
-  });
-  document.getElementById('ccsave').onclick=()=>{
-    const nameInput=document.getElementById('ccname'), error=document.getElementById('ccerror'), name=nameInput.value.trim();
-    if(!name){error.textContent='Enter a card name.'; error.hidden=false; nameInput.setAttribute('aria-invalid','true'); nameInput.setAttribute('aria-describedby','ccerror'); nameInput.focus();return;}
-    if(S.custom.length>=25){error.textContent='You can add up to 25 custom cards.'; error.hidden=false; error.focus();return;}
-    const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,32)||'card';
-    let id; do{
-      const token=globalThis.crypto&&crypto.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0].toString(36).slice(0,8):Date.now().toString(36).slice(-8);
-      id=`cust_${slug}_${token}`;
-    }while(getCard(id));
-    const selectedMetadata=readMetadata();
-    S.custom.push({id,name,issuer:selectedMetadata.issuer,program:document.getElementById('ccprog').value,rates:{other:{v:1,u:'%'}},notes:'',...selectedMetadata});
-    S.myCards.push(id); saveState(S); closeModal(false); render(); restoreFocus(CARD_QUERY.trim()?`picker-action-${id}`:`card-row-${id}`); toast(`${name} created`);
+function pickerBankDisplay(issuer,prefilled){
+  const bank=PICKER_ISSUERS.find(item=>item.name===issuer), label=issuer==='Custom'?'Other bank':issuer;
+  const logo=bank?`<img class="picker-bank-logo" src="${pickerLogoPath(bank.logo)}" alt="">`:'';
+  return `<span class="picker-bank-value${issuer?'':' picker-bank-placeholder'}">${logo}<span id="pickerBankName">${esc(label||'Choose a bank')}</span></span>
+    <span class="picker-bank-hint" id="pickerBankHint">${prefilled&&issuer?'pre-filled':'choose'} ▾</span>`;
+}
+function showCustomCardError(message,control){
+  const error=document.getElementById('customCardError'); error.textContent=message; error.hidden=false;
+  if(control){control.setAttribute('aria-invalid','true');control.setAttribute('aria-describedby','customCardError');control.focus();}
+}
+function clearCustomCardError(){
+  const error=document.getElementById('customCardError'); if(error) error.hidden=true;
+  mainEl.querySelectorAll('[aria-invalid="true"]').forEach(control=>{control.removeAttribute('aria-invalid');control.removeAttribute('aria-describedby');});
+}
+function updateCustomBankDisplay(){
+  const select=document.getElementById('customCardBank'), display=document.getElementById('pickerBankDisplay'); if(!select||!display) return;
+  const prefilled=select.dataset.prefilled===select.value&&!!select.value;
+  display.innerHTML=pickerBankDisplay(select.value,prefilled);
+}
+function updateCustomRateUnit(unit){
+  const form=document.getElementById('customCardForm'); if(!form) return; form.dataset.unit=unit;
+  form.querySelectorAll('[data-custom-unit]').forEach(button=>{const active=button.dataset.customUnit===unit;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',active);});
+  form.querySelectorAll('[data-custom-rate-suffix]').forEach(suffix=>suffix.textContent=unit==='x'?'×':'%');
+}
+function saveCustomCardFromPage(){
+  clearCustomCardError();
+  const nameInput=document.getElementById('customCardName'), bankSelect=document.getElementById('customCardBank'), form=document.getElementById('customCardForm');
+  const name=nameInput.value.trim(), issuer=bankSelect.value;
+  if(!name){showCustomCardError('Enter a card name.',nameInput);return;}
+  if(!issuer){showCustomCardError('Choose a bank.',bankSelect);return;}
+  if(S.custom.length>=25){showCustomCardError('You can add up to 25 custom cards.',nameInput);return;}
+  const rates={}, used=new Set(), unit=form.dataset.unit==='x'?'x':'%';
+  for(const row of form.querySelectorAll('[data-custom-rate-row]')){
+    const category=row.querySelector('[data-custom-rate-category]').value, valueInput=row.querySelector('[data-custom-rate-value]'), raw=valueInput.value.trim();
+    if(!category&&!raw) continue;
+    if(!category){showCustomCardError('Pick a category for every rate.',row.querySelector('[data-custom-rate-category]'));return;}
+    if(!raw||!Number.isFinite(Number(raw))||Number(raw)<0){showCustomCardError('Enter a valid rate for every category.',valueInput);return;}
+    if(used.has(category)){showCustomCardError('Use each reward category only once.',row.querySelector('[data-custom-rate-category]'));return;}
+    used.add(category); rates[category]={v:Number(raw),u:unit};
+  }
+  if(!Object.keys(rates).length){showCustomCardError('Add at least one earn rate.',form.querySelector('[data-custom-rate-value]'));return;}
+  const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,32)||'card';
+  let id; do{
+    const token=globalThis.crypto&&crypto.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0].toString(36).slice(0,8):Date.now().toString(36).slice(-8);
+    id=`cust_${slug}_${token}`;
+  }while(getCard(id));
+  const program=unit==='x'?(PICKER_BANK_PROGRAM[issuer]||'cash'):'cash';
+  S.custom.push({id,name,issuer,program,rates,notes:'',brand:null,hotel:false,store:false,biz:false,other:false});
+  S.myCards.push(id); saveState(S); announcePicker(`${name} saved to My cards`);
+  const depth=Number(history.state?.pickerDepth)||0;
+  CARD_PICKER_ROUTE={kind:'hub',value:''}; CARD_QUERY=''; CARD_FILTER=null; PICKER_ROUTE_MOTION='pop';
+  if(depth>0) history.go(-depth);
+  else{history.replaceState({view:'cards'},'',location.pathname+location.search);render();scrollAppTo({top:0,behavior:'auto'});restoreFocus(`card-row-${id}`);}
+}
+function renderCustomCardPage(){
+  const route=CARD_PICKER_ROUTE, issuer=route.issuer||'', backLabel=route.backLabel||'Add a card', motion=PICKER_ROUTE_MOTION?` is-${PICKER_ROUTE_MOTION}`:'';
+  const bankOptions=[`<option value=""${issuer?'':' selected'} disabled>Choose a bank</option>`,...PICKER_ISSUERS.map(item=>
+    `<option value="${esc(item.name)}"${issuer===item.name?' selected':''}>${esc(item.name)}</option>`),`<option value="Custom">Other bank</option>`].join('');
+  mainEl.innerHTML=`<section class="picker-page picker-custom-page${motion}"><button class="picker-back" id="pickerBack" type="button" data-focus-id="picker-back"><span class="picker-back-glyph" aria-hidden="true">‹</span>${esc(backLabel)}</button>
+    <div class="picker-custom-title"><h1 tabindex="-1" data-picker-page-title>Custom card</h1></div>
+    <form class="picker-custom-stack" id="customCardForm" data-unit="%" novalidate>
+      <div class="picker-custom-card"><div class="picker-field-group"><label class="picker-field-label" for="customCardName">Card name</label>
+        <div class="picker-custom-input-shell"><input class="picker-custom-name" id="customCardName" data-focus-id="customCardName" type="text" maxlength="120" placeholder="e.g. Ink Business Premier" autocomplete="off"></div></div>
+        <div class="picker-field-group"><label class="picker-field-label" for="customCardBank">Bank</label>
+          <div class="picker-bank-shell"><div class="picker-bank-display" id="pickerBankDisplay">${pickerBankDisplay(issuer,!!issuer)}</div>
+            <select class="picker-bank-select" id="customCardBank" data-prefilled="${esc(issuer)}">${bankOptions}</select></div></div>
+      </div>
+      <div class="picker-custom-card is-rates"><div class="picker-rates-head"><span class="picker-rates-label">Earn rates</span>
+        <button class="picker-add-rate" id="pickerAddRate" type="button">+ Add a rate</button></div>
+        <div class="picker-unit-toggle" role="group" aria-label="Rewards unit"><button class="picker-unit-button is-active" type="button" data-custom-unit="%" aria-pressed="true">% cash back</button>
+          <button class="picker-unit-button" type="button" data-custom-unit="x" aria-pressed="false">× points</button></div>
+        <div id="pickerRateRows">${pickerCustomRateRow(0,'other','1.5')}${pickerCustomRateRow(1)}</div>
+      </div>
+      <p class="picker-custom-error" id="customCardError" role="status" aria-live="polite" tabindex="-1" hidden></p>
+      <button class="picker-save-custom" type="submit">Save to my cards</button>
+    </form></section>`;
+  PICKER_ROUTE_MOTION='';
+  document.getElementById('pickerBack').onclick=closePickerRoute;
+  const form=document.getElementById('customCardForm'), bank=document.getElementById('customCardBank');
+  form.addEventListener('submit',event=>{event.preventDefault();saveCustomCardFromPage();});
+  form.addEventListener('input',clearCustomCardError); form.addEventListener('change',clearCustomCardError);
+  bank.addEventListener('change',()=>{bank.dataset.prefilled='';updateCustomBankDisplay();});
+  form.querySelectorAll('[data-custom-unit]').forEach(button=>button.onclick=()=>updateCustomRateUnit(button.dataset.customUnit));
+  form.querySelectorAll('[data-custom-rate-category]').forEach(select=>select.onchange=()=>select.classList.toggle('is-placeholder',!select.value));
+  document.getElementById('pickerAddRate').onclick=()=>{
+    const rows=document.getElementById('pickerRateRows'), index=rows.querySelectorAll('[data-custom-rate-row]').length;
+    rows.insertAdjacentHTML('beforeend',pickerCustomRateRow(index));
+    const select=rows.querySelector(`#customRateCategory${index}`); select.onchange=()=>select.classList.toggle('is-placeholder',!select.value); select.focus();
+    updateCustomRateUnit(form.dataset.unit);
   };
 }
 
@@ -2432,7 +2639,7 @@ function bindPromoActions(){
     requestAnimationFrame(()=>{ const status=document.getElementById('radar-filter-status'); if(status) status.textContent=message; });
   });
   mainEl.querySelectorAll('[data-go-cards]').forEach(b=>b.onclick=()=>{endPromosVisit();TAB='cards';PROMOS_VIEW='overview';RADAR_FILTER='all';
-    CARD_PICKER_ROUTE={kind:'hub',value:''};CARD_QUERY='';AIRLINE_FILTER=null;history.replaceState({view:'cards'},'',location.pathname+location.search);render();restoreFocus('add-card-heading');});
+    CARD_PICKER_ROUTE={kind:'hub',value:''};CARD_QUERY='';CARD_FILTER=null;history.replaceState({view:'cards'},'',location.pathname+location.search);render();restoreFocus('pickerAddCard');});
   mainEl.querySelectorAll('[data-task-check]').forEach(cb=>cb.onchange=()=>{
     const mutationNow=new Date(), task=findCurrentTaskOrRefresh(cb.dataset.taskCheck,mutationNow); if(!task) return;
     const currentState=task.closed?'closed':task.unavailable?'unavailable':'open';
@@ -2568,7 +2775,7 @@ function syncFloatingUi(){
     const viewportLeft=viewport.offsetLeft||0, viewportTop=viewport.offsetTop||0, viewportBottom=viewportTop+viewport.height;
     const maxWidth=Math.max(96,viewport.width-24), navTop=navEl.getBoundingClientRect().top;
     toastEl.style.left=`${viewportLeft+viewport.width/2}px`; toastEl.style.bottom='auto'; toastEl.style.maxWidth=`${maxWidth}px`;
-    toastEl.style.width=toastEl.classList.contains('card-picker-toast')?`${Math.min(532,maxWidth)}px`:(toastEl.classList.contains('wide')?`${Math.min(520,maxWidth)}px`:'max-content');
+    toastEl.style.width=toastEl.classList.contains('wide')?`${Math.min(520,maxWidth)}px`:'max-content';
     const visibleBottom=navTop>viewportTop&&navTop<viewportBottom?navTop-10:viewportBottom-12;
     toastEl.style.top=`${Math.max(viewportTop+12,visibleBottom-toastEl.offsetHeight)}px`;
   }else{
@@ -2597,15 +2804,23 @@ document.addEventListener('keydown',e=>{
   if(e.shiftKey&&document.activeElement===first){ e.preventDefault(); last.focus(); }
   else if(!e.shiftKey&&document.activeElement===last){ e.preventDefault(); first.focus(); }
 });
-history.replaceState({view:TAB,promosView:PROMOS_VIEW,radarFilter:RADAR_FILTER},'',location.pathname+location.search);
+history.replaceState({view:TAB,promosView:PROMOS_VIEW,radarFilter:RADAR_FILTER,pickerDepth:0},'',location.pathname+location.search);
 window.addEventListener('popstate',e=>{
   if(e.state?.view==='cards'){
-    if(TAB==='promos') endPromosVisit(); TAB='cards'; CARD_QUERY=''; AIRLINE_FILTER=null;
-    CARD_PICKER_ROUTE=e.state.cardPickerRoute&&typeof e.state.cardPickerRoute.kind==='string'?{kind:e.state.cardPickerRoute.kind,value:e.state.cardPickerRoute.value||''}:{kind:'hub',value:''};
-    PICKER_ROUTE_MOTION='pop'; render(); scrollAppTo({top:0,behavior:'auto'}); restoreFocus(CARD_PICKER_ROUTE.kind==='hub'?'add-card-heading':'picker-back'); return;
+    if(TAB==='promos') endPromosVisit(); TAB='cards'; CARD_QUERY=typeof e.state.cardQuery==='string'?e.state.cardQuery:'';
+    CARD_PICKER_ROUTE=e.state.cardPickerRoute&&['add','issuer','category','custom'].includes(e.state.cardPickerRoute.kind)?{...e.state.cardPickerRoute}:{kind:'hub',value:''};
+    if(CARD_PICKER_ROUTE.kind!=='hub') CARD_FILTER=null;
+    PICKER_ROUTE_MOTION='pop'; render(); scrollAppTo({top:0,behavior:'auto'});
+    const focusTarget=CARD_PICKER_ROUTE.kind==='hub'?'pickerAddCard':CARD_PICKER_ROUTE.kind==='custom'?'customCardName':CARD_PICKER_ROUTE.kind==='add'&&CARD_QUERY.trim()?'cardSearch':'picker-page-title';
+    restoreFocus(focusTarget); return;
   }
-  const normalized=normalizePromosHistory(e.state); PROMOS_VIEW=normalized.view; RADAR_FILTER=normalized.filter; beginRadarVisit(new Date());
-  TAB='promos'; render(); scrollAppTo({top:0,behavior:'auto'}); requestAnimationFrame(()=>document.getElementById('hdr').focus());
+  const nextView=['which','benefits','promos','settings'].includes(e.state?.view)?e.state.view:'which';
+  if(TAB==='promos'&&nextView!=='promos') endPromosVisit();
+  TAB=nextView; CARD_PICKER_ROUTE={kind:'hub',value:''}; CARD_QUERY=''; CARD_FILTER=null;
+  if(TAB==='promos'){
+    const normalized=normalizePromosHistory(e.state); PROMOS_VIEW=normalized.view; RADAR_FILTER=normalized.filter; beginRadarVisit(new Date());
+  }else{PROMOS_VIEW='overview';RADAR_FILTER='all';}
+  render(); scrollAppTo({top:0,behavior:'auto'}); requestAnimationFrame(()=>document.getElementById('hdr').focus());
 });
 function refreshIfCalendarChanged(){
   const now=new Date(), currentDayKey=localIsoDate(localDay(now)), currentMonthKey=periodInfo('month',now).key, previousMonthKey=renderedMonthKey;
@@ -2619,13 +2834,14 @@ window.addEventListener('pageshow',refreshIfCalendarChanged);
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   const nextTab=b.dataset.tab; if(TAB==='promos'&&nextTab!=='promos') endPromosVisit();
   TAB=nextTab; PROMOS_VIEW='overview'; RADAR_FILTER='all';
-  if(TAB==='cards'){CARD_PICKER_ROUTE={kind:'hub',value:''};CARD_QUERY='';AIRLINE_FILTER=null;}
-  history.replaceState({view:TAB,promosView:'overview',radarFilter:'all'},'',location.pathname+location.search);
+  if(TAB==='cards'){CARD_PICKER_ROUTE={kind:'hub',value:''};CARD_QUERY='';CARD_FILTER=null;}
+  history.replaceState({view:TAB,promosView:'overview',radarFilter:'all',pickerDepth:0},'',location.pathname+location.search);
   if(TAB==='promos') beginRadarVisit(new Date());
   render(); scrollAppTo({top:0,behavior:'auto'});
   if(window.visualViewport?.scale>1.01) requestAnimationFrame(()=>document.getElementById('hdr').focus());
 });
 document.getElementById('storageBackup').onclick=()=>copySetupLink();
+document.getElementById('pickerAddCard').onclick=()=>openPickerRoute('add');
 if(TAB==='promos') beginRadarVisit(new Date());
 render();
 if(startupNotice) setTimeout(()=>toast(startupNotice,3600),0);
