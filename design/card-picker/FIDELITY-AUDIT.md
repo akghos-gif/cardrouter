@@ -133,6 +133,7 @@ screens.
 | -2px | drag-glyph tracking | -2px | index.html:295 | MATCH |
 | `#9ca3af` | drag-glyph color | `#69717f` | index.html:21,295 | MISMATCH (D08) |
 | 44px × 44px | actual reorder target (not expressed by mock) | 44px × 44px, no overlap with Edit | index.html:294 | MISMATCH (D06) |
+| unspecified | live pointer-drag presentation and motion | intervening rows translate by the measured dragged-row height over 200ms `cubic-bezier(.16,1,.3,1)`; dragged row uses 10px radius, 1px existing-border outline, and `0 8px 24px` using the existing nav-shadow color | index.html:284-286,2143-2173 | MISMATCH (D20) |
 | `12px 0` | list-footer padding | `12px 0` | index.html:299 | MATCH |
 | 12px | list-footer size | 12px | index.html:299 | MATCH |
 | `#9ca3af` | list-footer color | `#69717f` | index.html:21,299 | MISMATCH (D08) |
@@ -311,13 +312,14 @@ screens.
 | 12.5px / 500 / `#2563eb` | Add a rate | 12.5px / 500 / `#2563eb` | index.html:22,426-427 | MATCH |
 | 44px | Add-rate hit height (source is text-only) | 44px minimum with -12px visual margins | index.html:426 | MISMATCH (D07) |
 | `#f4f5f7` / `1px solid #e5e7eb` / 10px | unit-toggle surface | same visible surface | index.html:20-21,428-430 | MATCH |
-| 2px | unit-toggle horizontal inset | 2px | index.html:428 | MATCH |
-| roughly 34px | unit-toggle drawn surface | 34px surface inside 44px targets | index.html:428-434 | MATCH |
-| 44px | unit-segment target (source visual is roughly 34px) | 44px | index.html:431 | MISMATCH (D16) |
-| 13px / 600 | active unit segment | 13px / 600 | index.html:432,435 | MATCH |
-| `#ffffff` / 8px | active segment fill/radius | `#ffffff` / 8px | index.html:20,434-436 | MATCH |
-| `0 1px 3px rgba(0,0,0,.10)` | active-segment shadow | same | index.html:436 | MATCH |
-| 13px / 500 / `#6b7280` | inactive unit segment | 13px / 500 / `#69717f` | index.html:20,431-433 | MISMATCH (D08) |
+| 2px | unit-toggle selected-segment inset | 2px inside the bordered track | index.html:431-432 | MATCH |
+| roughly 34px | unit-toggle drawn surface | 34px bordered track with a contained 30px selected indicator inside 44px targets | index.html:428-432 | MATCH |
+| 44px | unit-segment target (source visual is roughly 34px) | 44px | index.html:434 | MISMATCH (D16) |
+| 13px / 600 | active unit segment | 13px / 600 | index.html:434-436 | MATCH |
+| `#ffffff` / 8px | active segment fill/radius | `#ffffff` / 8px | index.html:20,431-432 | MATCH |
+| `0 1px 3px rgba(0,0,0,.10)` | active-segment shadow | same | index.html:432 | MATCH |
+| 13px / 500 / `#6b7280` | inactive unit segment | 13px / 500 / `#69717f` | index.html:20,434-435 | MISMATCH (D08) |
+| unspecified | unit selection motion and clarified visible labels | 200ms `cubic-bezier(.16,1,.3,1)` indicator transition; “Cash back” / “Points” | index.html:432-433,2303-2304 | MISMATCH (D25) |
 | 8px | rate-row gap | 8px | index.html:438 | MATCH |
 | 38px | category/value visual control height | 38px inset surface | index.html:439,442 | MATCH |
 | 44px | category/value target (source is 38px) | 44px | index.html:438-439,446,452 | MISMATCH (D16) |
@@ -352,9 +354,9 @@ screens.
 | no executable status action | `✓ In my cards` | non-focusable status/no-op | index.html:1982-1985 | MISMATCH (D15) |
 | platform push/pop, unspecified numbers | page navigation | 200ms, 18px, opacity .5→1, cubic-bezier(.16,1,.3,1) | index.html:244-247,304-305 | MISMATCH (D13) |
 | static row | held-card row | tap opens editor | index.html:2132-2137 | MISMATCH (D14) |
-| static drag | held-row reordering | live midpoints; 44px edge zone; 10px/frame; pointer cancellation no-op | index.html:2143-2171 | MISMATCH (D20) |
-| no live-region values | dynamic search/rate rows | result-count announcement and numbered rate-control names | index.html:2012-2013,2224-2227 | MISMATCH (D20) |
-| three visible custom-form concepts | custom page | name, bank, rates only; metadata defaults null/false in model | index.html:2278,2291-2305 | MATCH |
+| static drag | held-row reordering | stored midpoints; intervening rows preview the destination over 200ms; 44px edge zone; 10px/frame; pointer cancellation no-op | index.html:2143-2173 | MISMATCH (D20) |
+| no live-region values | dynamic search/rate rows | result-count announcement and numbered rate-control names | index.html:2012-2013,2226-2229 | MISMATCH (D20) |
+| three visible custom-form concepts | custom page | name, bank, rates only; metadata defaults null/false in model | index.html:2281,2294-2308 | MATCH |
 
 ## Dark mode (design-unspecified)
 
@@ -392,7 +394,7 @@ reviewable mismatch under D09 rather than a claim of fidelity.
 | `3-chase-issuer-page.png` | Same issuer heading/count, two-column card grid, held statuses, actions, and custom issuer tile last. | Only the production-derived subtitle copy/wrapping differs (D01); status remains a no-op (D15). |
 | `4-search-results.png` | Same focused search, result row structure, highlighting, fixed-width actions, and custom link. | Real native caret (D23), all results in a scrolling six-row region (D10), and real keyboard instead of mock (D12). |
 | `5-business-cards-page.png` | Same generic category pattern, five production Business cards, and Custom last. | Production-derived subtitle copy/wrapping differs (D01). |
-| `6-custom-card-step.png` | Same stack and ordering: back, title, identity card, earn-rates card, primary action; no metadata controls. | Form is roughly 22px taller because interactive controls have 44px targets while their inset surfaces preserve the drawn 42/38/roughly-34px sizes (D16). Native caret differs from the mock (D23). |
+| `6-custom-card-step.png` | Same stack and ordering: back, title, identity card, earn-rates card, primary action; no metadata controls. | Form is roughly 22px taller because interactive controls have 44px targets while their inset surfaces preserve the drawn 42/38/roughly-34px sizes (D16). The contained selector uses “Cash back” / “Points” (D25). Native caret differs from the mock (D23). |
 
 No screen produced document-level horizontal overflow at 390px, 320px, desktop 1280px, or
 a 195px CSS viewport (390px phone at 200% browser zoom). The seven-screen interaction and

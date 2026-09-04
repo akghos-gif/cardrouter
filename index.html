@@ -283,7 +283,7 @@
     background:var(--picker-surface)}
   .picker-held-row{display:flex; align-items:center; gap:11px; flex:none; padding:0;
     border-bottom:1px solid var(--picker-border); position:relative; transition:transform .2s cubic-bezier(.16,1,.3,1)}
-  .picker-held-row.is-dragging{z-index:2; transition:none}
+  .picker-held-row.is-dragging{z-index:2; transition:none; border-radius:10px; outline:1px solid var(--picker-border); background:var(--picker-surface); box-shadow:0 8px 24px var(--picker-nav-shadow)}.picker-held-list.is-sorting .picker-held-row{user-select:none}
   .picker-held-edit{display:grid; grid-template-columns:16px 58px minmax(0,1fr); align-items:center; gap:11px;
     flex:1; min-width:0; margin:0; padding:11px 0; border:0; border-radius:7px; background:transparent;
     color:var(--picker-text); font:inherit; text-align:left; cursor:pointer}
@@ -425,15 +425,15 @@
   .picker-rates-head{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
   .picker-add-rate{min-height:44px; margin:-12px 0; padding:12px 0; border:0; background:transparent;
     color:var(--picker-accent); font:inherit; font-size:12.5px; font-weight:500; cursor:pointer}
-  .picker-unit-toggle{display:flex; height:44px; padding:0 2px; position:relative}
+  .picker-unit-toggle{display:grid; grid-template-columns:1fr 1fr; height:44px; position:relative; isolation:isolate}
   .picker-unit-toggle::before{content:""; position:absolute; inset:5px 0; border:1px solid var(--picker-border);
     border-radius:10px; background:var(--picker-bg)}
-  .picker-unit-button{flex:1; z-index:1; height:44px; margin:0; padding:0; border:0; border-radius:8px;
-    background:transparent; color:var(--picker-secondary); font:inherit; font-size:13px; font-weight:500;
-    cursor:pointer; position:relative; isolation:isolate}
-  .picker-unit-button::before{content:""; position:absolute; z-index:-1; inset:5px 0; border-radius:8px}
-  .picker-unit-button.is-active{color:var(--picker-text); font-weight:600}
-  .picker-unit-button.is-active::before{background:var(--picker-surface); box-shadow:0 1px 3px rgba(0,0,0,.10)}
+  .picker-unit-indicator{position:absolute; z-index:0; top:7px; bottom:7px; left:2px; width:calc(50% - 2px);
+    border-radius:8px; background:var(--picker-surface); box-shadow:0 1px 3px rgba(0,0,0,.10); pointer-events:none; transition:transform .2s cubic-bezier(.16,1,.3,1)}
+  .picker-unit-toggle[data-unit="x"] .picker-unit-indicator{transform:translateX(100%)}
+  .picker-unit-button{z-index:1; height:44px; margin:0; padding:0; border:0; border-radius:8px;
+    background:transparent; color:var(--picker-secondary); font:inherit; font-size:13px; font-weight:500; cursor:pointer}
+  .picker-unit-button.is-active{color:var(--picker-text); font-weight:600}.picker-unit-button:focus-visible{outline-offset:-4px}
   #pickerRateRows{display:contents}
   .picker-rate-row{display:flex; align-items:center; gap:8px; min-height:44px}
   .picker-rate-select-shell,.picker-rate-value-shell{height:44px; position:relative}
@@ -2143,31 +2143,33 @@ function bindPickerHeldRows(scope){
     handle.onpointerdown=event=>{
       if(event.pointerType==='mouse'&&event.button!==0) return;
       const row=handle.closest('.picker-held-row'), list=handle.closest('.picker-held-list'), startY=event.clientY;
-      const startScrollTop=list.scrollTop, rows=[...list.querySelectorAll('[data-picker-held]')];
-      let currentY=startY, targetIndex=S.myCards.indexOf(id), frame=0, active=true;
+      const startScrollTop=list.scrollTop, rows=[...list.querySelectorAll('[data-picker-held]')], startIndex=rows.indexOf(row), rowHeight=row.getBoundingClientRect().height;
+      const metrics=rows.map((candidate,index)=>{const rect=candidate.getBoundingClientRect();return{candidate,index,center:rect.top+list.scrollTop+rect.height/2};});
+      let currentY=startY, targetIndex=startIndex, frame=0, active=true;
       const paint=()=>{row.style.transform=`translateY(${currentY-startY+(list.scrollTop-startScrollTop)}px)`;};
-      const updateTarget=()=>{
-        targetIndex=rows.filter(candidate=>candidate!==row&&currentY>candidate.getBoundingClientRect().top+candidate.getBoundingClientRect().height/2).length;
+      const preview=()=>{
+        targetIndex=metrics.filter(item=>item.candidate!==row&&currentY+list.scrollTop>item.center).length;
+        rows.forEach((candidate,index)=>{if(candidate===row)return;const shift=targetIndex>startIndex&&index>startIndex&&index<=targetIndex?-rowHeight:targetIndex<startIndex&&index>=targetIndex&&index<startIndex?rowHeight:0;candidate.style.transform=shift?`translateY(${shift}px)`:'';});
       };
       const autoScroll=()=>{
         if(!active) return;
         const rect=list.getBoundingClientRect(), edge=Math.min(44,rect.height/4);
         const delta=currentY<rect.top+edge?-10:currentY>rect.bottom-edge?10:0;
-        if(delta){list.scrollBy({top:delta,behavior:'auto'});paint();updateTarget();}
+        if(delta){list.scrollBy({top:delta,behavior:'auto'});paint();preview();}
         frame=requestAnimationFrame(autoScroll);
       };
       const cleanup=end=>{
         active=false; cancelAnimationFrame(frame);
         try{if(handle.hasPointerCapture(end.pointerId)) handle.releasePointerCapture(end.pointerId);}catch(ignore){}
         handle.removeEventListener('pointermove',moveEvent); handle.removeEventListener('pointerup',finish); handle.removeEventListener('pointercancel',cancel);
-        row.classList.remove('is-dragging'); row.style.removeProperty('transform');
+        row.classList.remove('is-dragging'); list.classList.remove('is-sorting'); rows.forEach(candidate=>candidate.style.removeProperty('transform'));
       };
-      const moveEvent=move=>{currentY=move.clientY;paint();updateTarget();};
-      const finish=end=>{currentY=end.clientY;updateTarget();cleanup(end);movePickerCardTo(id,targetIndex);};
+      const moveEvent=move=>{currentY=move.clientY;paint();preview();};
+      const finish=end=>{currentY=end.clientY;preview();cleanup(end);movePickerCardTo(id,targetIndex);};
       const cancel=end=>cleanup(end);
-      row.classList.add('is-dragging');
+      row.classList.add('is-dragging'); list.classList.add('is-sorting');
       try{handle.setPointerCapture(event.pointerId);}catch(ignore){}
-      event.preventDefault(); updateTarget(); frame=requestAnimationFrame(autoScroll);
+      event.preventDefault(); paint(); preview(); frame=requestAnimationFrame(autoScroll);
       handle.addEventListener('pointermove',moveEvent); handle.addEventListener('pointerup',finish); handle.addEventListener('pointercancel',cancel);
     };
   });
@@ -2249,6 +2251,7 @@ function updateCustomBankDisplay(){
 }
 function updateCustomRateUnit(unit){
   const form=document.getElementById('customCardForm'); if(!form) return; form.dataset.unit=unit;
+  form.querySelector('.picker-unit-toggle').dataset.unit=unit;
   form.querySelectorAll('[data-custom-unit]').forEach(button=>{const active=button.dataset.customUnit===unit;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',active);});
   form.querySelectorAll('[data-custom-rate-suffix]').forEach(suffix=>suffix.textContent=unit==='x'?'×':'%');
 }
@@ -2297,8 +2300,8 @@ function renderCustomCardPage(){
       </div>
       <div class="picker-custom-card is-rates"><div class="picker-rates-head"><span class="picker-rates-label">Earn rates</span>
         <button class="picker-add-rate" id="pickerAddRate" type="button">+ Add a rate</button></div>
-        <div class="picker-unit-toggle" role="group" aria-label="Rewards unit"><button class="picker-unit-button is-active" type="button" data-custom-unit="%" aria-pressed="true">% cash back</button>
-          <button class="picker-unit-button" type="button" data-custom-unit="x" aria-pressed="false">× points</button></div>
+        <div class="picker-unit-toggle" data-unit="%" role="group" aria-label="Reward type"><span class="picker-unit-indicator" aria-hidden="true"></span><button class="picker-unit-button is-active" type="button" data-custom-unit="%" aria-pressed="true" aria-label="Cash back, percent">Cash back</button>
+          <button class="picker-unit-button" type="button" data-custom-unit="x" aria-pressed="false" aria-label="Points, points per dollar">Points</button></div>
         <div id="pickerRateRows">${pickerCustomRateRow(0,'other','1.5')}${pickerCustomRateRow(1)}</div>
       </div>
       <p class="picker-custom-error" id="customCardError" role="status" aria-live="polite" tabindex="-1" hidden></p>
