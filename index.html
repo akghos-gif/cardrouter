@@ -2143,34 +2143,48 @@ function bindPickerHeldRows(scope){
     handle.onpointerdown=event=>{
       if(event.pointerType==='mouse'&&event.button!==0) return;
       const row=handle.closest('.picker-held-row'), list=handle.closest('.picker-held-list'), startY=event.clientY;
-      const startScrollTop=list.scrollTop, rows=[...list.querySelectorAll('[data-picker-held]')], startIndex=rows.indexOf(row), rowHeight=row.getBoundingClientRect().height;
+      const startRect=row.getBoundingClientRect(), grabOffset=startY-startRect.top, pointerId=event.pointerId;
+      const startScrollTop=list.scrollTop, rows=[...list.querySelectorAll('[data-picker-held]')], startIndex=rows.indexOf(row), rowHeight=startRect.height;
       const metrics=rows.map((candidate,index)=>{const rect=candidate.getBoundingClientRect();return{candidate,index,center:rect.top+list.scrollTop+rect.height/2};});
-      let currentY=startY, targetIndex=startIndex, frame=0, active=true;
-      const paint=()=>{row.style.transform=`translateY(${currentY-startY+(list.scrollTop-startScrollTop)}px)`;};
+      let currentY=startY, targetIndex=startIndex, frame=0, active=true, lastFrame=null;
+      const visualTop=()=>{
+        const bounds=list.getBoundingClientRect();
+        const minTop=bounds.top+2, maxTop=Math.max(minTop,bounds.bottom-rowHeight-2), clampedTop=Math.max(minTop,Math.min(maxTop,currentY-grabOffset));
+        return clampedTop;
+      };
+      const paint=()=>{
+        const naturalTop=startRect.top-(list.scrollTop-startScrollTop);
+        row.style.transform=`translateY(${visualTop()-naturalTop}px)`;
+      };
       const preview=()=>{
-        targetIndex=metrics.filter(item=>item.candidate!==row&&currentY+list.scrollTop>item.center).length;
+        const dragCenter=visualTop()+rowHeight/2+list.scrollTop;
+        targetIndex=metrics.filter(item=>item.candidate!==row&&dragCenter>item.center).length;
         rows.forEach((candidate,index)=>{if(candidate===row)return;const shift=targetIndex>startIndex&&index>startIndex&&index<=targetIndex?-rowHeight:targetIndex<startIndex&&index>=targetIndex&&index<startIndex?rowHeight:0;candidate.style.transform=shift?`translateY(${shift}px)`:'';});
       };
-      const autoScroll=()=>{
+      const autoScroll=now=>{
         if(!active) return;
         const rect=list.getBoundingClientRect(), edge=Math.min(44,rect.height/4);
-        const delta=currentY<rect.top+edge?-10:currentY>rect.bottom-edge?10:0;
-        if(delta){list.scrollBy({top:delta,behavior:'auto'});paint();preview();}
+        const topPressure=Math.max(0,Math.min(1,(rect.top+edge-currentY)/edge)), bottomPressure=Math.max(0,Math.min(1,(currentY-(rect.bottom-edge))/edge));
+        const pressure=Math.max(topPressure,bottomPressure), elapsed=lastFrame===null?0:Math.min(32,Math.max(0,now-lastFrame)); lastFrame=now;
+        const direction=bottomPressure>topPressure?1:topPressure>0?-1:0, delta=direction*120*pressure*pressure*elapsed/1000, before=list.scrollTop;
+        if(delta){list.scrollTop+=delta;if(list.scrollTop!==before){paint();preview();}}
         frame=requestAnimationFrame(autoScroll);
       };
-      const cleanup=end=>{
+      const cleanup=()=>{
+        if(!active) return;
         active=false; cancelAnimationFrame(frame);
-        try{if(handle.hasPointerCapture(end.pointerId)) handle.releasePointerCapture(end.pointerId);}catch(ignore){}
-        handle.removeEventListener('pointermove',moveEvent); handle.removeEventListener('pointerup',finish); handle.removeEventListener('pointercancel',cancel);
+        window.removeEventListener('pointermove',moveEvent); window.removeEventListener('pointerup',finish); window.removeEventListener('pointercancel',cancel); window.removeEventListener('blur',cancelOnBlur); handle.removeEventListener('lostpointercapture',cancel);
+        try{if(handle.hasPointerCapture(pointerId)) handle.releasePointerCapture(pointerId);}catch(ignore){}
         row.classList.remove('is-dragging'); list.classList.remove('is-sorting'); rows.forEach(candidate=>candidate.style.removeProperty('transform'));
       };
-      const moveEvent=move=>{currentY=move.clientY;paint();preview();};
-      const finish=end=>{currentY=end.clientY;preview();cleanup(end);movePickerCardTo(id,targetIndex);};
-      const cancel=end=>cleanup(end);
+      const moveEvent=move=>{if(move.pointerId!==pointerId)return;currentY=move.clientY;paint();preview();};
+      const finish=end=>{if(end.pointerId!==pointerId)return;currentY=end.clientY;preview();cleanup();movePickerCardTo(id,targetIndex);};
+      const cancel=end=>{if(end.pointerId!==pointerId)return;cleanup();};
+      const cancelOnBlur=()=>cleanup();
       row.classList.add('is-dragging'); list.classList.add('is-sorting');
+      window.addEventListener('pointermove',moveEvent); window.addEventListener('pointerup',finish); window.addEventListener('pointercancel',cancel); window.addEventListener('blur',cancelOnBlur); handle.addEventListener('lostpointercapture',cancel);
       try{handle.setPointerCapture(event.pointerId);}catch(ignore){}
       event.preventDefault(); paint(); preview(); frame=requestAnimationFrame(autoScroll);
-      handle.addEventListener('pointermove',moveEvent); handle.addEventListener('pointerup',finish); handle.addEventListener('pointercancel',cancel);
     };
   });
 }

@@ -965,6 +965,49 @@ document.getElementById('app').addEventListener('load',async()=>{
       await afterRender(win); equal(JSON.parse(win.localStorage.getItem('cardrouter')).myCards.join(','),'amex_gold,double_cash,csp');
     });
   });
+  test('pointer drag stays inside the list and edge scrolling remains controlled',async()=>{
+    const cards=['wf_active','csp','amex_plat','ink_cash','freedom_flex','csr','double_cash','strata_premier','usb_cashplus','prime_visa'];
+    await withAppState({schemaVersion:4,myCards:cards},async(win,doc,frame)=>{
+      frame.style.width='390px'; frame.style.height='844px';
+      doc.documentElement.classList.add('ios-scroll-shell');
+      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      const list=doc.querySelector('.picker-held-list'), bottomBounds=list.getBoundingClientRect();
+      assert(list.scrollHeight>list.clientHeight,'A tall wallet should make the held list scrollable');
+      const nativeRequestAnimationFrame=win.requestAnimationFrame, nativeCancelAnimationFrame=win.cancelAnimationFrame;
+      let pendingFrames=[], nextFrameId=0;
+      win.requestAnimationFrame=callback=>{const id=++nextFrameId;pendingFrames.push({id,callback});return id;};
+      win.cancelAnimationFrame=id=>{pendingFrames=pendingFrames.filter(frame=>frame.id!==id);};
+      const stepFrames=(startTime,count=16)=>{for(let index=1;index<=count;index++){const callbacks=pendingFrames;pendingFrames=[];callbacks.forEach(frame=>frame.callback(startTime+index*16.67));}};
+      let handle=doc.querySelector('[data-picker-drag="wf_active"]');
+      handle.setPointerCapture=()=>{};handle.releasePointerCapture=()=>{};handle.hasPointerCapture=()=>false;
+      let start=handle.getBoundingClientRect();
+      handle.dispatchEvent(new win.PointerEvent('pointerdown',{bubbles:true,pointerId:3,pointerType:'touch',clientY:start.top+start.height/2}));
+      win.dispatchEvent(new win.PointerEvent('pointermove',{bubbles:true,pointerId:3,pointerType:'touch',clientY:bottomBounds.bottom+2000}));
+      let dragged=handle.closest('[data-picker-held]').getBoundingClientRect();
+      assert(dragged.bottom<=bottomBounds.bottom-1,'A drag far below the list must remain clamped inside its bottom edge');
+      stepFrames(0);
+      const bottomDistance=list.scrollTop; assert(bottomDistance>=29&&bottomDistance<=31,`Bottom edge scrolling should be 30px over fifteen simulated 60Hz intervals, received ${bottomDistance}px`);
+      win.dispatchEvent(new win.PointerEvent('pointercancel',{bubbles:true,pointerId:3,pointerType:'touch',clientY:bottomBounds.bottom+2000}));
+      assert(!list.classList.contains('is-sorting'),'Pointer cancellation outside the handle should clean up sorting state');
+      list.scrollTop=120;
+      const topBounds=list.getBoundingClientRect(); handle=doc.querySelector('[data-picker-drag="csr"]');
+      handle.setPointerCapture=()=>{};handle.releasePointerCapture=()=>{};handle.hasPointerCapture=()=>false; start=handle.getBoundingClientRect();
+      handle.dispatchEvent(new win.PointerEvent('pointerdown',{bubbles:true,pointerId:4,pointerType:'touch',clientY:start.top+start.height/2}));
+      win.dispatchEvent(new win.PointerEvent('pointermove',{bubbles:true,pointerId:4,pointerType:'touch',clientY:topBounds.top-2000}));
+      dragged=handle.closest('[data-picker-held]').getBoundingClientRect(); assert(dragged.top>=topBounds.top+1,'A drag far above the list must remain clamped inside its top edge');
+      const beforeTopScroll=list.scrollTop; stepFrames(1000);
+      const topDistance=beforeTopScroll-list.scrollTop; assert(topDistance>=29&&topDistance<=31,`Top edge scrolling should be 30px over fifteen simulated 60Hz intervals, received ${topDistance}px`);
+      win.dispatchEvent(new win.PointerEvent('pointercancel',{bubbles:true,pointerId:4,pointerType:'touch',clientY:topBounds.top-2000}));
+      equal(JSON.parse(win.localStorage.getItem('cardrouter')).myCards.join(','),cards.join(','));
+      list.scrollTop=0; handle=doc.querySelector('[data-picker-drag="wf_active"]'); start=handle.getBoundingClientRect();
+      handle.dispatchEvent(new win.PointerEvent('pointerdown',{bubbles:true,pointerId:5,pointerType:'touch',clientY:start.top+start.height/2}));
+      win.dispatchEvent(new win.PointerEvent('pointermove',{bubbles:true,pointerId:5,pointerType:'touch',clientY:bottomBounds.bottom+2000}));
+      win.dispatchEvent(new win.PointerEvent('pointerup',{bubbles:true,pointerId:5,pointerType:'touch',clientY:bottomBounds.bottom+2000}));
+      win.requestAnimationFrame=nativeRequestAnimationFrame; win.cancelAnimationFrame=nativeCancelAnimationFrame;
+      const dropped=JSON.parse(win.localStorage.getItem('cardrouter')).myCards;
+      assert(dropped.indexOf('wf_active')>0&&dropped.indexOf('wf_active')<dropped.length-1,'A far-off pointer should drop at the bounded visible row, not jump immediately to the unseen final slot');
+    });
+  });
   test('search keeps every match in a six-row scroll region and restores browse when cleared',async()=>{
     await withAppState({schemaVersion:4,myCards:['csp']},async(win,doc,frame)=>{
       frame.style.width='390px'; frame.style.height='844px';
