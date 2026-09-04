@@ -2122,6 +2122,11 @@ function movePickerCardTo(id,targetIndex){
   S.myCards.splice(from,1); S.myCards.splice(to,0,id); saveState(S); renderCards(); restoreFocus(`picker-drag-${id}`);
   announcePicker(`${getCard(id).name} moved to priority ${to+1}`);
 }
+function pickerDragScrollMotion(pointerY,rect){
+  const edge=Math.min(44,rect.height/4), topDepth=Math.max(0,rect.top+edge-pointerY), bottomDepth=Math.max(0,pointerY-(rect.bottom-edge)), direction=bottomDepth>topDepth?1:topDepth>0?-1:0;
+  const edgePressure=Math.min(1,Math.max(topDepth,bottomDepth)/edge), overshoot=direction>0?Math.max(0,pointerY-rect.bottom):direction<0?Math.max(0,rect.top-pointerY):0, overshootPressure=Math.min(1,overshoot/(edge*2));
+  return{direction,speed:120*edgePressure*edgePressure+180*overshootPressure};
+}
 function bindPickerHeldRows(scope){
   scope.querySelectorAll('[data-picker-filter]').forEach(button=>{
     button.addEventListener('focus',()=>button.scrollIntoView({block:'nearest',inline:'nearest'}));
@@ -2163,10 +2168,9 @@ function bindPickerHeldRows(scope){
       };
       const autoScroll=now=>{
         if(!active) return;
-        const rect=list.getBoundingClientRect(), edge=Math.min(44,rect.height/4);
-        const topPressure=Math.max(0,Math.min(1,(rect.top+edge-currentY)/edge)), bottomPressure=Math.max(0,Math.min(1,(currentY-(rect.bottom-edge))/edge));
-        const pressure=Math.max(topPressure,bottomPressure), elapsed=lastFrame===null?0:Math.min(32,Math.max(0,now-lastFrame)); lastFrame=now;
-        const direction=bottomPressure>topPressure?1:topPressure>0?-1:0, delta=direction*120*pressure*pressure*elapsed/1000, before=list.scrollTop;
+        const rect=list.getBoundingClientRect(), {direction,speed}=pickerDragScrollMotion(currentY,rect);
+        const elapsed=lastFrame===null?0:Math.min(80,Math.max(0,now-lastFrame)); lastFrame=now;
+        const delta=direction*speed*elapsed/1000, before=list.scrollTop;
         if(delta){list.scrollTop+=delta;if(list.scrollTop!==before){paint();preview();}}
         frame=requestAnimationFrame(autoScroll);
       };
