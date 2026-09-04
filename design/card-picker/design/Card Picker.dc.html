@@ -15,563 +15,53 @@ a{color:#2563eb}a:hover{color:#1d4ed8}
 </style>
 </helmet>
 
-<section id="turn2" style="padding:40px 48px 24px;display:flex;flex-direction:column;gap:16px;border-bottom:1px solid #d1d5db">
-  <div style="font-size:13px;color:#6b7280;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Turn 2 · <a href="#1a">1a</a> refined with real logos and card art</div>
-  <div id="2a" style="display:flex;flex-direction:column;gap:16px">
-    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
-      <a href="#2a" style="text-decoration:none;font-size:12px;font-weight:700;background:#1a1d21;color:#fff;padding:3px 8px;border-radius:6px">2a</a>
-      <div style="font-size:18px;font-weight:700;letter-spacing:-.01em">Hub in the tab, with artwork</div>
-      <div style="font-size:13px;color:#6b7280">Issuer logos on the tiles, Other moved last, no counts. Sub-pages show card tiles with the real card face; already-added cards stay visible and are marked. Airlines skip the brand step and list every airline card grouped by airline, with logo chips to filter (2a-6). Focusing the search box hides the held list; ✕ brings it back. Sub-pages are titled "Add a … card". Held-list and search subtitles show what each card is best for instead of issuer · program. Each sub-page ends in a card-shaped "Custom … card" tile with the issuer or airline pre-filled. Add / Added buttons share one width.</div>
-    </div>
-    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
-
-      <!-- 2a-1 Hub -->
-      <div data-screen-label="2a-1 My cards hub" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="display:flex;align-items:center;gap:11px;padding:54px 18px 12px;background:linear-gradient(180deg,rgba(37,99,235,.10),transparent)">
-          <img src="apple-touch-icon.png" alt="" style="width:42px;height:42px;border-radius:11px;box-shadow:0 3px 10px rgba(37,99,235,.35)">
-          <div><div style="font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.1">ChooseMyCard</div><div style="font-size:12px;color:#6b7280;margin-top:1px">your rewards butler</div></div>
-        </div>
-        <div style="padding:6px 18px 8px;display:flex;align-items:baseline;gap:8px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">My cards</h1><span style="color:#6b7280;font-size:13px">priority order breaks ties</span></div>
-        <div style="padding:0 14px">
-          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:2px 14px;margin:8px 0">
-            <sc-for list="{{ heldArt }}" as="c" hint-placeholder-count="3">
-              <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #e5e7eb">
-                <div style="width:20px;color:#6b7280;font-size:12px;font-weight:700;text-align:center">{{ c.n }}</div>
-                <img src="{{ c.img }}" alt="" style="width:44px;height:28px;border-radius:4px;object-fit:cover;flex:none">
-                <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ c.name }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ c.sub }}</div></div>
-                <div style="color:#9ca3af;font-size:16px;letter-spacing:-2px">⋮⋮</div>
-              </div>
-            </sc-for>
-          </div>
-          <div style="display:flex;align-items:baseline;justify-content:space-between;margin:6px 4px 6px"><h2 style="font-size:16px;margin:0">Add a card</h2><span style="font-size:13px;color:#2563eb;font-weight:500">+ Custom card</span></div>
-          <div style="display:flex;align-items:center;gap:8px;height:42px;padding:0 12px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;color:#9ca3af;font-size:15px"><span style="font-size:15px">🔍</span>Search cards, banks, airlines…</div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px">
-            <sc-for list="{{ tilesArt }}" as="t" hint-placeholder-count="12">
-              <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px 10px;background:#fff;border:1px solid #e5e7eb;border-radius:14px">
-                <sc-if value="{{ t.hasImg }}" hint-placeholder-val="{{ true }}"><img src="{{ t.img }}" alt="" style="width:34px;height:34px;object-fit:contain;border-radius:7px"></sc-if>
-                <sc-if value="{{ t.noImg }}" hint-placeholder-val="{{ false }}"><div style="width:34px;height:34px;border-radius:99px;background:#eef2ff;color:#3730a3;font-size:18px;display:flex;align-items:center;justify-content:center">{{ t.glyph }}</div></sc-if>
-                <div style="font-size:12.5px;font-weight:600;text-align:center;line-height:1.2">{{ t.label }}</div>
-              </div>
-            </sc-for>
-          </div>
-        </div>
-        <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
-          <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
-        </div>
-      </div>
-
-      <!-- 2a-2 Typing -->
-      <div data-screen-label="2a-2 Typing" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="display:flex;align-items:center;gap:11px;padding:54px 18px 12px;background:linear-gradient(180deg,rgba(37,99,235,.10),transparent)">
-          <img src="apple-touch-icon.png" alt="" style="width:42px;height:42px;border-radius:11px;box-shadow:0 3px 10px rgba(37,99,235,.35)">
-          <div><div style="font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.1">ChooseMyCard</div><div style="font-size:12px;color:#6b7280;margin-top:1px">your rewards butler</div></div>
-        </div>
-        <div style="padding:0 14px">
-          <div style="display:flex;align-items:center;gap:8px;height:42px;padding:0 12px;background:#fff;border:1.5px solid #2563eb;border-radius:12px;font-size:15px;box-shadow:0 0 0 3px rgba(37,99,235,.12);margin-top:10px"><span style="font-size:15px">🔍</span><span style="flex:1">{{ query }}<span style="display:inline-block;width:1.5px;height:18px;background:#2563eb;vertical-align:-3px;margin-left:1px"></span></span><span style="width:18px;height:18px;border-radius:99px;background:#d1d5db;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center">✕</span></div>
-          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:2px 14px;margin-top:10px">
-            <sc-for list="{{ resultsArt }}" as="r" hint-placeholder-count="3">
-              <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #e5e7eb">
-                <img src="{{ r.img }}" alt="" style="width:56px;height:36px;border-radius:5px;object-fit:cover;flex:none">
-                <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ r.pre }}<span style="background:#fef3c7;border-radius:3px">{{ r.hit }}</span>{{ r.post }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ r.sub }}</div></div>
-                <sc-if value="{{ r.added }}" hint-placeholder-val="{{ false }}"><div style="width:76px;box-sizing:border-box;background:rgba(4,120,87,.12);color:#047857;border-radius:99px;padding:6px 0;font-size:12.5px;font-weight:600;text-align:center;white-space:nowrap">✓ Added</div></sc-if>
-                <sc-if value="{{ r.notAdded }}" hint-placeholder-val="{{ true }}"><div style="width:76px;box-sizing:border-box;border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 0;font-size:13.5px;font-weight:600;text-align:center">Add</div></sc-if>
-              </div>
-            </sc-for>
-          </div>
-          <div style="color:#6b7280;font-size:13px;line-height:1.45;margin:12px 4px">Not listed? <span style="color:#2563eb">Create a custom card</span> named “{{ query }}”.</div>
-        </div>
-        <div style="position:absolute;left:0;right:0;bottom:0;height:290px;background:#d1d5db;border-radius:12px 12px 0 0;display:grid;grid-template-rows:repeat(4,1fr);gap:6px;padding:8px 4px 30px">
-          <div style="display:flex;gap:5px"><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div></div>
-          <div style="display:flex;gap:5px;padding:0 18px"><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div></div>
-          <div style="display:flex;gap:5px;padding:0 4px"><div style="flex:1.4;background:#aeb3bc;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1.4;background:#aeb3bc;border-radius:6px"></div></div>
-          <div style="display:flex;gap:5px;padding:0 4px"><div style="flex:1.2;background:#aeb3bc;border-radius:6px"></div><div style="flex:5;background:#fff;border-radius:6px"></div><div style="flex:1.2;background:#2563eb;border-radius:6px"></div></div>
-        </div>
-      </div>
-
-      <!-- 2a-3 Chase tiles -->
-      <div data-screen-label="2a-3 Chase cards" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="padding:58px 14px 0;display:flex;align-items:center;gap:2px;color:#2563eb;font-size:16px"><span style="font-size:26px;line-height:1;margin-top:-3px">‹</span>My cards</div>
-        <div style="padding:8px 18px 8px;display:flex;align-items:center;gap:10px"><img src="assets/logos/issuer-chase.svg" alt="" style="width:28px;height:28px;display:block;border-radius:6px;flex:none"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em;line-height:28px">Add a Chase card</h1></div>
-        <div style="padding:0 14px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
-            <sc-for list="{{ chaseTiles }}" as="c" hint-placeholder-count="6">
-              <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:7px">
-                <img src="{{ c.img }}" alt="" style="width:100%;aspect-ratio:1.586;border-radius:7px;object-fit:cover;display:block">
-                <div style="font-size:13px;font-weight:600;line-height:1.25">{{ c.name }}</div>
-                <sc-if value="{{ c.added }}" hint-placeholder-val="{{ false }}"><div style="background:rgba(4,120,87,.12);color:#047857;border-radius:99px;padding:6px 0;font-size:12.5px;font-weight:600;text-align:center;margin-top:auto">✓ In my cards</div></sc-if>
-                <sc-if value="{{ c.notAdded }}" hint-placeholder-val="{{ true }}"><div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 0;font-size:13px;font-weight:600;text-align:center;margin-top:auto">Add</div></sc-if>
-              </div>
-            </sc-for>
-            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:7px">
-              <div style="width:100%;aspect-ratio:1.586;border-radius:7px;background:#eef0f3;border:1.5px dashed #c7cbd1;box-sizing:border-box;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:28px;line-height:1;font-weight:300">+</div>
-              <div style="font-size:13px;font-weight:600;line-height:1.25">Custom Chase card<span style="display:block;font-weight:400;color:#6b7280;font-size:11.5px;margin-top:1px">not listed? issuer pre-filled</span></div>
-              <div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 0;font-size:13px;font-weight:600;text-align:center;margin-top:auto">Create</div>
-            </div>
-          </div>
-        </div>
-        <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
-          <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
-        </div>
-      </div>
-
-      <!-- 2a-4 Chase after Add -->
-      <div data-screen-label="2a-4 Chase after tapping Add" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="padding:58px 14px 0;display:flex;align-items:center;gap:2px;color:#2563eb;font-size:16px"><span style="font-size:26px;line-height:1;margin-top:-3px">‹</span>My cards</div>
-        <div style="padding:8px 18px 8px;display:flex;align-items:center;gap:10px"><img src="assets/logos/issuer-chase.svg" alt="" style="width:28px;height:28px;display:block;border-radius:6px;flex:none"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em;line-height:28px">Add a Chase card</h1></div>
-        <div style="padding:0 14px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
-            <sc-for list="{{ chaseTilesAfter }}" as="c" hint-placeholder-count="6">
-              <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:7px">
-                <img src="{{ c.img }}" alt="" style="width:100%;aspect-ratio:1.586;border-radius:7px;object-fit:cover;display:block">
-                <div style="font-size:13px;font-weight:600;line-height:1.25">{{ c.name }}</div>
-                <sc-if value="{{ c.added }}" hint-placeholder-val="{{ false }}"><div style="background:rgba(4,120,87,.12);color:#047857;border-radius:99px;padding:6px 0;font-size:12.5px;font-weight:600;text-align:center;margin-top:auto">✓ In my cards</div></sc-if>
-                <sc-if value="{{ c.notAdded }}" hint-placeholder-val="{{ true }}"><div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 0;font-size:13px;font-weight:600;text-align:center;margin-top:auto">Add</div></sc-if>
-              </div>
-            </sc-for>
-            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:7px">
-              <div style="width:100%;aspect-ratio:1.586;border-radius:7px;background:#eef0f3;border:1.5px dashed #c7cbd1;box-sizing:border-box;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:28px;line-height:1;font-weight:300">+</div>
-              <div style="font-size:13px;font-weight:600;line-height:1.25">Custom Chase card<span style="display:block;font-weight:400;color:#6b7280;font-size:11.5px;margin-top:1px">not listed? issuer pre-filled</span></div>
-              <div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 0;font-size:13px;font-weight:600;text-align:center;margin-top:auto">Create</div>
-            </div>
-          </div>
-        </div>
-        <div style="position:absolute;left:14px;right:14px;bottom:104px;background:#1a1d21;color:#f4f5f7;padding:12px 14px;border-radius:14px;font-size:14px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.25)"><img src="assets/cards/card-freedom_flex.png" alt="" style="width:40px;height:26px;border-radius:3px;object-fit:cover;flex:none"><div style="flex:1;line-height:1.3">Freedom Flex added</div><div style="color:#93c5fd;font-weight:600;font-size:13px">Undo</div></div>
-        <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
-          <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
-        </div>
-      </div>
-
-      <!-- 2a-5 Airlines grouped -->
-      <div data-screen-label="2a-5 Airline cards grouped by airline" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="padding:58px 14px 0;display:flex;align-items:center;gap:2px;color:#2563eb;font-size:16px"><span style="font-size:26px;line-height:1;margin-top:-3px">‹</span>My cards</div>
-        <div style="padding:8px 18px 8px;display:flex;align-items:baseline;gap:8px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">Add an airline card</h1><span style="color:#6b7280;font-size:13px">grouped by airline</span></div>
-        <div style="padding:0 14px">
-          <div style="display:flex;gap:6px;overflow:hidden;margin:4px -14px 0;padding:0 14px">
-            <div style="flex:none;display:flex;align-items:center;border:1px solid #1a1d21;background:#1a1d21;color:#fff;border-radius:99px;padding:5px 12px;font-size:13px;font-weight:600;white-space:nowrap">All</div>
-            <sc-for list="{{ airlineJump }}" as="j" hint-placeholder-count="5">
-              <div style="flex:none;display:flex;align-items:center;gap:6px;border:1px solid #e5e7eb;background:#fff;border-radius:99px;padding:5px 11px 5px 6px;font-size:13px;font-weight:500;white-space:nowrap"><img src="{{ j.logo }}" alt="" style="width:18px;height:18px;object-fit:contain;border-radius:4px">{{ j.name }}</div>
-            </sc-for>
-          </div>
-          <sc-for list="{{ airlineGroups }}" as="g" hint-placeholder-count="2">
-            <div>
-              <div style="display:flex;align-items:center;gap:8px;margin:14px 4px 6px"><img src="{{ g.logo }}" alt="" style="width:22px;height:22px;object-fit:contain;border-radius:5px"><h2 style="font-size:16px;margin:0">{{ g.name }}</h2><span style="font-size:12.5px;color:#6b7280">{{ g.sub }}</span></div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="2">
-                  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:7px">
-                    <img src="{{ c.img }}" alt="" style="width:100%;aspect-ratio:1.586;border-radius:7px;object-fit:cover;display:block">
-                    <div style="font-size:13px;font-weight:600;line-height:1.25">{{ c.name }}</div>
-                    <sc-if value="{{ c.added }}" hint-placeholder-val="{{ false }}"><div style="background:rgba(4,120,87,.12);color:#047857;border-radius:99px;padding:6px 0;font-size:12.5px;font-weight:600;text-align:center;margin-top:auto">✓ In my cards</div></sc-if>
-                    <sc-if value="{{ c.notAdded }}" hint-placeholder-val="{{ true }}"><div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 0;font-size:13px;font-weight:600;text-align:center;margin-top:auto">Add</div></sc-if>
-                  </div>
-                </sc-for>
-              </div>
-            </div>
-          </sc-for>
-        </div>
-        <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
-          <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
-        </div>
-      </div>
-
-      <!-- 2a-6 Airline chip selected -->
-      <div data-screen-label="2a-6 Airline chip selected (Delta)" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="padding:58px 14px 0;display:flex;align-items:center;gap:2px;color:#2563eb;font-size:16px"><span style="font-size:26px;line-height:1;margin-top:-3px">‹</span>My cards</div>
-        <div style="padding:8px 18px 8px;display:flex;align-items:baseline;gap:8px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">Add an airline card</h1><span style="color:#6b7280;font-size:13px">filtered to Delta</span></div>
-        <div style="padding:0 14px">
-          <div style="display:flex;gap:6px;overflow:hidden;margin:4px -14px 0;padding:0 14px">
-            <div style="flex:none;display:flex;align-items:center;border:1px solid #e5e7eb;background:#fff;color:#1a1d21;border-radius:99px;padding:5px 12px;font-size:13px;font-weight:500;white-space:nowrap">All</div>
-            <sc-for list="{{ airlineJumpDelta }}" as="j" hint-placeholder-count="5">
-              <sc-if value="{{ j.on }}" hint-placeholder-val="{{ false }}"><div style="flex:none;display:flex;align-items:center;gap:6px;border:1px solid #1a1d21;background:#1a1d21;color:#fff;border-radius:99px;padding:5px 11px 5px 6px;font-size:13px;font-weight:600;white-space:nowrap"><img src="{{ j.logo }}" alt="" style="width:18px;height:18px;object-fit:contain;border-radius:4px;background:#fff;padding:1px;box-sizing:border-box">{{ j.name }}<span style="font-size:11px;opacity:.8;margin-left:2px">✕</span></div></sc-if>
-              <sc-if value="{{ j.off }}" hint-placeholder-val="{{ true }}"><div style="flex:none;display:flex;align-items:center;gap:6px;border:1px solid #e5e7eb;background:#fff;border-radius:99px;padding:5px 11px 5px 6px;font-size:13px;font-weight:500;white-space:nowrap;opacity:.6"><img src="{{ j.logo }}" alt="" style="width:18px;height:18px;object-fit:contain;border-radius:4px">{{ j.name }}</div></sc-if>
-            </sc-for>
-          </div>
-          <sc-for list="{{ deltaGroup }}" as="g" hint-placeholder-count="1">
-            <div>
-              <div style="display:flex;align-items:center;gap:8px;margin:14px 4px 6px"><img src="{{ g.logo }}" alt="" style="width:22px;height:22px;object-fit:contain;border-radius:5px"><h2 style="font-size:16px;margin:0">{{ g.name }}</h2><span style="font-size:12.5px;color:#6b7280">{{ g.sub }}</span></div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="4">
-                  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:7px">
-                    <img src="{{ c.img }}" alt="" style="width:100%;aspect-ratio:1.586;border-radius:7px;object-fit:cover;display:block">
-                    <div style="font-size:13px;font-weight:600;line-height:1.25">{{ c.name }}</div>
-                    <sc-if value="{{ c.added }}" hint-placeholder-val="{{ false }}"><div style="background:rgba(4,120,87,.12);color:#047857;border-radius:99px;padding:6px 0;font-size:12.5px;font-weight:600;text-align:center;margin-top:auto">✓ In my cards</div></sc-if>
-                    <sc-if value="{{ c.notAdded }}" hint-placeholder-val="{{ true }}"><div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 0;font-size:13px;font-weight:600;text-align:center;margin-top:auto">Add</div></sc-if>
-                  </div>
-                </sc-for>
-                <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:7px">
-              <div style="width:100%;aspect-ratio:1.586;border-radius:7px;background:#eef0f3;border:1.5px dashed #c7cbd1;box-sizing:border-box;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:28px;line-height:1;font-weight:300">+</div>
-              <div style="font-size:13px;font-weight:600;line-height:1.25">Custom Delta card<span style="display:block;font-weight:400;color:#6b7280;font-size:11.5px;margin-top:1px">not listed? airline pre-filled</span></div>
-              <div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 0;font-size:13px;font-weight:600;text-align:center;margin-top:auto">Create</div>
-            </div>
-              </div>
-            </div>
-          </sc-for>
-        </div>
-        <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
-          <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
-        </div>
+<section style="padding:40px 48px 48px;display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="font-size:13px;color:#6b7280;font-weight:600;letter-spacing:.04em;text-transform:uppercase">ChooseMyCard · final design · 390 × 844</div>
+    <div style="font-size:24px;font-weight:700;letter-spacing:-.02em">Add a card</div>
+    <div style="font-size:13.5px;color:#374151;max-width:860px;line-height:1.6">
+      The + in the My cards header replaces the old full-width button, so the held list owns the whole screen. Tapping + pushes an Add a card page: search on top, browse tiles below, custom card at the bottom. The catalog is the {{ prodCount }} cards in the app today.
+      <div style="display:flex;flex-direction:column;gap:5px;margin-top:10px;color:#4b5563">
+        <div><strong style="color:#1a1d21">No autofocus.</strong> The search field sits at the top of the page unfocused; forcing the keyboard up would cover the list it sits above.</div>
+        <div><strong style="color:#1a1d21">Custom card is a step in the same navigation stack</strong> (screen 6), not a modal stacked on the picker.</div>
+        <div><strong style="color:#1a1d21">Card subtitles come from <code style="font-size:12px">bestForCard()</code></strong>, derived from real earn rates, not a stored copy field.</div>
+        <div><strong style="color:#1a1d21">Open question: three browse tiles are dead ends against today's catalog.</strong> Hotel cards has no cards, Airline cards has two, Other holds only Bilt, Apple and Target. Decide whether empty shelves hide or show a count.</div>
       </div>
     </div>
   </div>
-</section>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
 
-<section id="turn1" style="padding:40px 48px 24px;display:flex;flex-direction:column;gap:36px">
-  <div style="font-size:13px;color:#6b7280;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Turn 1 · Add-a-card picker redesign · 2 directions</div>
-
-  <!-- ===== 1a ===== -->
-  <div id="1a" style="display:flex;flex-direction:column;gap:16px">
-    <div style="display:flex;align-items:baseline;gap:12px">
-      <a href="#1a" style="text-decoration:none;font-size:12px;font-weight:700;background:#1a1d21;color:#fff;padding:3px 8px;border-radius:6px">1a</a>
-      <div style="font-size:18px;font-weight:700;letter-spacing:-.01em">Hub in the tab</div>
-      <div style="font-size:13px;color:#6b7280">Search bar + 12 browse tiles live directly in My cards. Groups with many brands (Airlines) get a brand list first; small groups (Hotels) go straight to cards.</div>
-    </div>
-    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
-
-      <!-- 1a-1 My cards hub -->
-      <div data-screen-label="1a-1 My cards hub" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="display:flex;align-items:center;gap:11px;padding:54px 18px 12px;background:linear-gradient(180deg,rgba(37,99,235,.10),transparent)">
-          <img src="apple-touch-icon.png" alt="" style="width:42px;height:42px;border-radius:11px;box-shadow:0 3px 10px rgba(37,99,235,.35)">
-          <div><div style="font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.1">ChooseMyCard</div><div style="font-size:12px;color:#6b7280;margin-top:1px">your rewards butler</div></div>
-        </div>
-        <div style="padding:6px 18px 8px;display:flex;align-items:baseline;gap:8px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">My cards</h1><span style="color:#6b7280;font-size:13px">priority order breaks ties</span></div>
-        <div style="padding:0 14px">
-          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:2px 14px;margin:8px 0">
-            <sc-for list="{{ held }}" as="c" hint-placeholder-count="3">
-              <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #e5e7eb">
-                <div style="width:22px;height:22px;border-radius:99px;background:#eef2ff;color:#3730a3;font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ c.n }}</div>
-                <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ c.name }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ c.sub }}</div></div>
-                <div style="color:#9ca3af;font-size:16px;letter-spacing:-2px">⋮⋮</div>
-              </div>
-            </sc-for>
-          </div>
-          <div style="display:flex;align-items:baseline;justify-content:space-between;margin:6px 4px 6px"><h2 style="font-size:16px;margin:0">Add a card</h2><span style="font-size:13px;color:#2563eb;font-weight:500">+ Custom card</span></div>
-          <div style="display:flex;align-items:center;gap:8px;height:42px;padding:0 12px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;color:#9ca3af;font-size:15px"><span style="font-size:15px">🔍</span>Search cards, banks, airlines…</div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px">
-            <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="12">
-              <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px 6px;background:#fff;border:1px solid #e5e7eb;border-radius:14px">
-                <div style="width:30px;height:30px;border-radius:99px;background:#eef2ff;color:#3730a3;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ t.glyph }}</div>
-                <div style="font-size:12.5px;font-weight:600;text-align:center;line-height:1.2">{{ t.label }}</div>
-                <sc-if value="{{ showCounts }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;color:#6b7280">{{ t.countLabel }}</div></sc-if>
-              </div>
-            </sc-for>
-          </div>
-        </div>
-        <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
-          <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
-        </div>
-      </div>
-
-      <!-- 1a-2 Typing -->
-      <div data-screen-label="1a-2 Typing" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="display:flex;align-items:center;gap:11px;padding:54px 18px 12px;background:linear-gradient(180deg,rgba(37,99,235,.10),transparent)">
-          <img src="apple-touch-icon.png" alt="" style="width:42px;height:42px;border-radius:11px;box-shadow:0 3px 10px rgba(37,99,235,.35)">
-          <div><div style="font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.1">ChooseMyCard</div><div style="font-size:12px;color:#6b7280;margin-top:1px">your rewards butler</div></div>
-        </div>
-        <div style="padding:6px 18px 8px;display:flex;align-items:baseline;gap:8px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">My cards</h1><span style="color:#6b7280;font-size:13px">priority order breaks ties</span></div>
-        <div style="padding:0 14px">
-          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:10px 14px;margin:10px 0;display:flex;align-items:center;justify-content:space-between"><div style="font-size:14px;font-weight:600">3 cards held</div><div style="font-size:13px;color:#2563eb;font-weight:500">Show</div></div>
-          <h2 style="font-size:16px;margin:14px 4px 6px">Add a card</h2>
-          <div style="display:flex;align-items:center;gap:8px;height:44px;padding:0 12px;background:#fff;border:1.5px solid #2563eb;border-radius:12px;font-size:15px;box-shadow:0 0 0 3px rgba(37,99,235,.12)"><span style="font-size:15px">🔍</span><span style="flex:1">{{ query }}<span style="display:inline-block;width:1.5px;height:18px;background:#2563eb;vertical-align:-3px;margin-left:1px"></span></span><span style="width:18px;height:18px;border-radius:99px;background:#d1d5db;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center">✕</span></div>
-          <div style="font-size:12px;color:#6b7280;margin:10px 4px 6px">{{ resultCount }} matches</div>
-          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:2px 14px">
-            <sc-for list="{{ results }}" as="r" hint-placeholder-count="3">
-              <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #e5e7eb">
-                <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ r.pre }}<span style="background:#fef3c7;border-radius:3px">{{ r.hit }}</span>{{ r.post }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ r.sub }}</div></div>
-                <div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 14px;font-size:13.5px;font-weight:600">Add</div>
-              </div>
-            </sc-for>
-          </div>
-          <div style="color:#6b7280;font-size:13px;line-height:1.45;margin:12px 4px">Not listed? <span style="color:#2563eb">Create a custom card</span> named “{{ query }}”.</div>
-        </div>
-        <div style="position:absolute;left:0;right:0;bottom:0;height:290px;background:#d1d5db;border-radius:12px 12px 0 0;display:grid;grid-template-rows:repeat(4,1fr);gap:6px;padding:8px 4px 30px">
-          <div style="display:flex;gap:5px"><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div></div>
-          <div style="display:flex;gap:5px;padding:0 18px"><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div></div>
-          <div style="display:flex;gap:5px;padding:0 4px"><div style="flex:1.4;background:#aeb3bc;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1.4;background:#aeb3bc;border-radius:6px"></div></div>
-          <div style="display:flex;gap:5px;padding:0 4px"><div style="flex:1.2;background:#aeb3bc;border-radius:6px"></div><div style="flex:5;background:#fff;border-radius:6px"></div><div style="flex:1.2;background:#2563eb;border-radius:6px"></div></div>
-        </div>
-      </div>
-
-      <!-- 1a-3 Chase -->
-      <div data-screen-label="1a-3 Chase cards" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="padding:58px 14px 0;display:flex;align-items:center;gap:2px;color:#2563eb;font-size:16px"><span style="font-size:26px;line-height:1;margin-top:-3px">‹</span>My cards</div>
-        <div style="padding:8px 18px 8px;display:flex;align-items:baseline;gap:8px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">Chase</h1><span style="color:#6b7280;font-size:13px">{{ chaseCount }} cards · Ultimate Rewards</span></div>
-        <div style="padding:0 14px">
-          <div style="display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;color:#9ca3af;font-size:14px;margin:6px 0 10px"><span>🔍</span>Search within Chase</div>
-          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:2px 14px">
-            <sc-for list="{{ chaseCards }}" as="c" hint-placeholder-count="8">
-              <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #e5e7eb">
-                <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ c.name }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ c.sub }}</div></div>
-                <div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 14px;font-size:13.5px;font-weight:600">Add</div>
-              </div>
-            </sc-for>
-          </div>
-          <div style="color:#6b7280;font-size:12px;margin:10px 4px">Co-branded Chase cards (United, Southwest, Marriott, Hyatt, IHG) also appear under Airline and Hotel.</div>
-        </div>
-        <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
-          <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
-        </div>
-      </div>
-
-      <!-- 1a-4 Airlines brands -->
-      <div data-screen-label="1a-4 Airline brands" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="padding:58px 14px 0;display:flex;align-items:center;gap:2px;color:#2563eb;font-size:16px"><span style="font-size:26px;line-height:1;margin-top:-3px">‹</span>My cards</div>
-        <div style="padding:8px 18px 8px;display:flex;align-items:baseline;gap:8px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">Airline cards</h1><span style="color:#6b7280;font-size:13px">pick your airline</span></div>
-        <div style="padding:0 14px">
-          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:2px 14px;margin-top:6px">
-            <sc-for list="{{ airlineBrands }}" as="b" hint-placeholder-count="5">
-              <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #e5e7eb">
-                <div style="width:36px;height:36px;border-radius:99px;background:#eef2ff;color:#3730a3;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ b.mono }}</div>
-                <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:15px">{{ b.name }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ b.sub }}</div></div>
-                <div style="color:#9ca3af;font-size:22px;line-height:1">›</div>
-              </div>
-            </sc-for>
-          </div>
-          <div style="color:#6b7280;font-size:12px;margin:10px 4px">Groups with more than 5 cards get this brand step; smaller ones (Hotels, Store) list cards directly.</div>
-        </div>
-        <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
-          <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
-        </div>
-      </div>
-
-      <!-- 1a-5 Delta -->
-      <div data-screen-label="1a-5 Delta cards" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="padding:58px 14px 0;display:flex;align-items:center;gap:2px;color:#2563eb;font-size:16px"><span style="font-size:26px;line-height:1;margin-top:-3px">‹</span>Airline cards</div>
-        <div style="padding:8px 18px 8px;display:flex;align-items:baseline;gap:8px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">Delta</h1><span style="color:#6b7280;font-size:13px">SkyMiles · issued by Amex</span></div>
-        <div style="padding:0 14px">
-          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:2px 14px;margin-top:6px">
-            <sc-for list="{{ deltaCards }}" as="c" hint-placeholder-count="2">
-              <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #e5e7eb">
-                <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ c.name }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ c.sub }}</div></div>
-                <div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 14px;font-size:13.5px;font-weight:600">Add</div>
-              </div>
-            </sc-for>
-          </div>
-          <div style="margin:12px 0 0;text-align:center"><span style="display:inline-block;border:1px solid #e5e7eb;background:#fff;border-radius:99px;padding:8px 14px;font-size:13.5px;font-weight:500">+ Custom Delta card</span></div>
-        </div>
-        <div style="position:absolute;left:50%;transform:translateX(-50%);bottom:112px;background:#1a1d21;color:#f4f5f7;padding:9px 16px;border-radius:99px;font-size:13px;white-space:nowrap">Delta SkyMiles Gold added · 4 cards</div>
-        <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
-          <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== 1b ===== -->
-  <div id="1b" style="display:flex;flex-direction:column;gap:16px">
-    <div style="display:flex;align-items:baseline;gap:12px">
-      <a href="#1b" style="text-decoration:none;font-size:12px;font-weight:700;background:#1a1d21;color:#fff;padding:3px 8px;border-radius:6px">1b</a>
-      <div style="font-size:18px;font-weight:700;letter-spacing:-.01em">Picker sheet</div>
-      <div style="font-size:13px;color:#6b7280">My cards stays a clean list; “Add a card” opens a full-height sheet (the app already uses sheets). Big 2-column tiles; brand filtering happens with chips inside the sub-page instead of an extra hop.</div>
-    </div>
-    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
-
-      <!-- 1b-1 My cards -->
-      <div data-screen-label="1b-1 My cards" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="display:flex;align-items:center;gap:11px;padding:54px 18px 12px;background:linear-gradient(180deg,rgba(37,99,235,.10),transparent)">
-          <img src="apple-touch-icon.png" alt="" style="width:42px;height:42px;border-radius:11px;box-shadow:0 3px 10px rgba(37,99,235,.35)">
-          <div><div style="font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.1">ChooseMyCard</div><div style="font-size:12px;color:#6b7280;margin-top:1px">your rewards butler</div></div>
-        </div>
-        <div style="padding:6px 18px 8px;display:flex;align-items:baseline;gap:8px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">My cards</h1><span style="color:#6b7280;font-size:13px">priority order breaks ties</span></div>
-        <div style="padding:0 14px">
-          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:4px 14px;margin:10px 0">
-            <sc-for list="{{ held }}" as="c" hint-placeholder-count="3">
-              <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #e5e7eb">
-                <div style="width:22px;height:22px;border-radius:99px;background:#eef2ff;color:#3730a3;font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ c.n }}</div>
-                <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ c.name }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ c.sub }}</div></div>
-                <div style="border:1px solid #e5e7eb;background:#fff;border-radius:10px;width:32px;height:32px;font-size:15px;display:flex;align-items:center;justify-content:center">✎</div>
-                <div style="color:#9ca3af;font-size:16px;letter-spacing:-2px">⋮⋮</div>
-              </div>
-            </sc-for>
-          </div>
-          <div style="font-size:12px;color:#6b7280;margin:2px 4px 8px">Drag to reorder — order breaks ties. ✎ to view or edit a card’s earn rates.</div>
-          <div style="margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px;height:50px;background:#2563eb;color:#fff;border-radius:14px;font-size:15.5px;font-weight:600;box-shadow:0 3px 10px rgba(37,99,235,.3)">+ Add a card</div>
-        </div>
-        <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
-          <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
-          <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
-        </div>
-      </div>
-
-      <!-- 1b-2 Sheet browse -->
-      <div data-screen-label="1b-2 Picker sheet" style="width:390px;height:844px;background:#0f1115;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="position:absolute;inset:0;background:#f4f5f7;opacity:.55"></div>
-        <div style="position:absolute;left:0;right:0;bottom:0;top:56px;background:#fff;border-radius:18px 18px 0 0;padding:10px 16px 0;box-shadow:0 -10px 40px rgba(0,0,0,.25)">
-          <div style="width:36px;height:5px;border-radius:99px;background:#e5e7eb;margin:0 auto 12px"></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h3 style="font-size:17px;margin:0;font-weight:700">Add a card</h3><div style="border:1px solid #e5e7eb;border-radius:10px;width:32px;height:32px;font-size:15px;display:flex;align-items:center;justify-content:center">✕</div></div>
-          <div style="display:flex;align-items:center;gap:8px;height:46px;padding:0 12px;background:#f4f5f7;border:1px solid #e5e7eb;border-radius:12px;color:#9ca3af;font-size:15px"><span>🔍</span>Search cards, banks, airlines…</div>
-          <div style="font-size:12px;color:#6b7280;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:18px 2px 8px">Banks</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <sc-for list="{{ issuerTiles }}" as="t" hint-placeholder-count="8">
-              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f4f5f7;border:1px solid #e5e7eb;border-radius:14px">
-                <div style="width:34px;height:34px;flex:none;border-radius:10px;background:#eef2ff;color:#3730a3;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ t.glyph }}</div>
-                <div style="min-width:0"><div style="font-size:14px;font-weight:600;line-height:1.2">{{ t.label }}</div><sc-if value="{{ showCounts }}" hint-placeholder-val="{{ true }}"><div style="font-size:11.5px;color:#6b7280;margin-top:1px">{{ t.countLabel }}</div></sc-if></div>
-              </div>
-            </sc-for>
-          </div>
-          <div style="font-size:12px;color:#6b7280;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:18px 2px 8px">By type</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <sc-for list="{{ typeTiles }}" as="t" hint-placeholder-count="4">
-              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f4f5f7;border:1px solid #e5e7eb;border-radius:14px">
-                <div style="width:34px;height:34px;flex:none;border-radius:10px;background:#eef2ff;font-size:18px;display:flex;align-items:center;justify-content:center">{{ t.glyph }}</div>
-                <div style="min-width:0"><div style="font-size:14px;font-weight:600;line-height:1.2">{{ t.label }}</div><sc-if value="{{ showCounts }}" hint-placeholder-val="{{ true }}"><div style="font-size:11.5px;color:#6b7280;margin-top:1px">{{ t.countLabel }}</div></sc-if></div>
-              </div>
-            </sc-for>
-          </div>
-          <div style="margin:16px 0 0;text-align:center"><span style="display:inline-block;border:1px solid #e5e7eb;background:#fff;border-radius:99px;padding:8px 14px;font-size:13.5px;font-weight:500">+ Custom card</span></div>
-        </div>
-      </div>
-
-      <!-- 1b-3 Sheet typing -->
-      <div data-screen-label="1b-3 Sheet typing" style="width:390px;height:844px;background:#0f1115;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="position:absolute;inset:0;background:#f4f5f7;opacity:.55"></div>
-        <div style="position:absolute;left:0;right:0;bottom:0;top:56px;background:#fff;border-radius:18px 18px 0 0;padding:10px 16px 0;box-shadow:0 -10px 40px rgba(0,0,0,.25)">
-          <div style="width:36px;height:5px;border-radius:99px;background:#e5e7eb;margin:0 auto 12px"></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h3 style="font-size:17px;margin:0;font-weight:700">Add a card</h3><div style="border:1px solid #e5e7eb;border-radius:10px;width:32px;height:32px;font-size:15px;display:flex;align-items:center;justify-content:center">✕</div></div>
-          <div style="display:flex;align-items:center;gap:8px;height:46px;padding:0 12px;background:#fff;border:1.5px solid #2563eb;border-radius:12px;font-size:15px;box-shadow:0 0 0 3px rgba(37,99,235,.12)"><span>🔍</span><span style="flex:1">{{ query }}<span style="display:inline-block;width:1.5px;height:18px;background:#2563eb;vertical-align:-3px;margin-left:1px"></span></span><span style="width:18px;height:18px;border-radius:99px;background:#d1d5db;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center">✕</span></div>
-          <sc-for list="{{ resultGroups }}" as="g" hint-placeholder-count="2">
-            <div>
-              <div style="font-size:12px;color:#6b7280;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:16px 2px 4px">{{ g.issuer }}</div>
-              <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="2">
-                <div style="display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid #e5e7eb">
-                  <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ r.pre }}<span style="background:#fef3c7;border-radius:3px">{{ r.hit }}</span>{{ r.post }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ r.type }}</div></div>
-                  <div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 14px;font-size:13.5px;font-weight:600">Add</div>
-                </div>
-              </sc-for>
-            </div>
-          </sc-for>
-          <div style="color:#6b7280;font-size:13px;line-height:1.45;margin:14px 2px">No match? <span style="color:#2563eb">Create “{{ query }}” as a custom card</span></div>
-        </div>
-        <div style="position:absolute;left:0;right:0;bottom:0;height:290px;background:#d1d5db;border-radius:12px 12px 0 0;display:grid;grid-template-rows:repeat(4,1fr);gap:6px;padding:8px 4px 30px">
-          <div style="display:flex;gap:5px"><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div></div>
-          <div style="display:flex;gap:5px;padding:0 18px"><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div></div>
-          <div style="display:flex;gap:5px;padding:0 4px"><div style="flex:1.4;background:#aeb3bc;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1.4;background:#aeb3bc;border-radius:6px"></div></div>
-          <div style="display:flex;gap:5px;padding:0 4px"><div style="flex:1.2;background:#aeb3bc;border-radius:6px"></div><div style="flex:5;background:#fff;border-radius:6px"></div><div style="flex:1.2;background:#2563eb;border-radius:6px"></div></div>
-        </div>
-      </div>
-
-      <!-- 1b-4 Airlines with chips -->
-      <div data-screen-label="1b-4 Airline cards with brand chips" style="width:390px;height:844px;background:#0f1115;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="position:absolute;inset:0;background:#f4f5f7;opacity:.55"></div>
-        <div style="position:absolute;left:0;right:0;bottom:0;top:56px;background:#fff;border-radius:18px 18px 0 0;padding:10px 16px 0;box-shadow:0 -10px 40px rgba(0,0,0,.25)">
-          <div style="width:36px;height:5px;border-radius:99px;background:#e5e7eb;margin:0 auto 12px"></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="display:flex;align-items:center;gap:2px;color:#2563eb;font-size:15px"><span style="font-size:24px;line-height:1;margin-top:-3px">‹</span>Browse</div><h3 style="font-size:17px;margin:0;font-weight:700">✈️ Airline cards</h3><div style="border:1px solid #e5e7eb;border-radius:10px;width:32px;height:32px;font-size:15px;display:flex;align-items:center;justify-content:center">✕</div></div>
-          <div style="display:flex;gap:6px;overflow:hidden;margin:0 -16px;padding:0 16px">
-            <sc-for list="{{ airlineChips }}" as="ch" hint-placeholder-count="6">
-              <sc-if value="{{ ch.on }}" hint-placeholder-val="{{ false }}"><div style="flex:none;border:1px solid #2563eb;background:#2563eb;color:#fff;border-radius:99px;padding:7px 13px;font-size:13px;font-weight:600;white-space:nowrap">{{ ch.label }}</div></sc-if>
-              <sc-if value="{{ ch.off }}" hint-placeholder-val="{{ true }}"><div style="flex:none;border:1px solid #e5e7eb;background:#fff;color:#1a1d21;border-radius:99px;padding:7px 13px;font-size:13px;font-weight:500;white-space:nowrap">{{ ch.label }}</div></sc-if>
-            </sc-for>
-          </div>
-          <div style="margin-top:8px">
-            <sc-for list="{{ airlineCards }}" as="c" hint-placeholder-count="8">
-              <div style="display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid #e5e7eb">
-                <div style="width:34px;height:34px;flex:none;border-radius:10px;background:#eef2ff;color:#3730a3;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ c.mono }}</div>
-                <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ c.name }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ c.sub }}</div></div>
-                <div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 14px;font-size:13.5px;font-weight:600">Add</div>
-              </div>
-            </sc-for>
-          </div>
-        </div>
-      </div>
-
-      <!-- 1b-5 Amex grouped -->
-      <div data-screen-label="1b-5 Amex cards grouped" style="width:390px;height:844px;background:#0f1115;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
-        <div style="position:absolute;inset:0;background:#f4f5f7;opacity:.55"></div>
-        <div style="position:absolute;left:0;right:0;bottom:0;top:56px;background:#fff;border-radius:18px 18px 0 0;padding:10px 16px 0;box-shadow:0 -10px 40px rgba(0,0,0,.25)">
-          <div style="width:36px;height:5px;border-radius:99px;background:#e5e7eb;margin:0 auto 12px"></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="display:flex;align-items:center;gap:2px;color:#2563eb;font-size:15px"><span style="font-size:24px;line-height:1;margin-top:-3px">‹</span>Browse</div><h3 style="font-size:17px;margin:0;font-weight:700">Amex</h3><div style="border:1px solid #e5e7eb;border-radius:10px;width:32px;height:32px;font-size:15px;display:flex;align-items:center;justify-content:center">✕</div></div>
-          <div style="display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;background:#f4f5f7;border:1px solid #e5e7eb;border-radius:12px;color:#9ca3af;font-size:14px"><span>🔍</span>Search within Amex</div>
-          <sc-for list="{{ amexGroups }}" as="g" hint-placeholder-count="3">
-            <div>
-              <div style="font-size:12px;color:#6b7280;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:16px 2px 4px">{{ g.label }}</div>
-              <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="3">
-                <div style="display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid #e5e7eb">
-                  <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ c.name }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ c.sub }}</div></div>
-                  <div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 14px;font-size:13.5px;font-weight:600">Add</div>
-                </div>
-              </sc-for>
-            </div>
-          </sc-for>
-        </div>
-        <div style="position:absolute;left:50%;transform:translateX(-50%);bottom:40px;background:#1a1d21;color:#f4f5f7;padding:9px 16px;border-radius:99px;font-size:13px;white-space:nowrap">Amex Platinum added · 4 cards</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== Current ===== -->
-<section id="current" style="padding:24px 48px 60px;display:flex;flex-direction:column;gap:16px;border-top:1px solid #d1d5db">
-  <div style="display:flex;align-items:baseline;gap:12px">
-    <span style="font-size:12px;font-weight:700;background:#6b7280;color:#fff;padding:3px 8px;border-radius:6px">Current</span>
-    <div style="font-size:18px;font-weight:700;letter-spacing:-.01em">My cards tab today</div>
-    <div style="font-size:13px;color:#6b7280">Recreated from index.html · renderCards(). Full page height shown so the flat "Add a card" list is visible in its entirety.</div>
-  </div>
-  <div data-screen-label="Current My cards" style="width:390px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb;padding-bottom:74px">
+  <!-- Screen 1 -->
+  <div data-screen-label="1 My cards tab" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
     <div style="display:flex;align-items:center;gap:11px;padding:54px 18px 12px;background:linear-gradient(180deg,rgba(37,99,235,.10),transparent)">
       <img src="apple-touch-icon.png" alt="" style="width:42px;height:42px;border-radius:11px;box-shadow:0 3px 10px rgba(37,99,235,.35)">
       <div><div style="font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.1">ChooseMyCard</div><div style="font-size:12px;color:#6b7280;margin-top:1px">your rewards butler</div></div>
     </div>
-    <div style="padding:6px 18px 8px;display:flex;align-items:baseline;gap:8px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">My cards</h1><span style="color:#6b7280;font-size:13px">priority order breaks ties</span></div>
-    <div style="padding:0 14px">
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:4px 14px;margin:10px 0">
-        <sc-for list="{{ heldCurrent }}" as="c" hint-placeholder-count="3">
-          <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #e5e7eb">
-            <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ c.title }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ c.sub }}</div></div>
-            <div style="border:1px solid #e5e7eb;background:#fff;border-radius:10px;width:32px;height:32px;font-size:15px;display:flex;align-items:center;justify-content:center;opacity:{{ c.upOpacity }}">↑</div>
-            <div style="border:1px solid #e5e7eb;background:#fff;border-radius:10px;width:32px;height:32px;font-size:15px;display:flex;align-items:center;justify-content:center;opacity:{{ c.downOpacity }}">↓</div>
-            <div style="border:1px solid #e5e7eb;background:#fff;border-radius:10px;width:32px;height:32px;font-size:15px;display:flex;align-items:center;justify-content:center">✎</div>
-            <div style="border:1px solid #e5e7eb;background:#fff;border-radius:10px;width:32px;height:32px;font-size:15px;display:flex;align-items:center;justify-content:center">✕</div>
+    <div style="padding:6px 18px 8px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:8px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">My cards</h1><span style="color:#6b7280;font-size:13px">order breaks ties</span></div>
+      <div style="width:38px;height:38px;flex:none;border-radius:99px;background:#2563eb;color:#fff;font-size:24px;font-weight:300;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(37,99,235,.3)">+</div>
+    </div>
+    <div style="display:flex;gap:6px;padding:0 18px 2px;overflow:hidden;flex:none">
+      <sc-for list="{{ chips4 }}" as="p" hint-placeholder-count="5">
+        <div style="border:1px solid #e5e7eb;background:#fff;border-radius:99px;padding:6px 11px;font-size:13px;font-weight:500;white-space:nowrap;flex:none;display:flex;align-items:center;gap:6px">
+          <sc-if value="{{ p.hasImg }}" hint-placeholder-val="{{ true }}"><img src="{{ p.img }}" alt="" style="width:15px;height:15px;object-fit:contain;border-radius:3px;display:block"></sc-if>
+          <sc-if value="{{ p.noImg }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;line-height:1">{{ p.glyph }}</span></sc-if>
+          {{ p.label }}
+        </div>
+      </sc-for>
+    </div>
+    <div style="flex:1;min-height:0;padding:0 14px 100px;display:flex;flex-direction:column">
+      <div style="flex:1;min-height:0;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:2px 16px 0;margin:8px 0;display:flex;flex-direction:column">
+        <sc-for list="{{ held4Art }}" as="c" hint-placeholder-count="7">
+          <div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #e5e7eb;flex:none">
+            <div style="width:16px;color:#6b7280;font-size:12px;font-weight:700;text-align:center">{{ c.n }}</div>
+            <img src="{{ c.img }}" alt="" style="width:58px;height:37px;border-radius:5px;object-fit:cover;flex:none">
+            <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ c.name }}</div><div style="color:#6b7280;font-size:12px;margin-top:2px">{{ c.sub }}</div></div>
+            <div style="color:#9ca3af;font-size:16px;letter-spacing:-2px">⋮⋮</div>
           </div>
         </sc-for>
+        <div style="margin-top:auto;padding:12px 0;font-size:12px;color:#9ca3af">Drag to reorder · tap to edit rates</div>
       </div>
-      <p style="font-size:12px;color:#6b7280;margin:2px 4px 8px">Order = tie-break priority (your original spec). ✎ to view/edit a card's earn rates.</p>
-      <h2 style="font-size:16px;margin:14px 4px 6px">Add a card</h2>
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:4px 14px;margin:10px 0">
-        <sc-for list="{{ availCurrent }}" as="c" hint-placeholder-count="20">
-          <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #e5e7eb">
-            <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ c.name }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ c.issuer }}</div></div>
-            <div style="border:1px solid #e5e7eb;background:#fff;border-radius:99px;padding:8px 14px;font-size:13.5px;font-weight:500">Add</div>
-          </div>
-        </sc-for>
-      </div>
-      <div style="margin:10px 0 20px;text-align:center"><span style="display:inline-block;border:1px solid #e5e7eb;background:#fff;border-radius:99px;padding:8px 14px;font-size:13.5px;font-weight:500">+ Custom card</span></div>
     </div>
     <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
       <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
@@ -581,26 +71,228 @@ a{color:#2563eb}a:hover{color:#1d4ed8}
       <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
     </div>
   </div>
+
+  <!-- Screen 1b -->
+  <div data-screen-label="1b Chip filter on" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
+    <div style="display:flex;align-items:center;gap:11px;padding:54px 18px 12px;background:linear-gradient(180deg,rgba(37,99,235,.10),transparent)">
+      <img src="apple-touch-icon.png" alt="" style="width:42px;height:42px;border-radius:11px;box-shadow:0 3px 10px rgba(37,99,235,.35)">
+      <div><div style="font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.1">ChooseMyCard</div><div style="font-size:12px;color:#6b7280;margin-top:1px">your rewards butler</div></div>
+    </div>
+    <div style="padding:6px 18px 8px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:8px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">My cards</h1><span style="color:#6b7280;font-size:13px">order breaks ties</span></div>
+      <div style="width:38px;height:38px;flex:none;border-radius:99px;background:#2563eb;color:#fff;font-size:24px;font-weight:300;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(37,99,235,.3)">+</div>
+    </div>
+    <div style="display:flex;gap:6px;padding:0 18px 2px;overflow:hidden;flex:none">
+      <sc-for list="{{ chips4Sel }}" as="p" hint-placeholder-count="5">
+        <sc-if value="{{ p.on }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#1a1d21;color:#fff;border:1px solid #1a1d21;border-radius:99px;padding:6px 10px 6px 11px;font-size:13px;font-weight:600;white-space:nowrap;flex:none;display:flex;align-items:center;gap:6px">
+            <sc-if value="{{ p.hasImg }}" hint-placeholder-val="{{ true }}"><img src="{{ p.img }}" alt="" style="width:15px;height:15px;object-fit:contain;border-radius:3px;background:#fff;padding:1px;box-sizing:content-box;display:block"></sc-if>
+            <sc-if value="{{ p.noImg }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;line-height:1">{{ p.glyph }}</span></sc-if>
+            {{ p.label }}<span style="font-size:11px;opacity:.8;margin-left:2px">✕</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ p.off }}" hint-placeholder-val="{{ true }}">
+          <div style="border:1px solid #e5e7eb;background:#fff;border-radius:99px;padding:6px 11px;font-size:13px;font-weight:500;white-space:nowrap;flex:none;display:flex;align-items:center;gap:6px;opacity:.6">
+            <sc-if value="{{ p.hasImg }}" hint-placeholder-val="{{ true }}"><img src="{{ p.img }}" alt="" style="width:15px;height:15px;object-fit:contain;border-radius:3px;display:block"></sc-if>
+            <sc-if value="{{ p.noImg }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;line-height:1">{{ p.glyph }}</span></sc-if>
+            {{ p.label }}
+          </div>
+        </sc-if>
+      </sc-for>
+    </div>
+    <div style="flex:1;min-height:0;padding:0 14px 100px;display:flex;flex-direction:column">
+      <div style="flex:1;min-height:0;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:2px 16px 0;margin:8px 0;display:flex;flex-direction:column">
+        <sc-for list="{{ held4Filtered }}" as="c" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #e5e7eb;flex:none">
+            <div style="width:16px;color:#6b7280;font-size:12px;font-weight:700;text-align:center">{{ c.n }}</div>
+            <img src="{{ c.img }}" alt="" style="width:58px;height:37px;border-radius:5px;object-fit:cover;flex:none">
+            <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ c.name }}</div><div style="color:#6b7280;font-size:12px;margin-top:2px">{{ c.sub }}</div></div>
+          </div>
+        </sc-for>
+        <div style="margin-top:auto;padding:12px 0;font-size:12px;color:#9ca3af">{{ filterNote }}</div>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
+      <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
+    </div>
+  </div>
+
+  <!-- Screen 2 -->
+  <div data-screen-label="2 Add a card" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
+    <div style="padding:52px 14px 0;display:flex;align-items:center;gap:2px;color:#2563eb;font-size:16px"><span style="font-size:26px;line-height:1;margin-top:-3px">‹</span>My cards</div>
+    <div style="padding:4px 18px 4px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">Add a card</h1></div>
+    <div style="padding:0 14px">
+      <div style="display:flex;align-items:center;gap:8px;height:44px;padding:0 12px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;color:#9ca3af;font-size:15px"><span style="font-size:15px">🔍</span>Search cards, banks, airlines…</div>
+      <div style="font-size:12px;color:#6b7280;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:16px 4px 8px">Or browse</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">
+        <sc-for list="{{ tilesArt }}" as="t" hint-placeholder-count="12">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px 10px;background:#fff;border:1px solid #e5e7eb;border-radius:14px">
+            <sc-if value="{{ t.hasImg }}" hint-placeholder-val="{{ true }}"><img src="{{ t.img }}" alt="" style="width:34px;height:34px;object-fit:contain;border-radius:7px"></sc-if>
+            <sc-if value="{{ t.noImg }}" hint-placeholder-val="{{ false }}"><div style="width:34px;height:34px;border-radius:99px;background:#eef2ff;color:#3730a3;font-size:18px;display:flex;align-items:center;justify-content:center">{{ t.glyph }}</div></sc-if>
+            <div style="font-size:12.5px;font-weight:600;text-align:center;line-height:1.2">{{ t.label }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;align-items:center;gap:11px;margin:9px 0 0;padding:13px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:14px">
+        <div style="width:38px;height:26px;flex:none;border-radius:5px;border:1.5px dashed #9ca3af;color:#6b7280;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center">+</div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:14.5px;font-weight:600;line-height:1.2">Create a custom card</div>
+          <div style="font-size:12px;color:#6b7280;line-height:1.25">For a card that isn’t listed</div>
+        </div>
+        <span style="color:#9ca3af;font-size:19px;line-height:1">›</span>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
+      <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
+    </div>
+  </div>
+
+  <!-- Screen 3 -->
+  <div data-screen-label="3 Chase issuer page" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
+    <div style="padding:58px 14px 0;display:flex;align-items:center;gap:2px;color:#2563eb;font-size:16px"><span style="font-size:26px;line-height:1;margin-top:-3px">‹</span>Add a card</div>
+    <div style="padding:8px 18px 2px;display:flex;align-items:center;gap:10px"><img src="assets/logos/issuer-chase.svg" alt="" style="width:28px;height:28px;display:block;border-radius:6px;flex:none"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em;line-height:28px">Add a Chase card</h1></div>
+    <div style="padding:0 18px 6px;color:#6b7280;font-size:13px">{{ chaseCount4 }} to add · co-brands appear here and under their brand</div>
+    <div style="padding:0 14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+        <sc-for list="{{ chaseTiles4 }}" as="c" hint-placeholder-count="8">
+          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:6px">
+            <img src="{{ c.img }}" alt="" style="width:100%;aspect-ratio:1.586;border-radius:7px;object-fit:cover;display:block">
+            <div style="font-size:13px;font-weight:600;line-height:1.25">{{ c.name }}</div>
+            <div style="font-size:11.5px;color:#6b7280;line-height:1.25">{{ c.sub }}</div>
+            <sc-if value="{{ c.added }}" hint-placeholder-val="{{ false }}"><div style="background:rgba(4,120,87,.12);color:#047857;border-radius:99px;padding:6px 0;font-size:12.5px;font-weight:600;text-align:center;margin-top:auto">✓ In my cards</div></sc-if>
+            <sc-if value="{{ c.notAdded }}" hint-placeholder-val="{{ true }}"><div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 0;font-size:13px;font-weight:600;text-align:center;margin-top:auto">Add</div></sc-if>
+          </div>
+        </sc-for>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:6px">
+          <div style="width:100%;aspect-ratio:1.586;border-radius:7px;background:#eef0f3;border:1.5px dashed #c7cbd1;box-sizing:border-box;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:28px;line-height:1;font-weight:300">+</div>
+          <div style="font-size:13px;font-weight:600;line-height:1.25">Custom Chase card</div>
+          <div style="font-size:11.5px;color:#6b7280;line-height:1.25">bank pre-filled</div>
+          <div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 0;font-size:13px;font-weight:600;text-align:center;margin-top:auto">Create</div>
+        </div>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
+      <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
+    </div>
+  </div>
+
+  <!-- Screen 4 -->
+  <div data-screen-label="4 Search results" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
+    <div style="padding:58px 14px 0;display:flex;align-items:center;gap:2px;color:#2563eb;font-size:16px"><span style="font-size:26px;line-height:1;margin-top:-3px">‹</span>My cards</div>
+    <div style="padding:6px 18px 6px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">Add a card</h1></div>
+    <div style="padding:0 14px">
+      <div style="display:flex;align-items:center;gap:8px;height:44px;padding:0 12px;background:#fff;border:1.5px solid #2563eb;border-radius:12px;font-size:15px;box-shadow:0 0 0 3px rgba(37,99,235,.12)"><span style="font-size:15px">🔍</span><span style="flex:1">{{ query }}<span style="display:inline-block;width:1.5px;height:18px;background:#2563eb;vertical-align:-3px;margin-left:1px"></span></span><span style="width:18px;height:18px;border-radius:99px;background:#d1d5db;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center">✕</span></div>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:2px 14px;margin-top:10px">
+        <sc-for list="{{ results4 }}" as="r" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #e5e7eb">
+            <img src="{{ r.img }}" alt="" style="width:56px;height:36px;border-radius:5px;object-fit:cover;flex:none">
+            <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">{{ r.pre }}<span style="background:#fef3c7;border-radius:3px">{{ r.hit }}</span>{{ r.post }}</div><div style="color:#6b7280;font-size:12.5px;margin-top:1px">{{ r.sub }}</div></div>
+            <sc-if value="{{ r.added }}" hint-placeholder-val="{{ false }}"><div style="width:76px;box-sizing:border-box;background:rgba(4,120,87,.12);color:#047857;border-radius:99px;padding:6px 0;font-size:12.5px;font-weight:600;text-align:center;white-space:nowrap">✓ Added</div></sc-if>
+            <sc-if value="{{ r.notAdded }}" hint-placeholder-val="{{ true }}"><div style="width:76px;box-sizing:border-box;border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 0;font-size:13.5px;font-weight:600;text-align:center">Add</div></sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <div style="color:#6b7280;font-size:12.5px;line-height:1.45;margin:10px 4px"><span style="color:#2563eb">Create a custom card</span></div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:290px;background:#d1d5db;border-radius:12px 12px 0 0;display:grid;grid-template-rows:repeat(4,1fr);gap:6px;padding:8px 4px 30px">
+      <div style="display:flex;gap:5px"><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div></div>
+      <div style="display:flex;gap:5px;padding:0 18px"><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div></div>
+      <div style="display:flex;gap:5px;padding:0 4px"><div style="flex:1.4;background:#aeb3bc;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1;background:#fff;border-radius:6px"></div><div style="flex:1.4;background:#aeb3bc;border-radius:6px"></div></div>
+      <div style="display:flex;gap:5px;padding:0 4px"><div style="flex:1.2;background:#aeb3bc;border-radius:6px"></div><div style="flex:5;background:#fff;border-radius:6px"></div><div style="flex:1.2;background:#2563eb;border-radius:6px"></div></div>
+    </div>
+  </div>
+
+  <!-- Screen 5 -->
+  <div data-screen-label="5 Business cards page" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
+    <div style="padding:58px 14px 0;display:flex;align-items:center;gap:2px;color:#2563eb;font-size:16px"><span style="font-size:26px;line-height:1;margin-top:-3px">‹</span>Add a card</div>
+    <div style="padding:8px 18px 2px;display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;border-radius:99px;background:#eef2ff;font-size:15px;display:flex;align-items:center;justify-content:center;flex:none">💼</div><h1 style="font-size:22px;margin:0;letter-spacing:-.02em;line-height:28px">Business cards</h1></div>
+    <div style="padding:0 18px 6px;color:#6b7280;font-size:13px">{{ bizCount4 }}</div>
+    <div style="padding:0 14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+        <sc-for list="{{ bizTiles4 }}" as="c" hint-placeholder-count="5">
+          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:6px">
+            <img src="{{ c.img }}" alt="" style="width:100%;aspect-ratio:1.586;border-radius:7px;object-fit:cover;display:block">
+            <div style="font-size:13px;font-weight:600;line-height:1.25">{{ c.name }}</div>
+            <div style="font-size:11.5px;color:#6b7280;line-height:1.25">{{ c.sub }}</div>
+            <div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 0;font-size:13px;font-weight:600;text-align:center;margin-top:auto">Add</div>
+          </div>
+        </sc-for>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:6px">
+          <div style="width:100%;aspect-ratio:1.586;border-radius:7px;background:#eef0f3;border:1.5px dashed #c7cbd1;box-sizing:border-box;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:28px;line-height:1;font-weight:300">+</div>
+          <div style="font-size:13px;font-weight:600;line-height:1.25">Custom card</div>
+          <div style="border:1px solid #2563eb;color:#2563eb;border-radius:99px;padding:6px 0;font-size:13px;font-weight:600;text-align:center;margin-top:auto">Create</div>
+        </div>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:2px;background:#fff;border-top:1px solid #e5e7eb;padding:7px 6px 28px;box-shadow:0 -6px 18px rgba(0,0,0,.08)">
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">💳</span>Which card?</div>
+      <div style="flex:1;color:#2563eb;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:#eef2ff;border:1.5px solid #2563eb;box-shadow:0 1px 8px rgba(37,99,235,.28)">🗂️</span>My cards</div>
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎁</span>Benefits</div>
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">🎯</span>Promos</div>
+      <div style="flex:1;color:#6b7280;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;width:54px;height:30px;border-radius:99px;background:rgba(125,125,125,.10);border:1.5px solid transparent;filter:grayscale(1);opacity:.75">⚙️</span>Settings</div>
+    </div>
+  </div>
+
+  <!-- Screen 6 -->
+  <div data-screen-label="6 Custom card step" style="width:390px;height:844px;background:#f4f5f7;color:#1a1d21;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.12);border:1px solid #e5e7eb">
+    <div style="padding:58px 14px 0;display:flex;align-items:center;gap:2px;color:#2563eb;font-size:16px"><span style="font-size:26px;line-height:1;margin-top:-3px">‹</span>Chase</div>
+    <div style="padding:8px 18px 2px"><h1 style="font-size:22px;margin:0;letter-spacing:-.02em">Custom card</h1></div>
+    <div style="padding:0 14px;display:flex;flex-direction:column;gap:12px">
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:13px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:11.5px;font-weight:600;color:#6b7280;letter-spacing:.03em;text-transform:uppercase">Card name</div>
+          <div style="height:42px;display:flex;align-items:center;padding:0 12px;border:1.5px solid #2563eb;border-radius:11px;font-size:15px;color:#9ca3af;box-shadow:0 0 0 3px rgba(37,99,235,.12)">e.g. Ink Business Premier<span style="display:inline-block;width:1.5px;height:18px;background:#2563eb;margin-left:1px"></span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:11.5px;font-weight:600;color:#6b7280;letter-spacing:.03em;text-transform:uppercase">Bank</div>
+          <div style="height:42px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border:1px solid #e5e7eb;border-radius:11px;font-size:15px;background:#f9fafb"><span style="display:flex;align-items:center;gap:8px"><img src="assets/logos/issuer-chase.svg" alt="" style="width:20px;height:20px;border-radius:4px;display:block">Chase</span><span style="color:#9ca3af;font-size:12px">pre-filled ▾</span></div>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:11px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between"><div style="font-size:11.5px;font-weight:600;color:#6b7280;letter-spacing:.03em;text-transform:uppercase">Earn rates</div><span style="font-size:12.5px;color:#2563eb;font-weight:500">+ Add a rate</span></div>
+        <div style="display:flex;background:#f4f5f7;border:1px solid #e5e7eb;border-radius:10px;padding:2px">
+          <div style="flex:1;text-align:center;padding:6px 0;font-size:13px;font-weight:600;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.10)">% cash back</div>
+          <div style="flex:1;text-align:center;padding:6px 0;font-size:13px;font-weight:500;color:#6b7280">× points</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 11px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px">Everything else<span style="color:#9ca3af;font-size:12px">▾</span></div>
+          <div style="width:74px;height:38px;display:flex;align-items:center;justify-content:center;gap:3px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;font-weight:600">1.5<span style="color:#6b7280;font-weight:400;font-size:12.5px">%</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 11px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;color:#9ca3af">Pick a category<span style="font-size:12px">▾</span></div>
+          <div style="width:74px;height:38px;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;color:#9ca3af">—</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;height:48px;background:#2563eb;color:#fff;border-radius:14px;font-size:15.5px;font-weight:600;box-shadow:0 3px 10px rgba(37,99,235,.3)">Save to my cards</div>
+    </div>
+  </div>
+  </div>
 </section>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;query&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;sa&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Search state&quot;},&quot;showCounts&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Browse tiles&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;query&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;sa&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Search state&quot;}}">
 class Component extends DCLogic {
-  // From index.html CARD_DB (real) plus proposed additions (isNew) so Airline/Hotel/Store groups aren't near-empty.
+  // The production catalog: the 28 cards in the app today.
   static CARDS = [
     {id:'csr',name:'Chase Sapphire Reserve',issuer:'Chase',prog:'Ultimate Rewards',type:'Travel points'},
     {id:'csp',name:'Chase Sapphire Preferred',issuer:'Chase',prog:'Ultimate Rewards',type:'Travel points'},
     {id:'freedom_flex',name:'Chase Freedom Flex',issuer:'Chase',prog:'Ultimate Rewards',type:'Cash back · rotating 5%'},
     {id:'cfu',name:'Chase Freedom Unlimited',issuer:'Chase',prog:'Ultimate Rewards',type:'Cash back'},
     {id:'ink_cash',name:'Chase Ink Business Cash',issuer:'Chase',prog:'Ultimate Rewards',type:'Business',biz:true},
-    {id:'ink_pref',name:'Chase Ink Business Preferred',issuer:'Chase',prog:'Ultimate Rewards',type:'Business',biz:true,isNew:true},
     {id:'prime_visa',name:'Prime Visa (Chase Amazon)',issuer:'Chase',prog:'Cash back',type:'Store',store:true},
     {id:'united_explorer',name:'United Explorer',issuer:'Chase',prog:'United MileagePlus',type:'Airline',brand:'United'},
-    {id:'united_quest',name:'United Quest',issuer:'Chase',prog:'United MileagePlus',type:'Airline',brand:'United',isNew:true},
     {id:'sw_priority',name:'Southwest Priority',issuer:'Chase',prog:'Southwest Rapid Rewards',type:'Airline',brand:'Southwest'},
-    {id:'sw_plus',name:'Southwest Plus',issuer:'Chase',prog:'Southwest Rapid Rewards',type:'Airline',brand:'Southwest',isNew:true},
-    {id:'marriott',name:'Marriott Bonvoy Boundless',issuer:'Chase',prog:'Marriott Bonvoy',type:'Hotel',hotel:true,isNew:true},
-    {id:'hyatt',name:'World of Hyatt',issuer:'Chase',prog:'World of Hyatt',type:'Hotel',hotel:true,isNew:true},
-    {id:'ihg',name:'IHG One Rewards Premier',issuer:'Chase',prog:'IHG One Rewards',type:'Hotel',hotel:true,isNew:true},
     {id:'amex_gold',name:'Amex Gold',issuer:'Amex',prog:'Membership Rewards',type:'Travel points'},
     {id:'amex_plat',name:'Amex Platinum',issuer:'Amex',prog:'Membership Rewards',type:'Travel points'},
     {id:'bcp',name:'Amex Blue Cash Preferred',issuer:'Amex',prog:'Cash back',type:'Cash back'},
@@ -609,102 +301,72 @@ class Component extends DCLogic {
     {id:'biz_gold',name:'Amex Business Gold',issuer:'Amex',prog:'Membership Rewards',type:'Business',biz:true},
     {id:'bbp',name:'Amex Blue Business Plus',issuer:'Amex',prog:'Membership Rewards',type:'Business',biz:true},
     {id:'bbc',name:'Amex Blue Business Cash',issuer:'Amex',prog:'Cash back',type:'Business',biz:true},
-    {id:'delta_gold',name:'Delta SkyMiles Gold',issuer:'Amex',prog:'Delta SkyMiles',type:'Airline',brand:'Delta',isNew:true},
-    {id:'delta_reserve',name:'Delta SkyMiles Reserve',issuer:'Amex',prog:'Delta SkyMiles',type:'Airline',brand:'Delta',isNew:true},
-    {id:'hilton',name:'Hilton Honors Surpass',issuer:'Amex',prog:'Hilton Honors',type:'Hotel',hotel:true,isNew:true},
     {id:'custom_cash',name:'Citi Custom Cash',issuer:'Citi',prog:'ThankYou',type:'Cash back'},
     {id:'double_cash',name:'Citi Double Cash',issuer:'Citi',prog:'ThankYou',type:'Cash back'},
     {id:'strata_premier',name:'Citi Strata Premier',issuer:'Citi',prog:'ThankYou',type:'Travel points'},
-    {id:'aa_plat',name:'AAdvantage Platinum Select',issuer:'Citi',prog:'American AAdvantage',type:'Airline',brand:'American',isNew:true},
-    {id:'costco',name:'Costco Anywhere Visa',issuer:'Citi',prog:'Cash back',type:'Store',store:true,isNew:true},
     {id:'venture_x',name:'Capital One Venture X',issuer:'Capital One',prog:'Capital One Miles',type:'Travel points'},
     {id:'savor',name:'Capital One Savor',issuer:'Capital One',prog:'Cash back',type:'Cash back'},
     {id:'discover_it',name:'Discover it',issuer:'Discover',prog:'Cash back',type:'Cash back · rotating 5%'},
     {id:'usb_cashplus',name:'US Bank Cash+',issuer:'US Bank',prog:'Cash back',type:'Cash back · you pick 5%'},
-    {id:'altitude_go',name:'US Bank Altitude Go',issuer:'US Bank',prog:'Cash back',type:'Cash back',isNew:true},
     {id:'wf_autograph',name:'Wells Fargo Autograph',issuer:'Wells Fargo',prog:'Wells Fargo Rewards',type:'Travel points'},
     {id:'wf_active',name:'Wells Fargo Active Cash',issuer:'Wells Fargo',prog:'Cash back',type:'Cash back'},
-    {id:'alaska',name:'Alaska Airlines Visa Signature',issuer:'Bank of America',prog:'Alaska Mileage Plan',type:'Airline',brand:'Alaska',isNew:true,other:true},
     {id:'bilt',name:'Bilt Mastercard',issuer:'Bilt / Cardless',prog:'Bilt Rewards',type:'Rent · points',other:true},
     {id:'target_circle',name:'Target Circle Card',issuer:'TD Bank / Target',prog:'Cash back',type:'Store',store:true,other:true},
     {id:'apple_card',name:'Apple Card',issuer:'Apple / Goldman Sachs',prog:'Cash back',type:'Cash back',other:true},
-    // Turn 2 follow-up additions (artwork in assets/cards)
-    {id:'chase_amazon_visa',name:'Amazon Visa',issuer:'Chase',prog:'Amazon rewards',type:'Store',t2:true},
-    {id:'united_gateway',name:'United Gateway',issuer:'Chase',prog:'United MileagePlus',type:'Airline',brand:'United',t2:true},
-    {id:'united_club',name:'United Club Infinite',issuer:'Chase',prog:'United MileagePlus',type:'Airline',brand:'United',t2:true},
-    {id:'sw_premier',name:'Southwest Rapid Rewards Premier',issuer:'Chase',prog:'Southwest Rapid Rewards',type:'Airline',brand:'Southwest',t2:true},
-    {id:'delta_blue',name:'Delta SkyMiles Blue',issuer:'Amex',prog:'Delta SkyMiles',type:'Airline',brand:'Delta',t2:true},
-    {id:'delta_platinum',name:'Delta SkyMiles Platinum',issuer:'Amex',prog:'Delta SkyMiles',type:'Airline',brand:'Delta',t2:true},
-    {id:'aa_exec',name:'AAdvantage Executive',issuer:'Citi',prog:'American AAdvantage',type:'Airline',brand:'American',t2:true},
-    {id:'aa_mileup',name:'AAdvantage MileUp',issuer:'Citi',prog:'American AAdvantage',type:'Airline',brand:'American',t2:true},
-    {id:'jetblue_plus',name:'JetBlue Plus',issuer:'Barclays',prog:'JetBlue TrueBlue',type:'Airline',brand:'JetBlue',t2:true},
-    {id:'hawaiian',name:'Hawaiian Airlines World Elite',issuer:'Barclays',prog:'HawaiianMiles',type:'Airline',brand:'Hawaiian',t2:true},
   ];
+  // The wallet shown on screens 2-6.
   static HELD = ['csp','amex_gold','double_cash'];
-  static BEST = {csr:'3× dining & travel', csp:'3× dining · 2× travel', freedom_flex:'5% rotating categories', cfu:'1.5% everything · 3% dining', ink_cash:'5% office & internet', ink_pref:'3× travel & ads', prime_visa:'5% Amazon & Whole Foods', chase_amazon_visa:'3% Amazon', amex_gold:'4× dining & groceries', amex_plat:'5× flights · lounges', bcp:'6% groceries & streaming', bce:'3% groceries, gas, online', biz_plat:'5× flights', biz_gold:'4× top two categories', bbp:'2× everything', bbc:'2% everything', custom_cash:'5% top category', double_cash:'2% on everything', strata_premier:'3× travel, dining, gas', costco:'4% gas · 3% dining & travel', venture_x:'2× everything · 10× hotels', savor:'3% dining & entertainment', discover_it:'5% rotating categories', usb_cashplus:'5% two categories you pick', altitude_go:'4× dining', wf_autograph:'3× travel, dining, gas', wf_active:'2% on everything', bilt:'1× rent · 3× dining', target_circle:'5% Target', apple_card:'2% Apple Pay', marriott:'6× Marriott', hyatt:'4× Hyatt', ihg:'10× IHG', hilton:'12× Hilton'};
-  static ISSUERS = [['Chase','CH'],['Amex','AX'],['Citi','CI'],['Capital One','C1'],['Discover','DS'],['US Bank','US'],['Wells Fargo','WF'],['Other','…']];
-  static BRAND_MONO = {United:'UA',Delta:'DL',American:'AA',Southwest:'WN',Alaska:'AS'};
+  // The wallet shown on screen 1 — wider so every filter chip category appears.
+  static HELD_HUB = ['csp','amex_gold','double_cash','united_explorer','ink_cash','prime_visa','bilt'];
+  // Design placeholders, NOT verified reward terms. Ship values from real rates via bestForCard().
+  static BEST = {csr:'3× dining & travel', csp:'3× dining · 2× travel', freedom_flex:'5% rotating categories', cfu:'1.5% everything · 3% dining', ink_cash:'5% office & internet', prime_visa:'5% Amazon & Whole Foods', amex_gold:'4× dining & groceries', amex_plat:'5× flights · lounges', bcp:'6% groceries & streaming', bce:'3% groceries, gas, online', biz_plat:'5× flights', biz_gold:'4× top two categories', bbp:'2× everything', bbc:'2% everything', custom_cash:'5% top category', double_cash:'2% on everything', strata_premier:'3× travel, dining, gas', venture_x:'2× everything · 10× hotels', savor:'3% dining & entertainment', discover_it:'5% rotating categories', usb_cashplus:'5% two categories you pick', wf_autograph:'3× travel, dining, gas', wf_active:'2% on everything', bilt:'1× rent · 3× dining', target_circle:'5% Target', apple_card:'2% Apple Pay'};
+  static ISSUERS = ['Chase','Amex','Citi','Capital One','Discover','US Bank','Wells Fargo'];
+  static LOGO = {Chase:'issuer-chase.svg', Amex:'issuer-amex.svg', Citi:'issuer-citi.svg', 'Capital One':'issuer-capital-one.svg', Discover:'issuer-discover.svg', 'US Bank':'issuer-us-bank.svg', 'Wells Fargo':'issuer-wells-fargo.svg'};
 
   renderVals() {
-    const C = Component, held = C.HELD, showCounts = this.props.showCounts ?? true;
+    const C = Component, held = C.HELD;
     const q = (this.props.query ?? 'sa').trim();
-    const avail = C.CARDS.filter(c => !held.includes(c.id) && !c.t2);
-    const sub = c => c.issuer + ' · ' + c.prog;
+    const art = c => 'assets/cards/card-' + c.id + '.png';
+    const logo = k => 'assets/logos/' + C.LOGO[k];
     const best = c => C.BEST[c.id] || (c.brand ? '2× ' + c.brand : c.type);
     const n = k => k + (k === 1 ? ' card' : ' cards');
-    const byIssuer = name => name === 'Other' ? avail.filter(c => c.other) : avail.filter(c => c.issuer === name);
-    const issuerTiles = C.ISSUERS.map(([label, glyph]) => ({label, glyph, countLabel: n(byIssuer(label).length)}));
-    const types = [['Airline','✈️', c => c.brand], ['Hotel','🏨', c => c.hotel], ['Store','🛍️', c => c.store], ['Business','💼', c => c.biz]];
-    const typeTiles = types.map(([label, glyph, f]) => ({label: label + ' cards', glyph, countLabel: n(avail.filter(f).length)}));
-    const hit = c => { const i = c.name.toLowerCase().indexOf(q.toLowerCase()); return i < 0 || !q ? null : {pre: c.name.slice(0, i), hit: c.name.slice(i, i + q.length), post: c.name.slice(i + q.length), sub: sub(c), type: c.type, issuer: c.issuer}; };
-    const results = avail.map(hit).filter(Boolean);
-    const groups = {}; results.forEach(r => (groups[r.issuer] ||= []).push(r));
-    const airlines = avail.filter(c => c.brand);
-    const brands = [...new Set(airlines.map(c => c.brand))];
-    const amexRows = f => avail.filter(c => c.issuer === 'Amex' && f(c)).map(c => ({name: c.name, sub: c.type}));
-    // Turn 2: artwork-backed data
-    const art = c => 'assets/cards/card-' + c.id + '.png';
-    const LOGO = {Chase:'issuer-chase.svg', Amex:'issuer-amex.svg', Citi:'issuer-citi.svg', 'Capital One':'issuer-capital-one.svg', Discover:'issuer-discover.svg', 'US Bank':'issuer-us-bank.svg', 'Wells Fargo':'issuer-wells-fargo.svg',
-      United:'airline-united.png', Delta:'airline-delta.svg', American:'airline-american.svg', Southwest:'airline-southwest.svg', Alaska:'airline-alaska.svg', JetBlue:'airline-jetblue.svg', Hawaiian:'airline-hawaiian.svg'};
-    const logo = k => 'assets/logos/' + LOGO[k];
-    const tile = (c, extraHeld = []) => { const added = held.includes(c.id) || extraHeld.includes(c.id); return {name: c.name, img: art(c), sub: best(c), added, notAdded: !added}; };
+    const tile = c => { const added = held.includes(c.id); return {name: c.name, img: art(c), sub: best(c), added, notAdded: !added}; };
+    const hit = c => { const i = c.name.toLowerCase().indexOf(q.toLowerCase()); return i < 0 || !q ? null : {pre: c.name.slice(0, i), hit: c.name.slice(i, i + q.length), post: c.name.slice(i + q.length)}; };
+    const avail = C.CARDS.filter(c => !held.includes(c.id));
+    const hubCards = C.HELD_HUB.map(id => C.CARDS.find(x => x.id === id));
+    const chaseCards = C.CARDS.filter(c => c.issuer === 'Chase');
+
+    // Browse grid: 7 issuer tiles, 4 category tiles, Other last.
+    const TYPES = [['Airline', '✈️'], ['Hotel', '🏨'], ['Store', '🛍️'], ['Business', '💼']];
     const tilesArt = [
-      ...C.ISSUERS.filter(([l]) => l !== 'Other').map(([label]) => ({label, img: logo(label), hasImg: true, noImg: false})),
-      ...types.map(([label, glyph]) => ({label: label + ' cards', glyph, hasImg: false, noImg: true})),
+      ...C.ISSUERS.map(label => ({label, img: logo(label), hasImg: true, noImg: false})),
+      ...TYPES.map(([label, glyph]) => ({label: label + ' cards', glyph, hasImg: false, noImg: true})),
       {label: 'Other', glyph: '…', hasImg: false, noImg: true},
     ];
-    const chaseAll = C.CARDS.filter(c => c.issuer === 'Chase' && !c.brand && !c.hotel);
-    const allAirlines = C.CARDS.filter(c => c.brand);
-    const allBrands = [...new Set(allAirlines.map(c => c.brand))];
-    const resultsArt = C.CARDS.filter(c => c.name.toLowerCase().includes(q.toLowerCase()) && q).map(c => ({...hit(c), ...tile(c), sub: best(c)}));
+    // Filter chips on screen 1: only the categories present in this wallet.
+    const CHIPS = [
+      ...C.ISSUERS.map(name => ({label: name, img: logo(name), hasImg: true, noImg: false, f: c => c.issuer === name})),
+      {label: 'Airline cards', glyph: '✈️', hasImg: false, noImg: true, f: c => !!c.brand},
+      {label: 'Hotel cards', glyph: '🏨', hasImg: false, noImg: true, f: c => !!c.hotel},
+      {label: 'Store cards', glyph: '🏪', hasImg: false, noImg: true, f: c => !!c.store},
+      {label: 'Business cards', glyph: '💼', hasImg: false, noImg: true, f: c => !!c.biz},
+      {label: 'Other', glyph: '…', hasImg: false, noImg: true, f: c => !C.ISSUERS.includes(c.issuer)},
+    ];
     return {
-      heldArt: held.map((id, i) => { const c = C.CARDS.find(x => x.id === id); return {n: i + 1, name: c.name, sub: best(c), img: art(c)}; }),
+      prodCount: C.CARDS.length,
+      query: q,
+      held4Art: hubCards.map((c, i) => ({n: i + 1, name: c.name, sub: best(c), img: art(c)})),
+      chips4: CHIPS.filter(t => hubCards.some(t.f)).map(({label, img, glyph, hasImg, noImg}) => ({label, img, glyph, hasImg, noImg})),
+      // Chip filter engaged (screen 1b): priority numbers keep the wallet's real order.
+      chips4Sel: CHIPS.filter(t => hubCards.some(t.f)).map(({label, img, glyph, hasImg, noImg}) => ({label, img, glyph, hasImg, noImg, on: label === 'Chase', off: label !== 'Chase'})),
+      held4Filtered: hubCards.map((c, i) => ({n: i + 1, c})).filter(x => x.c.issuer === 'Chase').map(({n, c}) => ({n, name: c.name, sub: best(c), img: art(c)})),
+      filterNote: 'Showing ' + hubCards.filter(c => c.issuer === 'Chase').length + ' of ' + hubCards.length + ' · ✕ clears the filter',
       tilesArt,
-      resultsArt: resultsArt.slice(0, 6),
-      chaseTiles: chaseAll.map(c => tile(c)),
-      chaseTilesAfter: chaseAll.map(c => tile(c, ['freedom_flex'])),
-      airlineJump: allBrands.map(b => ({name: b, logo: logo(b)})),
-      airlineJumpDelta: allBrands.map(b => ({name: b, logo: logo(b), on: b === 'Delta', off: b !== 'Delta'})),
-      deltaGroup: [(() => { const cs = allAirlines.filter(c => c.brand === 'Delta'); return {name: 'Delta', logo: logo('Delta'), sub: cs[0].prog + ' · ' + cs[0].issuer, items: cs.map(c => tile(c))}; })()],
-      airlineGroups: allBrands.map(b => { const cs = allAirlines.filter(c => c.brand === b); return {name: b, logo: logo(b), sub: cs[0].prog + ' · ' + cs[0].issuer, items: cs.map(c => tile(c))}; }),
-      query: q, showCounts,
-      held: held.map((id, i) => { const c = C.CARDS.find(x => x.id === id); return {n: i + 1, name: c.name, sub: sub(c)}; }),
-      tiles: [...issuerTiles, ...typeTiles],
-      issuerTiles, typeTiles,
-      results: results.slice(0, 6), resultCount: results.length,
-      resultGroups: Object.entries(groups).map(([issuer, items]) => ({issuer, items})),
-      chaseCards: byIssuer('Chase').map(c => ({name: c.name, sub: c.type})), chaseCount: byIssuer('Chase').length,
-      airlineBrands: brands.map(b => { const cs = airlines.filter(c => c.brand === b); return {name: b, mono: C.BRAND_MONO[b], sub: n(cs.length) + ' · ' + cs[0].issuer}; }),
-      deltaCards: airlines.filter(c => c.brand === 'Delta').map(c => ({name: c.name, sub: sub(c)})),
-      airlineChips: [{label: 'All', on: true, off: false}, ...brands.map(b => ({label: b, on: false, off: true}))],
-      airlineCards: airlines.map(c => ({name: c.name, mono: C.BRAND_MONO[c.brand], sub: c.brand + ' · issued by ' + c.issuer})),
-      amexGroups: [
-        {label: 'Personal', items: amexRows(c => !c.biz && !c.brand && !c.hotel)},
-        {label: 'Business', items: amexRows(c => c.biz)},
-        {label: 'Airline & hotel', items: amexRows(c => c.brand || c.hotel)},
-      ],
-      heldCurrent: held.map((id, i) => { const c = C.CARDS.find(x => x.id === id); return {title: (i + 1) + '. ' + c.name, sub: c.issuer + ' · ' + ({chase:'Chase Ultimate Rewards',amex:'Amex Membership Rewards',citi:'Citi ThankYou'}[['chase','amex','citi'][i]]), upOpacity: i === 0 ? 0.3 : 1, downOpacity: i === held.length - 1 ? 0.3 : 1}; }),
-      availCurrent: avail.filter(c => !c.isNew).map(c => ({name: c.name, issuer: c.issuer})),
+      chaseTiles4: chaseCards.map(tile),
+      chaseCount4: n(chaseCards.filter(c => !held.includes(c.id)).length),
+      bizTiles4: avail.filter(c => c.biz).map(tile),
+      bizCount4: n(avail.filter(c => c.biz).length),
+      results4: C.CARDS.filter(c => q && c.name.toLowerCase().includes(q.toLowerCase())).map(c => ({...hit(c), ...tile(c)})),
     };
   }
 }
