@@ -17,12 +17,33 @@
     --bg:#f4f5f7; --card:#ffffff; --ink:#1a1d21; --muted:#596270; --line:#e5e7eb;
     --accent:#2563eb; --primary-bg:#2563eb; --accent-ink:#ffffff; --gold:#b45309; --good:#047857; --warn:#b91c1c;
     --chip:#eef2ff; --chip-ink:#3730a3; --radius:16px; --nav-h:74px;
+    --picker-bg:#f4f5f7; --picker-surface:#ffffff; --picker-field-alt:#f9fafb; --picker-text:#1a1d21; --picker-secondary:#69717f;
+    --picker-placeholder:#69717f; --picker-border:#e5e7eb; --picker-placeholder-fill:#eef0f3;
+    --picker-placeholder-border:#c7cbd1; --picker-accent:#2563eb; --picker-accent-hover:#1d4ed8;
+    --picker-primary:#2563eb; --picker-primary-hover:#1d4ed8;
+    --picker-accent-tint:#eef2ff; --picker-accent-on-tint:#3730a3;
+    --picker-success:#047857; --picker-success-fill:rgba(4,120,87,.12); --picker-highlight:#fef3c7;
+    --picker-header-glow:rgba(37,99,235,.10); --picker-logo-shadow:rgba(37,99,235,.35);
+    --picker-focus-ring:rgba(37,99,235,.12); --picker-clear:#d1d5db; --picker-clear-text:#ffffff;
+    --picker-nav-idle:rgba(125,125,125,.10); --picker-nav-shadow:rgba(0,0,0,.08);
+    --picker-nav-active-shadow:rgba(37,99,235,.28); --picker-logo-backing:#ffffff;
   }
   @media (prefers-color-scheme: dark){
     :root{ --bg:#0f1115; --card:#191c22; --ink:#f3f4f6; --muted:#aeb6c2; --line:#2a2f38;
-      --accent:#3b82f6; --primary-bg:#1d4ed8; --gold:#f59e0b; --good:#34d399; --warn:#f87171; --chip:#1e2a4a; --chip-ink:#a5b4fc; }
+      --accent:#3b82f6; --primary-bg:#1d4ed8; --gold:#f59e0b; --good:#34d399; --warn:#f87171; --chip:#1e2a4a; --chip-ink:#a5b4fc;
+      --picker-bg:#0f1115; --picker-surface:#191c22; --picker-field-alt:#20242b; --picker-text:#f3f4f6; --picker-secondary:#aeb6c2;
+      --picker-placeholder:#818b99; --picker-border:#626b78; --picker-placeholder-fill:#22262e;
+      --picker-placeholder-border:#697381; --picker-accent:#3b82f6; --picker-accent-hover:#60a5fa;
+      --picker-primary:#1d4ed8; --picker-primary-hover:#2563eb;
+      --picker-accent-tint:#1e2a4a; --picker-accent-on-tint:#a5b4fc;
+      --picker-success:#34d399; --picker-success-fill:rgba(52,211,153,.14); --picker-highlight:#5f4b16;
+      --picker-header-glow:rgba(59,130,246,.12); --picker-logo-shadow:rgba(59,130,246,.45);
+      --picker-focus-ring:rgba(59,130,246,.24); --picker-clear:#46505d; --picker-clear-text:#f3f4f6;
+      --picker-nav-idle:rgba(174,182,194,.08); --picker-nav-shadow:rgba(0,0,0,.38);
+      --picker-nav-active-shadow:rgba(59,130,246,.38); --picker-logo-backing:#ffffff; }
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  [hidden]{display:none!important}
   body{margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     background:var(--bg); color:var(--ink); padding-bottom:calc(var(--nav-h) + 12px + env(safe-area-inset-bottom));}
   .brand{display:flex; align-items:center; gap:11px;
@@ -73,9 +94,6 @@
   nav button:active .em{transform:scale(.9)}
   nav button.on{color:var(--accent)}
   nav button.on .em{background:var(--chip); border-color:var(--accent); box-shadow:0 1px 8px rgba(37,99,235,.28)}
-  @keyframes tabpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
-  nav button.pulse .em{animation:tabpulse .8s ease-in-out 5; background:var(--chip); border-color:var(--accent);
-    box-shadow:0 1px 10px rgba(37,99,235,.4); filter:none; opacity:1}
   .row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line)}
   .row:last-child{border-bottom:none}
   .row .grow{flex:1; min-width:0}
@@ -102,6 +120,7 @@
   .field-label{display:block; font-size:13.5px; font-weight:600; line-height:1.35}
   .field-label .tag{display:block; font-weight:400}
   .field-error{margin:0; color:var(--warn); font-size:13px; font-weight:650; line-height:1.4}
+  .custom-placement{margin:8px 0 0}
   .sr-only{position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important}
   .empty{color:var(--muted); text-align:center; padding:22px 10px; font-size:14px; line-height:1.5}
   .toast{position:fixed; bottom:calc(var(--nav-h) + 10px); left:50%; transform:translateX(-50%);
@@ -210,6 +229,261 @@
   .confirmed-status{display:inline-flex; align-items:center; min-height:44px; color:var(--good); font-size:12.5px; font-weight:750}
   .hide-radar-action{color:var(--muted); min-width:44px; justify-content:center}
   .terms-changed{color:var(--warn); font-weight:750}
+  body.card-picker-mode{background:var(--picker-bg); color:var(--picker-text)}
+  body.card-picker-mode .brand{padding:max(54px,env(safe-area-inset-top)) 18px 12px;
+    background:linear-gradient(180deg,var(--picker-header-glow),transparent)}
+  body.card-picker-mode .brand .logo{box-shadow:0 3px 10px var(--picker-logo-shadow)}
+  body.card-picker-mode .brand .btag,body.card-picker-mode header .sub{color:var(--picker-secondary)}
+  body.card-picker-mode nav{background:var(--picker-surface); border-color:var(--picker-border);
+    padding:7px 6px max(28px,calc(7px + env(safe-area-inset-bottom))); box-shadow:0 -6px 18px var(--picker-nav-shadow)}
+  body.card-picker-mode nav button{color:var(--picker-secondary)}
+  body.card-picker-mode nav button .em{background:var(--picker-nav-idle)}
+  body.card-picker-mode nav button.on{color:var(--picker-accent)}
+  body.card-picker-mode nav button.on .em{background:var(--picker-accent-tint); border-color:var(--picker-accent);
+    box-shadow:0 1px 8px var(--picker-nav-active-shadow)}
+  @keyframes picker-push{from{opacity:.5;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes picker-pop{from{opacity:.5;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+
+  /* Seven-screen Add-a-card flow. Values mirror design/card-picker; invisible hit-area
+     extensions preserve the repository's 44px touch-target requirement. */
+  body.card-picker-mode .app-scroll{min-height:calc(100dvh - var(--nav-h) - 12px); display:flex; flex-direction:column}
+  body.card-picker-mode .card-picker-main{display:flex; flex:1; flex-direction:column; min-height:0; width:100%}
+  body.card-picker-no-nav{padding-bottom:0}
+  body.card-picker-no-nav .app-scroll{min-height:100dvh}
+  body.card-picker-no-nav nav{display:none}
+  body.card-picker-mode header{align-items:baseline; flex-wrap:nowrap}
+  body.card-picker-mode header .sub{color:var(--picker-secondary)}
+  .picker-add-button{display:flex; align-items:center; justify-content:center; width:38px; height:38px; flex:none;
+    align-self:center; margin-left:auto; padding:0; border:0; border-radius:99px; background:var(--picker-primary); color:#fff;
+    font:inherit; font-size:24px; font-weight:300; line-height:1; box-shadow:0 3px 10px rgba(37,99,235,.3);
+    cursor:pointer; position:relative}
+  .picker-add-button::before{content:""; position:absolute; inset:-3px}
+  .picker-add-button:hover{background:var(--picker-primary-hover)}
+
+  .picker-wallet{display:flex; flex:1; flex-direction:column; min-height:0; margin:0 -14px}
+  .picker-filter-row{display:flex; flex:none; gap:6px; margin:-7px 0; padding:0 18px 2px; overflow-x:auto;
+    overflow-y:visible; overscroll-behavior-x:contain; scrollbar-width:none; -webkit-overflow-scrolling:touch}
+  .picker-filter-row::-webkit-scrollbar{display:none}
+  .picker-filter-chip{display:flex; align-items:center; gap:6px; flex:none; min-height:44px; margin:0; padding:6px 11px;
+    border:0; border-radius:99px; background:transparent; color:var(--picker-text); isolation:isolate;
+    font:inherit; font-size:13px; font-weight:500; line-height:normal; white-space:nowrap; cursor:pointer; position:relative}
+  .picker-filter-chip::before{content:""; position:absolute; z-index:-1; inset:7px 0;
+    border:1px solid var(--picker-border); border-radius:99px; background:var(--picker-surface)}
+  .picker-filter-chip:focus-visible{outline-offset:-3px}
+  .picker-filter-chip.is-muted{opacity:.6}
+  .picker-filter-chip.is-active{padding:6px 10px 6px 11px; color:var(--picker-surface); font-weight:600}
+  .picker-filter-chip.is-active::before{border-color:var(--picker-text); background:var(--picker-text)}
+  .picker-filter-logo{display:block; width:15px; height:15px; border-radius:3px; object-fit:contain}
+  .picker-filter-chip.is-active .picker-filter-logo{box-sizing:content-box; padding:1px; background:var(--picker-logo-backing)}
+  .picker-filter-glyph{font-size:13px; line-height:1}
+  .picker-filter-close{margin-left:2px; font-size:11px; opacity:.8}
+  .picker-held-wrap{display:flex; flex:1; flex-direction:column; min-height:0; padding:0 14px 100px}
+  .picker-held-list{display:flex; flex:1; flex-direction:column; min-height:0; margin:8px 0; padding:2px 16px 0;
+    overflow-y:auto; overscroll-behavior-y:contain; border:1px solid var(--picker-border); border-radius:16px;
+    background:var(--picker-surface)}
+  .picker-held-row{display:flex; align-items:center; gap:11px; flex:none; padding:0;
+    border-bottom:1px solid var(--picker-border); position:relative; transition:transform .2s cubic-bezier(.16,1,.3,1)}
+  .picker-held-row.is-dragging{z-index:2; transition:none; border-radius:10px; outline:1px solid var(--picker-border); background:var(--picker-surface); box-shadow:0 8px 24px var(--picker-nav-shadow)}.picker-held-list.is-sorting .picker-held-row{user-select:none}
+  .picker-held-edit{display:grid; grid-template-columns:16px 58px minmax(0,1fr); align-items:center; gap:11px;
+    flex:1; min-width:0; margin:0; padding:11px 0; border:0; border-radius:7px; background:transparent;
+    color:var(--picker-text); font:inherit; text-align:left; cursor:pointer}
+  .picker-priority{width:16px; color:var(--picker-secondary); font-size:12px; font-weight:700; text-align:center}
+  .picker-held-art{display:block; width:58px; height:37px; flex:none; border-radius:5px; object-fit:cover}
+  .picker-held-name{display:block; font-size:14.5px; font-weight:600; overflow-wrap:anywhere}
+  .picker-held-best{display:block; margin-top:2px; color:var(--picker-secondary); font-size:12px; overflow-wrap:anywhere}
+  .picker-drag-handle{width:44px; height:44px; flex:none; margin:0 -14px 0 0; padding:0; border:0; border-radius:6px;
+    background:transparent; color:var(--picker-placeholder); font:inherit; font-size:16px; letter-spacing:-2px;
+    cursor:grab; touch-action:none; position:relative}
+  .picker-drag-handle:focus-visible{outline-offset:-3px}
+  .picker-drag-handle:active{cursor:grabbing}
+  .picker-held-footer{margin-top:auto; padding:12px 0; color:var(--picker-placeholder); font-size:12px}
+  .picker-wallet-empty{margin:auto; padding:22px 10px; color:var(--picker-secondary); font-size:14px;
+    line-height:1.5; text-align:center}
+
+  .picker-page{width:100%; padding-bottom:100px; color:var(--picker-text)}
+  .picker-page.is-push{animation:picker-push .2s cubic-bezier(.16,1,.3,1)}
+  .picker-page.is-pop{animation:picker-pop .2s cubic-bezier(.16,1,.3,1)}
+  .picker-back{display:flex; align-items:center; gap:2px; width:max-content; min-height:84px; margin:0; padding:58px 0 0;
+    border:0; background:transparent; color:var(--picker-accent); font:inherit; font-size:16px; cursor:pointer}
+  .picker-add-page:not(.is-searching) .picker-back{min-height:78px; padding-top:52px}
+  .picker-back:hover{color:var(--picker-accent-hover)}
+  .picker-back-glyph{margin-top:-3px; font-size:26px; line-height:1}
+  .picker-add-title{margin:0 4px; padding:4px 0}
+  .picker-add-page.is-searching .picker-add-title{padding:6px 0}
+  .picker-add-title h1,.picker-custom-title h1,.picker-page-heading h1{margin:0; font-size:22px;
+    font-weight:700; letter-spacing:-.02em}
+  .picker-add-content{width:100%}
+  .picker-search-shell{display:flex; align-items:center; gap:8px; width:100%; height:44px; padding:0 12px;
+    border:1px solid var(--picker-border); border-radius:12px; background:var(--picker-surface);
+    color:var(--picker-placeholder); font-size:15px; position:relative}
+  .picker-search-shell::before{content:none}
+  .picker-search-shell:focus-within{border:1.5px solid var(--picker-accent); box-shadow:0 0 0 3px var(--picker-focus-ring)}
+  .picker-search-icon,.picker-search-input,.picker-search-clear{position:relative; z-index:1}
+  .picker-search-icon{flex:none; font-size:15px; line-height:1}
+  .picker-search-input{flex:1; min-width:0; height:42px; margin:0; padding:0; border:0; border-radius:0;
+    outline:0!important; background:transparent!important; color:var(--picker-text); caret-color:var(--picker-accent);
+    font:inherit; font-size:15px; -webkit-appearance:none; appearance:none}
+  .picker-search-input::-webkit-search-cancel-button{display:none}
+  .picker-search-input::placeholder{color:var(--picker-placeholder); opacity:1}
+  .picker-search-clear{width:18px; height:18px; flex:none; margin:0; padding:0; border:0; border-radius:99px;
+    background:var(--picker-clear); color:var(--picker-clear-text); font:inherit; font-size:11px; line-height:18px;
+    cursor:pointer}
+  .picker-search-clear::before{content:""; position:absolute; inset:-13px}
+  .picker-browse-heading{margin:16px 4px 8px; color:var(--picker-secondary); font-size:12px; font-weight:600;
+    letter-spacing:.04em; text-transform:uppercase}
+  .picker-browse-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin:0}
+  .picker-browse-tile{display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:6px;
+    min-width:0; margin:0; padding:12px 4px 10px; border:1px solid var(--picker-border); border-radius:14px;
+    background:var(--picker-surface); color:var(--picker-text); font:inherit; cursor:pointer}
+  .picker-browse-tile:hover{border-color:var(--picker-accent)}
+  .picker-browse-logo{display:block; width:34px; height:34px; border-radius:7px; object-fit:contain}
+  .picker-browse-glyph{display:flex; align-items:center; justify-content:center; width:34px; height:34px;
+    border-radius:99px; background:var(--picker-accent-tint); color:var(--picker-accent-on-tint); font-size:18px}
+  .picker-browse-label{font-size:12.5px; font-weight:600; line-height:1.2; text-align:center; overflow-wrap:anywhere}
+  .picker-custom-row{display:flex; align-items:center; gap:11px; width:100%; margin:9px 0 0; padding:13px 14px;
+    border:1px solid var(--picker-border); border-radius:14px; background:var(--picker-surface); color:var(--picker-text);
+    font:inherit; text-align:left; cursor:pointer}
+  .picker-custom-row:hover{border-color:var(--picker-accent)}
+  .picker-custom-row-art{display:flex; align-items:center; justify-content:center; width:38px; height:26px; flex:none;
+    border:1.5px dashed var(--picker-placeholder); border-radius:5px; color:var(--picker-secondary); font-size:16px; line-height:1}
+  .picker-custom-row-copy{display:flex; flex:1; flex-direction:column; gap:2px; min-width:0}
+  .picker-custom-row-title{font-size:14.5px; font-weight:600; line-height:1.2}
+  .picker-custom-row-sub{color:var(--picker-secondary); font-size:12px; line-height:1.25}
+  .picker-custom-row-chevron{color:var(--picker-placeholder); font-size:19px; line-height:1}
+
+  .picker-search-results{max-height:336px; margin-top:10px; padding:2px 14px; overflow-y:auto;
+    overscroll-behavior:contain; border:1px solid var(--picker-border); border-radius:16px; background:var(--picker-surface)}
+  .picker-search-row{display:flex; align-items:center; gap:10px; min-height:54px; padding:9px 0;
+    border-bottom:1px solid var(--picker-border)}
+  .picker-search-art{display:block; width:56px; height:36px; flex:none; border-radius:5px; object-fit:cover}
+  .picker-search-copy{flex:1; min-width:0}
+  .picker-search-name{font-size:14.5px; font-weight:600; overflow-wrap:anywhere}
+  .picker-search-name mark{padding:0; border-radius:3px; background:var(--picker-highlight); color:inherit}
+  .picker-search-best{margin-top:1px; color:var(--picker-secondary); font-size:12.5px; overflow-wrap:anywhere}
+  .picker-search-action,.picker-tile-action,.picker-card-status{box-sizing:border-box; border-radius:99px;
+    padding:6px 0; font:inherit; font-weight:600; line-height:normal; text-align:center; white-space:nowrap}
+  .picker-search-action,.picker-tile-action{border:1px solid var(--picker-accent); background:transparent;
+    color:var(--picker-accent); font-size:13.5px; cursor:pointer; position:relative}
+  .picker-search-action{width:76px; flex:none}
+  .picker-tile-action{width:100%; margin-top:auto; font-size:13px}
+  .picker-search-action::before,.picker-tile-action::before{content:""; position:absolute; inset:-7px 0}
+  .picker-search-action:hover,.picker-tile-action:hover{border-color:var(--picker-accent-hover); color:var(--picker-accent-hover)}
+  .picker-card-status{display:block; border:0; background:var(--picker-success-fill); color:var(--picker-success);
+    font-size:12.5px}
+  .picker-search-row .picker-card-status{width:76px; flex:none}
+  .picker-card-tile .picker-card-status{width:100%; margin-top:auto}
+  .picker-search-empty{padding:18px 0; color:var(--picker-secondary); font-size:13px; text-align:center}
+  .picker-search-custom{display:inline-block; min-height:44px; margin:0 4px; padding:10px 0; border:0;
+    background:transparent; color:var(--picker-accent); font:inherit; font-size:12.5px; line-height:1.45; cursor:pointer}
+  .picker-search-custom:hover{color:var(--picker-accent-hover)}
+
+  .picker-page-heading{display:flex; align-items:center; gap:10px; margin:0 4px; padding:8px 0 2px}
+  .picker-page-logo{display:block; width:28px; height:28px; flex:none; border-radius:6px; object-fit:contain}
+  .picker-page-glyph{display:flex; align-items:center; justify-content:center; width:28px; height:28px; flex:none;
+    border-radius:99px; background:var(--picker-accent-tint); color:var(--picker-accent-on-tint); font-size:15px}
+  .picker-page-heading h1{line-height:28px}
+  .picker-page-count{margin:0 4px; padding:0 0 6px; color:var(--picker-secondary); font-size:13px}
+  .picker-card-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px}
+  .picker-card-tile{display:flex; flex-direction:column; gap:6px; min-width:0; padding:8px;
+    border:1px solid var(--picker-border); border-radius:14px; background:var(--picker-surface)}
+  .picker-card-art{display:block; width:100%; aspect-ratio:1.586; border-radius:7px; object-fit:cover}
+  .picker-card-placeholder{display:flex; align-items:center; justify-content:center; width:100%; aspect-ratio:1.586;
+    box-sizing:border-box; border:1.5px dashed var(--picker-placeholder-border); border-radius:7px;
+    background:var(--picker-placeholder-fill); color:var(--picker-placeholder); font-size:28px; font-weight:300; line-height:1}
+  .picker-art-placeholder{display:flex; align-items:center; justify-content:center; border:1px dashed var(--picker-placeholder-border);
+    background:var(--picker-placeholder-fill); color:var(--picker-placeholder); font-weight:500; line-height:1}
+  .picker-card-name{font-size:13px; font-weight:600; line-height:1.25; overflow-wrap:anywhere}
+  .picker-card-subline{color:var(--picker-secondary); font-size:11.5px; font-weight:400; line-height:1.25; overflow-wrap:anywhere}
+
+  .picker-custom-page{padding-bottom:24px}
+  .picker-custom-title{margin:0 4px; padding:8px 0 2px}
+  .picker-custom-stack{display:flex; flex-direction:column; gap:12px}
+  .picker-custom-card{display:flex; flex-direction:column; gap:13px; padding:14px;
+    border:1px solid var(--picker-border); border-radius:16px; background:var(--picker-surface)}
+  .picker-custom-card.is-rates{gap:11px}
+  .picker-field-group{display:flex; flex-direction:column; gap:6px}
+  .picker-field-label,.picker-rates-label{color:var(--picker-secondary); font-size:11.5px; font-weight:600;
+    letter-spacing:.03em; text-transform:uppercase}
+  .picker-custom-input-shell,.picker-bank-shell{height:44px; position:relative}
+  .picker-custom-input-shell::before,.picker-bank-shell::before{content:""; position:absolute; inset:1px 0;
+    border:1px solid var(--picker-border); border-radius:11px; background:var(--picker-surface); pointer-events:none}
+  .picker-custom-input-shell:focus-within::before{border:1.5px solid var(--picker-accent); box-shadow:0 0 0 3px var(--picker-focus-ring)}
+  .picker-bank-shell:focus-within::before{border-color:var(--picker-accent); box-shadow:0 0 0 3px var(--picker-focus-ring)}
+  input.picker-custom-name{position:relative; z-index:1; width:100%; height:44px; min-height:0; margin:0; padding:0 12px;
+    border:0; border-radius:11px; outline:0!important; background:transparent; color:var(--picker-text);
+    caret-color:var(--picker-accent); font:inherit; font-size:15px}
+  input.picker-custom-name::placeholder{color:var(--picker-placeholder); opacity:1}
+  .picker-bank-shell::before{background:var(--picker-field-alt)}
+  .picker-bank-display{position:absolute; z-index:1; inset:0; display:flex; align-items:center; justify-content:space-between;
+    gap:8px; padding:0 12px; color:var(--picker-text); font-size:15px; pointer-events:none}
+  .picker-bank-value{display:flex; align-items:center; gap:8px; min-width:0}
+  .picker-bank-logo{display:block; width:20px; height:20px; flex:none; border-radius:4px; object-fit:contain}
+  .picker-bank-placeholder{color:var(--picker-placeholder)}
+  .picker-bank-hint{flex:none; color:var(--picker-placeholder); font-size:12px}
+  select.picker-bank-select{position:absolute; z-index:2; inset:0; width:100%; height:44px; min-height:0; margin:0;
+    padding:0; border:0; opacity:0; cursor:pointer}
+  .picker-rates-head{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
+  .picker-add-rate{min-height:44px; margin:-12px 0; padding:12px 0; border:0; background:transparent;
+    color:var(--picker-accent); font:inherit; font-size:12.5px; font-weight:500; cursor:pointer}
+  .picker-unit-toggle{display:grid; grid-template-columns:1fr 1fr; height:44px; position:relative; isolation:isolate}
+  .picker-unit-toggle::before{content:""; position:absolute; inset:5px 0; border:1px solid var(--picker-border);
+    border-radius:10px; background:var(--picker-bg)}
+  .picker-unit-indicator{position:absolute; z-index:0; top:7px; bottom:7px; left:2px; width:calc(50% - 2px);
+    border-radius:8px; background:var(--picker-surface); box-shadow:0 1px 3px rgba(0,0,0,.10); pointer-events:none; transition:transform .2s cubic-bezier(.16,1,.3,1)}
+  .picker-unit-toggle[data-unit="x"] .picker-unit-indicator{transform:translateX(100%)}
+  .picker-unit-button{z-index:1; height:44px; margin:0; padding:0; border:0; border-radius:8px;
+    background:transparent; color:var(--picker-secondary); font:inherit; font-size:13px; font-weight:500; cursor:pointer}
+  .picker-unit-button.is-active{color:var(--picker-text); font-weight:600}.picker-unit-button:focus-visible{outline-offset:-4px}
+  #pickerRateRows{display:contents}
+  .picker-rate-row{display:flex; align-items:center; gap:8px; min-height:44px}
+  .picker-rate-select-shell,.picker-rate-value-shell{height:44px; position:relative}
+  .picker-rate-select-shell{flex:1; min-width:0}
+  .picker-rate-value-shell{width:74px; flex:none}
+  .picker-rate-select-shell::before,.picker-rate-value-shell::before{content:""; position:absolute; inset:3px 0;
+    border:1px solid var(--picker-border); border-radius:10px; background:var(--picker-surface); pointer-events:none}
+  .picker-rate-select-shell:focus-within::before,.picker-rate-value-shell:focus-within::before{
+    border:1.5px solid var(--picker-accent); box-shadow:0 0 0 3px var(--picker-focus-ring)}
+  select.picker-rate-category{position:relative; z-index:1; width:100%; height:44px; min-height:0; margin:0;
+    padding:0 28px 0 11px; border:0; border-radius:10px; outline:0; background:transparent;
+    color:var(--picker-text); font:inherit; font-size:14px; -webkit-appearance:none; appearance:none; cursor:pointer}
+  .picker-rate-select-shell::after{content:"▾"; position:absolute; z-index:1; right:11px; top:50%;
+    transform:translateY(-50%); color:var(--picker-placeholder); font-size:12px; pointer-events:none}
+  .picker-rate-category.is-placeholder{color:var(--picker-placeholder)}
+  input.picker-rate-value{position:relative; z-index:1; width:100%; height:44px; min-height:0; margin:0;
+    padding:0 11px 0 0; border:0; border-radius:10px; outline:0; background:transparent;
+    color:var(--picker-text); font:inherit; font-size:14px; font-weight:600; text-align:center}
+  input.picker-rate-value::placeholder{color:var(--picker-placeholder); opacity:1; text-align:center}
+  input.picker-rate-value:placeholder-shown{padding:0}
+  .picker-rate-suffix{position:absolute; z-index:1; left:calc(50% + 8px); top:50%; transform:translateY(-50%);
+    color:var(--picker-secondary); font-size:12.5px; pointer-events:none}
+  .picker-rate-value:placeholder-shown + .picker-rate-suffix{display:none}
+  .picker-custom-error{margin:0; color:var(--warn); font-size:13px; font-weight:650; line-height:1.4}
+  .picker-save-custom{display:flex; align-items:center; justify-content:center; width:100%; height:48px; margin:0;
+    padding:0; border:0; border-radius:14px; background:var(--picker-primary); color:#fff;
+    font:inherit; font-size:15.5px; font-weight:600; box-shadow:0 3px 10px rgba(37,99,235,.3); cursor:pointer}
+  .picker-save-custom:hover{background:var(--picker-primary-hover)}
+
+  html.ios-scroll-shell body.card-picker-mode .app-scroll{min-height:0; padding-bottom:0}
+  html.ios-scroll-shell .picker-held-wrap{padding-bottom:19px}
+  html.ios-scroll-shell .picker-page:not(.picker-custom-page){padding-bottom:16px}
+  @media (max-width:260px){
+    .picker-held-list{padding-inline:10px}
+    .picker-held-row{gap:4px}
+    .picker-held-edit{grid-template-columns:16px minmax(0,1fr); gap:8px}
+    .picker-held-art{display:none}
+    .picker-search-results{padding-inline:8px}
+    .picker-search-row{gap:6px}
+    .picker-search-art{display:none}
+    .picker-search-action{width:60px}
+    .picker-browse-grid{grid-template-columns:1fr 1fr}
+    .picker-card-grid{grid-template-columns:1fr}
+    .picker-page-heading{align-items:flex-start; flex-wrap:wrap}
+    .picker-rates-head{align-items:flex-start; flex-wrap:wrap}
+    .picker-rate-row{align-items:stretch; flex-direction:column; gap:2px}
+    .picker-rate-select-shell,.picker-rate-value-shell{width:100%}
+    body.card-picker-mode nav{flex-wrap:wrap}
+    body.card-picker-mode nav button{flex-basis:30%; overflow-wrap:normal}
+  }
   @media (max-width:420px){
     header{flex-wrap:wrap; align-items:flex-start}
     header h1{white-space:normal; max-width:100%; overflow-wrap:anywhere}
@@ -247,41 +521,14 @@
 </head>
 <body>
 <div class="app-scroll" id="appScroll" role="region" aria-label="ChooseMyCard content" tabindex="0">
-<div class="brand">
-  <svg class="logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <defs>
-      <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#7c3aed"/>
-      </linearGradient>
-      <linearGradient id="silverg" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#f8fafc"/><stop offset=".45" stop-color="#cbd5e1"/><stop offset="1" stop-color="#94a3b8"/>
-      </linearGradient>
-      <linearGradient id="cardg" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e7e9ff"/>
-      </linearGradient>
-    </defs>
-    <rect width="48" height="48" rx="11" fill="url(#lg)"/>
-    <path d="M9.5 9.5 l1.1 2.3 2.3 1.1 -2.3 1.1 -1.1 2.3 -1.1 -2.3 -2.3 -1.1 2.3 -1.1 z" fill="#fff" opacity=".85"/>
-    <path d="M39 8 l.8 1.7 1.7 .8 -1.7 .8 -.8 1.7 -.8 -1.7 -1.7 -.8 1.7 -.8 z" fill="#fff" opacity=".6"/>
-    <g transform="translate(0 3.5)">
-      <g transform="rotate(-6 24 22)">
-        <rect x="14.5" y="15" width="19" height="13" rx="2.2" fill="url(#cardg)"/>
-        <rect x="14.5" y="18.1" width="19" height="3" fill="#7c3aed" opacity=".9"/>
-        <rect x="17" y="23.3" width="6.5" height="1.6" rx=".8" fill="#a5b4fc"/>
-        <circle cx="29.5" cy="24.6" r="1.7" fill="#f59e0b" opacity=".9"/>
-        <circle cx="27" cy="24.6" r="1.7" fill="#ef4444" opacity=".75"/>
-      </g>
-      <ellipse cx="24" cy="30.4" rx="8.5" ry="1.2" fill="#1e293b" opacity=".22"/>
-      <ellipse cx="24" cy="31.5" rx="14" ry="3.6" fill="url(#silverg)"/>
-      <ellipse cx="24" cy="30.9" rx="14" ry="3" fill="#f1f5f9"/>
-      <ellipse cx="24" cy="31.1" rx="10.5" ry="2.1" fill="#cbd5e1"/>
-    </g>
-  </svg>
+<div class="brand" id="brand">
+  <img class="logo" src="apple-touch-icon.png" alt="">
   <div><div class="bname">ChooseMyCard</div><div class="btag">your rewards butler</div></div>
 </div>
-<header>
+<header id="pageHeader">
   <h1 id="hdr" tabindex="-1">Which card?</h1>
   <span class="sub" id="hdrsub" hidden></span>
+  <button class="picker-add-button" id="pickerAddCard" type="button" aria-label="Add a card" hidden><span aria-hidden="true">+</span></button>
   <button class="header-action" id="radar-view-all" aria-label="View all Benefit Radar items" hidden>View all <span aria-hidden="true">›</span></button>
 </header>
 <div class="storage-warning" id="storageWarning" role="status" hidden>
@@ -303,6 +550,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
   <span id="toastmsg"></span><button id="toastundo" hidden>Undo</button>
 </div>
+<div class="sr-only" id="pickerLive" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
 'use strict';
@@ -359,12 +607,12 @@ const CARD_DB = [
   {id:'cfu', name:'Chase Freedom Unlimited', issuer:'Chase', program:'chase',
     rates:{dining:{v:3,u:'%'}, drugstores:{v:3,u:'%'}, hotels:{v:5,u:'%',note:'via Chase Travel only'}, other:{v:1.5,u:'%'}},
     notes:'1.5% floor on everything. Points become UR if you also hold a Sapphire.'},
-  {id:'ink_cash', name:'Chase Ink Business Cash', issuer:'Chase', program:'chase',
+  {id:'ink_cash', name:'Chase Ink Business Cash', issuer:'Chase', program:'chase', biz:true,
     rates:{phone:{v:5,u:'%',cap:'internet/cable/phone + office supply combined, first $25k/yr, then 1%'},
       gas:{v:2,u:'%',cap:'first $25k/yr combined with dining, then 1%'},
       dining:{v:2,u:'%',cap:'first $25k/yr combined with gas, then 1%'}, other:{v:1,u:'%'}},
     notes:'Also 5% at office supply stores (shares the $25k/yr cap with internet/cable/phone). No annual fee. Points become UR if you also hold a Sapphire or Ink Preferred.'},
-  {id:'prime_visa', name:'Prime Visa (Chase Amazon)', issuer:'Chase', program:'cash',
+  {id:'prime_visa', name:'Prime Visa (Chase Amazon)', issuer:'Chase', program:'cash', store:true,
     rates:{online:{v:5,u:'%',note:'Amazon.com; also 5% at Whole Foods & Amazon Fresh in store'},
       dining:{v:2,u:'%'}, gas:{v:2,u:'%'}, transit:{v:2,u:'%',note:'local transit & rideshare'},
       flights:{v:5,u:'%',note:'via Chase Travel ONLY — 1% booked direct'},
@@ -378,22 +626,22 @@ const CARD_DB = [
     rates:{flights:{v:5,u:'x',cap:'direct or Amex Travel; up to $500k/yr', note:'book direct with airline or Amex Travel'},
       hotels:{v:5,u:'x',note:'prepaid via Amex Travel'}, other:{v:1,u:'x'}},
     notes:'Weak outside travel — pair with a dining/grocery card.'},
-  {id:'biz_plat', name:'Amex Business Platinum', issuer:'Amex', program:'amex',
+  {id:'biz_plat', name:'Amex Business Platinum', issuer:'Amex', program:'amex', biz:true,
     rates:{flights:{v:5,u:'x',note:'via Amex Travel ONLY — 1x booked direct'},
       hotels:{v:5,u:'x',note:'prepaid via Amex Travel ONLY'},
       shipping:{v:2,u:'x',cap:'US shipping providers; part of $2M/yr combined 2x cap'}, other:{v:1,u:'x'}},
     notes:'2x on US construction/hardware, electronics/software/cloud, shipping, and any $5k+ purchase (up to $2M/yr combined) — post-2025 refresh, $895 fee.'},
-  {id:'biz_gold', name:'Amex Business Gold', issuer:'Amex', program:'amex',
+  {id:'biz_gold', name:'Amex Business Gold', issuer:'Amex', program:'amex', biz:true,
     rates:{dining:{v:4,u:'x',cap:'if a top-2 category that cycle; $150k/yr combined'},
       gas:{v:4,u:'x',cap:'if a top-2 category that cycle; $150k/yr combined'},
       transit:{v:4,u:'x',cap:'if a top-2 category that cycle; $150k/yr combined'},
       shipping:{v:4,u:'x',cap:'if a top-2 category that cycle; $150k/yr combined'},
       flights:{v:3,u:'x',note:'via Amex Travel'}, hotels:{v:3,u:'x',note:'prepaid via Amex Travel'}, other:{v:1,u:'x'}},
     notes:'4x applies automatically to your TOP 2 eligible categories each billing cycle (from: US media/ads, gas, restaurants, transit, tech/cloud, shipping).'},
-  {id:'bbp', name:'Amex Blue Business Plus', issuer:'Amex', program:'amex',
+  {id:'bbp', name:'Amex Blue Business Plus', issuer:'Amex', program:'amex', biz:true,
     rates:{other:{v:2,u:'x',cap:'up to $50k/yr, then 1x'}},
     notes:'Simple 2x MR on everything — great "everything else" business card. No annual fee.'},
-  {id:'bbc', name:'Amex Blue Business Cash', issuer:'Amex', program:'cash',
+  {id:'bbc', name:'Amex Blue Business Cash', issuer:'Amex', program:'cash', biz:true,
     rates:{other:{v:2,u:'%',cap:'up to $50k/yr, then 1%'}},
     notes:'2% cash back on everything up to $50k/yr. No annual fee.'},
   {id:'bcp', name:'Amex Blue Cash Preferred', issuer:'Amex', program:'cash',
@@ -437,21 +685,21 @@ const CARD_DB = [
     notes:''},
   {id:'wf_active', name:'Wells Fargo Active Cash', issuer:'Wells Fargo', program:'cash',
     rates:{other:{v:2,u:'%'}}, notes:'2% flat on everything.'},
-  {id:'bilt', name:'Bilt Mastercard', issuer:'Bilt / Cardless', program:'bilt',
+  {id:'bilt', name:'Bilt Mastercard', issuer:'Bilt / Cardless', program:'bilt', other:true,
     rates:{rent:{v:1,u:'x',note:'no transaction fee on rent'}, dining:{v:3,u:'x'}, flights:{v:2,u:'x'}, hotels:{v:2,u:'x'}, other:{v:1,u:'x'}},
     notes:'Legacy rates shown — Bilt 2.0 tiers (Blue/Silver/Gold/Platinum) differ. Edit rates to match your tier.'},
-  {id:'united_explorer', name:'United Explorer', issuer:'Chase', program:'united',
+  {id:'united_explorer', name:'United Explorer', issuer:'Chase', program:'united', brand:'United',
     rates:{flights:{v:3,u:'x',note:'United purchases only — other airlines earn 1x; MileagePlus member miles (~6x on fare) come on top'},
       dining:{v:2,u:'x'}, hotels:{v:2,u:'x',note:'booked direct with the hotel'}, other:{v:1,u:'x'}},
     notes:'Post-2025 refresh: $150/yr ($0 first year). Free first checked bag, 2 United Club passes/yr. 3x also applies to other United purchases (seat upgrades, inflight).'},
-  {id:'sw_priority', name:'Southwest Priority', issuer:'Chase', program:'southwest',
+  {id:'sw_priority', name:'Southwest Priority', issuer:'Chase', program:'southwest', brand:'Southwest',
     rates:{flights:{v:4,u:'x',note:'Southwest purchases only — other airlines earn 1x'},
       gas:{v:2,u:'x'}, dining:{v:2,u:'x'}, other:{v:1,u:'x'}},
     notes:'Post-2025 refresh: $229/yr, 7,500 anniversary points, Extra Legroom seat upgrades. The old 2x on transit/internet/streaming was removed.'},
-  {id:'target_circle', name:'Target Circle Card', issuer:'TD Bank / Target', program:'cash',
+  {id:'target_circle', name:'Target Circle Card', issuer:'TD Bank / Target', program:'cash', store:true, other:true,
     rates:{other:{v:0,u:'%',note:'store-only card — unusable outside Target'}},
     notes:'5% discount at Target & Target.com only (applied at checkout, on top of Target Circle deals). The app can\'t detect merchants, so it never ranks this card — just remember: shopping at Target (incl. Target groceries), use this.'},
-  {id:'apple_card', name:'Apple Card', issuer:'Apple / Goldman Sachs', program:'cash',
+  {id:'apple_card', name:'Apple Card', issuer:'Apple / Goldman Sachs', program:'cash', other:true,
     rates:{other:{v:2,u:'%',note:'via Apple Pay; only 1% with the titanium card or virtual number'}},
     notes:'3% at Apple and select merchants via Apple Pay (July 2026 list: Ace Hardware, Booking.com, ChargePoint, Duane Reade, Exxon/Mobil, Hertz, Nike, Uber & Uber Eats, Walgreens). Rates assume you tap with Apple Pay — physical card earns just 1%.'},
 ];
@@ -598,6 +846,35 @@ const PROGRAMS = {
   cash:{name:'Cash back', cpp:1.0},
 };
 
+const PICKER_ASSET_ROOT = 'assets/card-picker';
+const PICKER_ISSUERS = [
+  {name:'Chase',logo:'issuer-chase.svg'},
+  {name:'Amex',logo:'issuer-amex.svg'},
+  {name:'Citi',logo:'issuer-citi.svg'},
+  {name:'Capital One',logo:'issuer-capital-one.svg'},
+  {name:'Discover',logo:'issuer-discover.svg'},
+  {name:'US Bank',logo:'issuer-us-bank.svg'},
+  {name:'Wells Fargo',logo:'issuer-wells-fargo.svg'},
+];
+const PICKER_CARD_ORDER = [
+  'csr','csp','freedom_flex','cfu','ink_cash','prime_visa','united_explorer','sw_priority',
+  'amex_gold','amex_plat','bcp','bce','biz_plat','biz_gold','bbp','bbc',
+  'custom_cash','double_cash','strata_premier','venture_x','savor','discover_it','usb_cashplus',
+  'wf_autograph','wf_active','bilt','target_circle','apple_card',
+];
+const PICKER_GROUPS = [
+  {route:'airline',label:'Airline cards',glyph:'✈️',flag:'brand'},
+  {route:'hotel',label:'Hotel cards',glyph:'🏨',flag:'hotel'},
+  {route:'store',label:'Store cards',glyph:'🛍️',chipGlyph:'🏪',flag:'store'},
+  {route:'business',label:'Business cards',glyph:'💼',flag:'biz'},
+  {route:'other',label:'Other',glyph:'…',flag:'other'},
+];
+const PICKER_CATEGORY_LABELS = {
+  dining:'dining',groceries:'groceries',gas:'gas',flights:'flights',hotels:'hotels',transit:'transit',
+  streaming:'streaming',drugstores:'drugstores',online:'online retail',entertain:'entertainment',
+  phone:'phone & internet',shipping:'shipping',united_way:'United Way',rent:'rent',other:'everything',
+};
+
 const ACTIVATION_LINKS = {
   freedom_flex:'https://www.chase.com/personal/credit-cards/freedom/freedomfive',
   discover_it:'https://www.discover.com/credit-cards/cash-back/cashback-calendar.html',
@@ -669,7 +946,7 @@ const RADAR_BENEFIT_MAP = Object.fromEntries(RADAR_BENEFITS.map(x=>[x.cardId+':'
 
 /* ---------- state ---------- */
 /* Each device keeps its own setup (browser storage). A setup link (#hash) preloads a lineup. */
-const CURRENT_SCHEMA_VERSION = 3;
+const CURRENT_SCHEMA_VERSION = 4;
 const DEFAULT_STATE = {schemaVersion:CURRENT_SCHEMA_VERSION, myCards:[], overrides:{}, cpp:{}, custom:[], enrollments:{}, completions:{}, radarHidden:{}, radarSkips:{}, recurringSetups:{}, recurringPromptPrefs:{}};
 const IDENT_RE = /^[A-Za-z0-9_-]{1,64}$/;
 const PERIOD_RE = /^\d{4}-(?:(?:0[1-9]|1[0-2])|Q[1-4]|H[12]|Y)$/;
@@ -808,14 +1085,15 @@ function normalizeState(raw,now=new Date(),options={}){
   raw=plainObject(raw)?raw:{};
   if(raw.schemaVersion==null||raw.schemaVersion===1) raw=migrateLegacyCustomIds(raw);
   const out=structuredClone(DEFAULT_STATE);
-  out.coachDone=!!raw.coachDone;
   out.myCards=Array.isArray(raw.myCards)?raw.myCards.slice(0,50).map(cleanId).filter(Boolean):[];
   out.cpp={};
   if(plainObject(raw.cpp)) for(const [k,v] of Object.entries(raw.cpp).slice(0,25)) if(cleanId(k)&&Number.isFinite(Number(v))&&Number(v)>0) out.cpp[k]=Number(v);
   out.custom=Array.isArray(raw.custom)?raw.custom.slice(0,25).map(c=>{
     if(!plainObject(c)) return null; const id=cleanId(c.id), name=cleanText(c.name,120), program=cleanId(c.program);
     if(!id||!name||!PROGRAMS[program]) return null;
-    return {id,name,issuer:cleanText(c.issuer||'Custom',120),program,rates:sanitizeRates(c.rates),notes:cleanText(c.notes,500)};
+    const brand=c.brand==null?null:(cleanText(c.brand,120)||null), hotel=!!c.hotel, store=!!c.store, biz=!!c.biz;
+    return {id,name,issuer:cleanText(c.issuer||'Custom',120),program,rates:sanitizeRates(c.rates),notes:cleanText(c.notes,500),
+      brand,hotel,store,biz,other:!!c.other};
   }).filter(Boolean):[];
   const knownIds=new Set([...CARD_DB.map(c=>c.id),...out.custom.map(c=>c.id)]);
   out.myCards=[...new Set(out.myCards.filter(id=>knownIds.has(id)))];
@@ -924,8 +1202,9 @@ function validateImportShape(raw,now=new Date()){
   for(const key of ['overrides','cpp','activations']) if(raw[key]!=null&&!plainObject(raw[key])) invalidSetupData();
   for(const key of ['enrollments','completions','radarHidden','radarSkips','recurringSetups']) if(raw[key]!=null&&!Array.isArray(raw[key])&&!plainObject(raw[key])) invalidSetupData();
   if(Array.isArray(raw.custom)) for(const card of raw.custom){
-    assertAllowedKeys(card,['id','name','issuer','program','rates','notes']);
-    if(!validSetupId(card.id)||typeof card.name!=='string'||!card.name.trim()||!validSetupId(card.program)||!PROGRAMS[card.program]||!validOptionalText(card.issuer)||!validOptionalText(card.notes)) invalidSetupData();
+    assertAllowedKeys(card,['id','name','issuer','program','rates','notes','brand','hotel','store','biz','other']);
+    if(!validSetupId(card.id)||typeof card.name!=='string'||!card.name.trim()||!validSetupId(card.program)||!PROGRAMS[card.program]||!validOptionalText(card.issuer)||!validOptionalText(card.brand)||!validOptionalText(card.notes)) invalidSetupData();
+    for(const flag of ['hotel','store','biz','other']) if(card[flag]!=null&&typeof card[flag]!=='boolean') invalidSetupData();
     validateRateMap(card.rates);
   }
   const customIds=(raw.custom||[]).map(card=>card.id), knownCardIds=new Set([...CARD_DB.map(card=>card.id),...customIds]);
@@ -979,7 +1258,7 @@ function validateImportShape(raw,now=new Date()){
 function validateImportPayload(raw,encodedLength,decodedBytes,now=new Date()){
   if(encodedLength>SETUP_MAX_ENCODED||decodedBytes>SETUP_MAX_DECODED) throw new SetupLinkError('Setup link is too large');
   const version=raw&&raw.schemaVersion==null?1:raw&&raw.schemaVersion;
-  if(!plainObject(raw)||!Number.isInteger(version)||![1,2,3].includes(version)) throw new SetupLinkError('Setup link version is not supported');
+  if(!plainObject(raw)||!Number.isInteger(version)||![1,2,3,4].includes(version)) throw new SetupLinkError('Setup link version is not supported');
   const candidate=version===1?migrateLegacyCustomIds(raw):raw;
   inspectImportValue(candidate,0,{n:0});
   validateImportShape(candidate,now);
@@ -1018,7 +1297,7 @@ function loadState(){
     const saved=localStorage.getItem('cardrouter');
     if(saved){
       const raw=JSON.parse(saved), version=raw&&raw.schemaVersion==null?1:raw&&raw.schemaVersion;
-      if(!Number.isInteger(version)||![1,2,3].includes(version)){
+      if(!Number.isInteger(version)||![1,2,3,4].includes(version)){
         preserveStoredState=true; storagePersistent=false; storageWarningReason='newer';
         startupNotice='Newer saved data was left unchanged';
         const session=sessionStorage.getItem('cardrouter-session'); if(session) local=normalizeState(JSON.parse(session));
@@ -1092,11 +1371,51 @@ function cardRates(card){ return cardRatesFor(card,S); }
 function cppFor(card,state){ const p=state.cpp[card.program]; return p!=null?p:PROGRAMS[card.program].cpp; }
 function cpp(card){ return cppFor(card,S); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function pickerLogoPath(file){ return `${PICKER_ASSET_ROOT}/logos/${file}`; }
+function pickerCardArtPath(cardId,width=112){ return `${PICKER_ASSET_ROOT}/cards/card-${cardId}-${width}.webp`; }
+function pickerArtMarkup(card,className,sizes){
+  if(!CARD_DB.some(item=>item.id===card.id)) return `<span class="${className} picker-art-placeholder" aria-hidden="true">+</span>`;
+  return `<img class="${className}" src="${pickerCardArtPath(card.id)}" srcset="${pickerCardArtPath(card.id)} 112w, ${pickerCardArtPath(card.id,360)} 360w" sizes="${sizes}" alt="" decoding="async">`;
+}
+function formatPickerRate(rate){ return `${String(Number(rate.v))}${rate.u==='x'?'×':'%'}`; }
+function joinPickerLabels(labels){
+  if(labels.length<2) return labels[0]||'';
+  if(labels.length===2) return `${labels[0]} & ${labels[1]}`;
+  return `${labels.slice(0,-1).join(', ')} & ${labels.at(-1)}`;
+}
+function bestForCard(card,state=S){
+  const rates=cardRatesFor(card,state), eligible=Object.entries(rates).filter(([,rate])=>Number.isFinite(Number(rate?.v)));
+  if(card.rotating) return '5% rotating categories';
+  if(card.configurable){
+    const top=eligible.reduce((best,[,rate])=>!best||Number(rate.v)>Number(best.v)?rate:best,null);
+    return top?`${formatPickerRate(top)} categories you choose`:'Categories you choose';
+  }
+  const scored=eligible.map(([category,rate])=>({category,rate,eff:Number(rate.v)*(rate.u==='x'?cppFor(card,state):1)}));
+  const positive=scored.filter(item=>item.eff>0), topEff=positive.length?Math.max(...positive.map(item=>item.eff)):0;
+  if(!topEff){
+    const note=rates.other?.note?.split('—')[0].trim();
+    return note?note.charAt(0).toUpperCase()+note.slice(1):'No general rewards rate';
+  }
+  const winners=positive.filter(item=>Math.abs(item.eff-topEff)<0.0001);
+  const categoryWinners=winners.filter(item=>item.category!=='other');
+  if(!categoryWinners.length){
+    const winner=winners[0], qualifier=winner.rate.note||winner.rate.cap?'Up to ':'';
+    return `${qualifier}${formatPickerRate(winner.rate)} on everything`;
+  }
+  const shown=categoryWinners.slice(0,3), sameRate=shown.every(item=>formatPickerRate(item.rate)===formatPickerRate(shown[0].rate));
+  const qualifier=shown.some(item=>item.rate.note||item.rate.cap)?'Up to ':'';
+  if(sameRate){
+    const more=categoryWinners.length>shown.length?' + more':'';
+    return `${qualifier}${formatPickerRate(shown[0].rate)} ${joinPickerLabels(shown.map(item=>PICKER_CATEGORY_LABELS[item.category]||CAT[item.category]?.name||item.category))}${more}`;
+  }
+  return shown.map(item=>`${item.rate.note||item.rate.cap?'Up to ':''}${formatPickerRate(item.rate)} ${PICKER_CATEGORY_LABELS[item.category]||CAT[item.category]?.name||item.category}`).join(' · ');
+}
 let pendingUndo=null;
 function clearToast(){
   const t=document.getElementById('toast'), text=document.getElementById('toastmsg'), undo=document.getElementById('toastundo');
   pendingUndo=null; clearTimeout(t._h); t._dismiss=null; t._expiresAt=0; t._remaining=0; undo.hidden=true;
-  text.textContent=''; t.inert=false; t.removeAttribute('aria-hidden'); t.classList.remove('show','has-undo','wide','modal-suppressed');
+  text.textContent=''; t.inert=false; t.removeAttribute('aria-hidden');
+  t.classList.remove('show','has-undo','wide','modal-suppressed');
   scheduleFloatingUi();
 }
 function setToastModalSuppressed(suppressed){
@@ -1119,7 +1438,8 @@ function keepFocusedControlVisible(){
     const inSheet=!!target&&sheet.contains(target), inMain=!!target&&mainEl.contains(target);
     if(!inSheet&&!inMain) return;
     const viewport=window.visualViewport, viewportTop=viewport?.offsetTop||0, viewportBottom=viewportTop+(viewport?.height||window.innerHeight);
-    const rect=target.getBoundingClientRect(), navTop=nav?.getBoundingClientRect().top??viewportBottom, sheetRect=inSheet?sheet.getBoundingClientRect():null;
+    const navVisible=!!nav&&getComputedStyle(nav).display!=='none'&&nav.getClientRects().length>0;
+    const rect=target.getBoundingClientRect(), navTop=navVisible?nav.getBoundingClientRect().top:viewportBottom, sheetRect=inSheet?sheet.getBoundingClientRect():null;
     const toastTop=toastEl.classList.contains('show')?toastEl.getBoundingClientRect().top:viewportBottom;
     const safeBottom=inSheet?Math.min(viewportBottom-12,sheetRect.bottom-12,toastTop-12):Math.min(viewportBottom-12,navTop-12,toastTop-12);
     const safeTop=inSheet?Math.max(viewportTop+12,sheetRect.top+12):viewportTop+12;
@@ -1130,13 +1450,15 @@ function keepFocusedControlVisible(){
 }
 function toast(msg,ms,undoFn,{wide=false}={}){
   const t=document.getElementById('toast'), text=document.getElementById('toastmsg'), undo=document.getElementById('toastundo');
-  text.textContent=msg; pendingUndo=undoFn||null; undo.hidden=!undoFn; t.classList.toggle('has-undo',!!undoFn); t.classList.toggle('wide',wide); t.classList.add('show'); clearTimeout(t._h);
+  text.textContent=msg; pendingUndo=undoFn||null; undo.hidden=!undoFn;
+  t.classList.toggle('has-undo',!!undoFn); t.classList.toggle('wide',wide); t.classList.add('show'); clearTimeout(t._h);
   scheduleFloatingUi();
   keepFocusedControlVisible();
   undo.onclick=()=>{ if(!pendingUndo) return; const fn=pendingUndo; pendingUndo=null; undo.hidden=true; fn(); };
   const dismiss=()=>{
     if(document.activeElement===undo){ t._h=setTimeout(dismiss,1000); return; }
-    pendingUndo=null; text.textContent=''; undo.hidden=true; t._dismiss=null; t._expiresAt=0; t._remaining=0; t.classList.remove('show','has-undo','wide');
+    pendingUndo=null; text.textContent=''; undo.hidden=true;
+    t._dismiss=null; t._expiresAt=0; t._remaining=0; t.classList.remove('show','has-undo','wide');
   };
   const duration=ms||2600; t._dismiss=dismiss; t._expiresAt=Date.now()+duration; t._remaining=0; t._h=setTimeout(dismiss,duration);
   if(document.getElementById('modal').classList.contains('open')) setToastModalSuppressed(true);
@@ -1203,15 +1525,6 @@ function restoreRefreshFocus(target){
     element?.focus({preventScroll:true});
   });
 }
-/* One-time coach mark: after the first card is added, point at the "Which card?" tab. */
-function coachWhichTab(){
-  if(S.coachDone) return;
-  S.coachDone = true; saveState(S);
-  const b = document.querySelector('nav button[data-tab="which"]');
-  if(b){ b.classList.add('pulse'); setTimeout(()=>b.classList.remove('pulse'), 4200); }
-  toast('Card added! Tap 💳 "Which card?" below to get recommendations', 4200);
-}
-
 /* ---------- Radar task engine ---------- */
 function benefitById(cardId,benefitId){ return (BENEFITS[cardId]||[]).find(b=>b.id===benefitId); }
 function quarterlyActionForCard(cardId){ return QUARTERLY_ACTIONS.find(a=>a.cardId===cardId); }
@@ -1426,7 +1739,12 @@ window.CardRouterRadar={normalizeState,periodInfo,periodEndFromKey,calendarDays,
   buildRadarTasks:(state,now=new Date())=>buildRadarTasks(now,normalizeState(state,now)),
   recurringSetupStatus:(state,cardId,benefitId,now=new Date())=>recurringSetupStatus(cardId,benefitId,normalizeState(state,now),now),
   recurringSetupsForState:(state,now=new Date())=>recurringSetupsForState(normalizeState(state,now),now),
-  rankForState:(state,catId,now=new Date())=>rankCardsForState(normalizeState(state,now),catId,now)};
+  rankForState:(state,catId,now=new Date())=>rankCardsForState(normalizeState(state,now),catId,now),
+  pickerCatalogIds:()=>pickerProductionCards().map(card=>card.id),
+  bestForCardForState:(cardId,state={})=>{
+    const normalized=normalizeState(state), card=allCardsFor(normalized).find(item=>item.id===cardId);
+    return card?bestForCard(card,normalized):null;
+  }};
 
 /* Effective % return for card on category. */
 function evaluateForState(card,catId,state,now=new Date()){
@@ -1481,6 +1799,7 @@ function normalizePromosHistory(state){
 const initialPromosHistory=normalizePromosHistory(history.state);
 let TAB=initialPromosHistory.view==='overview'?'which':'promos', selectedCat=null, PROMOS_VIEW=initialPromosHistory.view, RADAR_FILTER=initialPromosHistory.filter,
   radarHistoryOpen=false, notShownOpen=false, historyLimit=20;
+let CARD_PICKER_ROUTE={kind:'hub',value:''}, CARD_QUERY='', CARD_FILTER=null, PICKER_ROUTE_MOTION='';
 let recurringReviewSession=null;
 let promosVisitToken='';
 let renderedDayKey=localIsoDate(localDay(new Date())), renderedMonthKey=periodInfo('month',new Date()).key;
@@ -1488,6 +1807,14 @@ let renderedDayKey=localIsoDate(localDay(new Date())), renderedMonthKey=periodIn
 function render(){
   renderedDayKey=localIsoDate(localDay(new Date()));
   renderedMonthKey=periodInfo('month',new Date()).key;
+  const cardPickerMode=TAB==='cards', brand=document.getElementById('brand'), pageHeader=document.getElementById('pageHeader'), appScroll=document.getElementById('appScroll'),
+    pickerAdd=document.getElementById('pickerAddCard');
+  document.body.classList.toggle('card-picker-mode',cardPickerMode); mainEl.classList.toggle('card-picker-main',cardPickerMode);
+  if(!cardPickerMode){
+    brand.hidden=false; pageHeader.hidden=false; pickerAdd.hidden=true;
+    document.body.classList.remove('card-picker-no-nav','card-picker-searching');
+    appScroll.classList.remove('picker-subpage','picker-searching');
+  }
   document.querySelectorAll('nav button').forEach(b=>{
     const on=b.dataset.tab===TAB; b.classList.toggle('on',on);
     if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
@@ -1495,7 +1822,7 @@ function render(){
   const hdr = document.getElementById('hdr'), sub=document.getElementById('hdrsub'), headerAction=document.getElementById('radar-view-all');
   headerAction.hidden=!(TAB==='promos'&&PROMOS_VIEW==='overview');
   if(TAB==='which'){ hdr.textContent='Which card?'; sub.textContent = S.myCards.length? '' : 'set up your cards first'; renderWhich(); }
-  if(TAB==='cards'){ hdr.textContent='My cards'; sub.textContent='priority order breaks ties'; renderCards(); }
+  if(TAB==='cards'){ hdr.textContent='My cards'; sub.textContent='order breaks ties'; renderCards(); }
   if(TAB==='benefits'){ hdr.textContent='Benefits'; sub.textContent='what your cards give you'; renderBenefits(); }
   if(TAB==='promos'){
     if(PROMOS_VIEW==='radar'){ hdr.innerHTML='<span class="title-icon" aria-hidden="true">📡</span>Benefit Radar'; sub.textContent='what needs attention'; }
@@ -1504,7 +1831,8 @@ function render(){
   }
   if(TAB==='settings'){ hdr.textContent='Settings'; sub.textContent=''; renderSettings(); }
   sub.hidden=!sub.textContent;
-  const titleIcon=hdr.querySelector('.title-icon'), pageTitle=titleIcon?hdr.textContent.slice(titleIcon.textContent.length).trim():hdr.textContent;
+  const titleIcon=hdr.querySelector('.title-icon'), pickerTitle=mainEl.querySelector('[data-picker-page-title]')?.textContent;
+  const pageTitle=cardPickerMode?(pickerTitle||'My cards'):(titleIcon?hdr.textContent.slice(titleIcon.textContent.length).trim():hdr.textContent);
   document.title=`ChooseMyCard · ${pageTitle}`;
   updateStorageWarning();
 }
@@ -1517,7 +1845,8 @@ function renderWhich(){
       <p class="hint" style="margin:0 0 16px">Pick the credit cards you carry and set their priority — then this screen tells you which one to tap for every kind of purchase. Your picks stay on <b>this device only</b>, so everyone who uses this app sets up their own.</p>
       <button class="pill primary" id="onboard" style="font-size:15px; padding:11px 22px">Pick my cards →</button>
     </div>`;
-    document.getElementById('onboard').onclick=()=>{ TAB='cards'; render(); restoreFocus('add-card-heading'); };
+    document.getElementById('onboard').onclick=()=>{ TAB='cards'; CARD_PICKER_ROUTE={kind:'hub',value:''}; CARD_QUERY=''; CARD_FILTER=null;
+      history.replaceState({view:'cards'},'',location.pathname+location.search); render(); restoreFocus('pickerAddCard'); };
     return;
   }
   let html = `<div class="panel"><div class="catgrid">` +
@@ -1580,42 +1909,306 @@ function guessFromLocation(){
   }, ()=>{ toast('Location permission denied'); render(); restoreFocus('location-guess'); }, {enableHighAccuracy:true, timeout:8000});
 }
 
-function renderCards(){
-  const held = S.myCards.map(getCard).filter(Boolean);
-  let html = '';
-  if(held.length){
-    html += `<div class="panel">` + held.map((c,i)=>`
-      <div class="row" tabindex="-1" data-focus-id="card-row-${c.id}">
-        <div class="grow"><div class="title">${i+1}. ${esc(c.name)}</div><div class="sub2">${esc(c.issuer)} · ${esc(PROGRAMS[c.program].name)}</div></div>
-        <button class="iconbtn" data-up="${c.id}" aria-label="Move ${esc(c.name)} up" ${i===0?'disabled':''}><span aria-hidden="true">↑</span></button>
-        <button class="iconbtn" data-down="${c.id}" aria-label="Move ${esc(c.name)} down" ${i===held.length-1?'disabled':''}><span aria-hidden="true">↓</span></button>
-        <button class="iconbtn" data-edit="${c.id}" data-focus-id="edit-card-${c.id}" aria-label="Edit ${esc(c.name)} rates"><span aria-hidden="true">✎</span></button>
-        <button class="iconbtn" data-del="${c.id}" aria-label="Delete ${esc(c.name)}"><span aria-hidden="true">✕</span></button>
-      </div>`).join('') + `</div>
-      <p class="section-note">Order = tie-break priority (your original spec). ✎ to view/edit a card's earn rates.</p>`;
-  } else html += `<div class="panel empty">No cards yet — add the 4–6 you carry.</div>`;
-
-  const avail = allCards().filter(c=>!S.myCards.includes(c.id));
-  html += `<h2 id="add-card-heading" tabindex="-1" data-focus-id="add-card-heading">Add a card</h2><div class="panel">` +
-    (avail.length? avail.map(c=>`
-      <div class="row"><div class="grow"><div class="title">${esc(c.name)}</div><div class="sub2">${esc(c.issuer)}</div></div>
-      <button class="pill" data-add="${c.id}" data-focus-id="add-card-${c.id}" aria-label="Add ${esc(c.name)}">Add</button></div>`).join('') : '<div class="empty">All database cards added.</div>') +
-    `</div><div style="margin:10px 0 20px; text-align:center"><button class="pill" id="addcustom">+ Custom card</button></div>`;
-  mainEl.innerHTML = html;
-
-  mainEl.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{ const card=getCard(b.dataset.add); S.myCards.push(b.dataset.add); saveState(S); render(); restoreFocus(`card-row-${b.dataset.add}`); toast(`${card.name} added`); coachWhichTab(); });
-  mainEl.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
-    const mutationNow=new Date(), cardId=b.dataset.del, card=getCard(cardId), heldIds=[...S.myCards], index=heldIds.indexOf(cardId), nextId=heldIds[index+1]||heldIds[index-1];
-    for(const record of Object.values(S.recurringSetups)) if(record.cardId===cardId) suspendRecurringSetup(record.cardId,record.benefitId,'card-removed',mutationNow);
-    S.myCards=S.myCards.filter(x=>x!==cardId); saveState(S,mutationNow); render(); restoreFocus(nextId?`card-row-${nextId}`:'add-card-heading'); toast(`${card.name} removed`);
-  });
-  mainEl.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{ move(b.dataset.up,-1); });
-  mainEl.querySelectorAll('[data-down]').forEach(b=>b.onclick=()=>{ move(b.dataset.down,1); });
-  mainEl.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit,b));
-  document.getElementById('addcustom').onclick = event=>openCustomCard(event.currentTarget);
+function pickerProductionCards(){
+  return PICKER_CARD_ORDER.map(id=>CARD_DB.find(card=>card.id===id)).filter(Boolean);
 }
-function move(id,d){ const i=S.myCards.indexOf(id); const j=i+d; if(j<0||j>=S.myCards.length)return; const card=getCard(id);
-  [S.myCards[i],S.myCards[j]]=[S.myCards[j],S.myCards[i]]; saveState(S); render(); restoreFocus(`card-row-${id}`); toast(`${card.name} moved ${d<0?'up':'down'}`); }
+function pickerCatalogGroupCards(route){
+  const group=PICKER_GROUPS.find(item=>item.route===route);
+  return group?pickerProductionCards().filter(card=>group.flag==='brand'?!!card.brand:!!card[group.flag]):[];
+}
+function pickerFilterDefinitions(){
+  return [
+    ...PICKER_ISSUERS.map(issuer=>({key:`issuer:${issuer.name}`,label:issuer.name,logo:issuer.logo,
+      match:card=>card.issuer===issuer.name})),
+    ...PICKER_GROUPS.map(group=>({key:`group:${group.route}`,label:group.label,glyph:group.chipGlyph||group.glyph,
+      match:card=>CARD_DB.some(item=>item.id===card.id)&&(group.flag==='brand'?!!card.brand:!!card[group.flag])})),
+  ];
+}
+function pickerFilterMarkup(held){
+  const filters=pickerFilterDefinitions().filter(filter=>held.some(filter.match));
+  if(CARD_FILTER&&!filters.some(filter=>filter.key===CARD_FILTER)) CARD_FILTER=null;
+  return filters.map(filter=>{
+    const active=filter.key===CARD_FILTER, muted=!!CARD_FILTER&&!active;
+    const icon=filter.logo?`<img class="picker-filter-logo" src="${pickerLogoPath(filter.logo)}" alt="">`:
+      `<span class="picker-filter-glyph" aria-hidden="true">${filter.glyph}</span>`;
+    return `<button class="picker-filter-chip${active?' is-active':''}${muted?' is-muted':''}" type="button"
+      data-picker-filter="${esc(filter.key)}" data-focus-id="picker-filter-${esc(filter.key)}" aria-pressed="${active}">${icon}${esc(filter.label)}${active?'<span class="picker-filter-close" aria-hidden="true">✕</span>':''}</button>`;
+  }).join('');
+}
+function pickerHeldMarkup(){
+  const held=S.myCards.map(getCard).filter(Boolean), availableFilters=pickerFilterDefinitions().filter(item=>held.some(item.match));
+  if(CARD_FILTER&&!availableFilters.some(item=>item.key===CARD_FILTER)) CARD_FILTER=null;
+  const filter=availableFilters.find(item=>item.key===CARD_FILTER);
+  const visible=held.map((card,index)=>({card,index})).filter(item=>!filter||filter.match(item.card));
+  const rows=visible.map(({card,index})=>`
+    <div class="picker-held-row" data-picker-held="${card.id}">
+      <button class="picker-held-edit" type="button" data-picker-edit="${card.id}" data-focus-id="card-row-${card.id}" aria-label="Edit ${esc(card.name)} rates">
+        <span class="picker-priority" aria-hidden="true">${index+1}</span>
+        ${pickerArtMarkup(card,'picker-held-art','58px')}
+        <span><span class="picker-held-name">${esc(card.name)}</span><span class="picker-held-best">${esc(bestForCard(card))}</span></span>
+      </button>
+      ${filter?'':`<button class="picker-drag-handle" type="button" data-picker-drag="${card.id}" data-focus-id="picker-drag-${card.id}"
+        aria-label="Reorder ${esc(card.name)}, priority ${index+1} of ${held.length}. Use the up and down arrow keys, or drag."
+        aria-keyshortcuts="ArrowUp ArrowDown"><span aria-hidden="true">⋮⋮</span></button>`}
+    </div>`).join('');
+  const footer=filter?`Showing ${visible.length} of ${held.length} · ✕ clears the filter`:'Drag to reorder · tap to edit rates';
+  return `<section class="picker-wallet" aria-label="My cards">
+    ${held.length?`<div class="picker-filter-row" aria-label="Filter My cards">${pickerFilterMarkup(held)}</div>`:''}
+    <div class="picker-held-wrap"><div class="picker-held-list">
+      ${rows||'<div class="picker-wallet-empty">Add a card to start your wallet.</div>'}
+      <div class="picker-held-footer">${esc(footer)}</div>
+    </div></div>
+  </section>`;
+}
+function pickerBrowseMarkup(){
+  const issuers=PICKER_ISSUERS.filter(item=>CARD_DB.some(card=>card.issuer===item.name)).map(item=>
+    `<button class="picker-browse-tile" type="button" data-picker-route="issuer" data-picker-value="${esc(item.name)}">
+      <img class="picker-browse-logo" src="${pickerLogoPath(item.logo)}" alt=""><span class="picker-browse-label">${esc(item.name)}</span></button>`).join('');
+  const groups=PICKER_GROUPS.filter(item=>pickerCatalogGroupCards(item.route).length).map(item=>
+    `<button class="picker-browse-tile" type="button" data-picker-route="category" data-picker-value="${item.route}">
+      <span class="picker-browse-glyph" aria-hidden="true">${item.glyph}</span><span class="picker-browse-label">${esc(item.label)}</span></button>`).join('');
+  return `<div class="picker-browse-heading">Or browse</div><div class="picker-browse-grid" id="pickerBrowse">${issuers}${groups}</div>
+    <button class="picker-custom-row" id="pickerCustomRow" type="button">
+      <span class="picker-custom-row-art" aria-hidden="true">+</span><span class="picker-custom-row-copy">
+        <span class="picker-custom-row-title">Create a custom card</span><span class="picker-custom-row-sub">For a card that isn’t listed</span>
+      </span><span class="picker-custom-row-chevron" aria-hidden="true">›</span>
+    </button>`;
+}
+function highlightPickerName(name,query){
+  const index=name.toLowerCase().indexOf(query.toLowerCase());
+  if(index<0) return esc(name);
+  return `${esc(name.slice(0,index))}<mark>${esc(name.slice(index,index+query.length))}</mark>${esc(name.slice(index+query.length))}`;
+}
+function pickerActionMarkup(card,context){
+  const added=S.myCards.includes(card.id), label=context==='search'?(added?'✓ Added':'Add'):(added?'✓ In my cards':'Add');
+  if(added) return `<span class="picker-card-status" role="status" tabindex="-1" data-focus-id="picker-action-${card.id}">${label}</span>`;
+  return `<button class="${context==='search'?'picker-search-action':'picker-tile-action'}" type="button"
+    data-picker-add="${card.id}" data-picker-context="${context}" data-focus-id="picker-action-${card.id}"
+    aria-label="Add ${esc(card.name)}">${label}</button>`;
+}
+function pickerSearchResultsMarkup(query){
+  const lower=query.toLowerCase(), matches=pickerProductionCards().filter(card=>card.name.toLowerCase().includes(lower));
+  const rows=matches.length?matches.map(card=>`<div class="picker-search-row" role="listitem">
+    ${pickerArtMarkup(card,'picker-search-art','56px')}
+    <div class="picker-search-copy"><div class="picker-search-name">${highlightPickerName(card.name,query)}</div><div class="picker-search-best">${esc(bestForCard(card))}</div></div>
+    ${pickerActionMarkup(card,'search')}</div>`).join(''):'<div class="picker-search-empty">No matching cards</div>';
+  return `<div class="picker-search-results" role="list" aria-label="Matching cards">${rows}</div>
+    <button class="picker-search-custom" type="button" id="pickerSearchCustom">Create a custom card</button>`;
+}
+function updatePickerSearch(){
+  const input=document.getElementById('cardSearch'); if(!input) return;
+  CARD_QUERY=input.value; const query=CARD_QUERY.trim(), searching=!!query;
+  document.getElementById('pickerBrowseContent').hidden=searching;
+  const searchContent=document.getElementById('pickerSearchContent'); searchContent.hidden=!searching;
+  document.getElementById('pickerSearchClear').hidden=!searching;
+  document.getElementById('pickerAddPage').classList.toggle('is-searching',searching);
+  document.body.classList.toggle('card-picker-searching',searching);
+  document.body.classList.toggle('card-picker-no-nav',searching);
+  document.getElementById('appScroll').classList.toggle('picker-searching',searching);
+  if(searching){
+    searchContent.innerHTML=pickerSearchResultsMarkup(query);
+    bindPickerAddButtons(searchContent);
+    document.getElementById('pickerSearchCustom').onclick=()=>openCustomCardStep({backLabel:'Add a card'});
+    const count=searchContent.querySelectorAll('.picker-search-row').length;
+    announcePicker(`${count} matching ${count===1?'card':'cards'}`);
+  }else searchContent.innerHTML='';
+  if(history.state?.view==='cards') history.replaceState({...history.state,cardQuery:CARD_QUERY},'',location.pathname+location.search);
+  document.title='ChooseMyCard · Add a card';
+}
+function renderPickerHub(){
+  document.getElementById('brand').hidden=false; document.getElementById('pageHeader').hidden=false;
+  document.getElementById('pickerAddCard').hidden=false;
+  document.body.classList.remove('card-picker-no-nav','card-picker-searching');
+  document.getElementById('appScroll').classList.remove('picker-subpage','picker-searching');
+  mainEl.innerHTML=pickerHeldMarkup();
+  bindPickerHeldRows(mainEl);
+}
+function renderPickerAddPage(){
+  const motion=PICKER_ROUTE_MOTION?` is-${PICKER_ROUTE_MOTION}`:'';
+  document.getElementById('brand').hidden=true; document.getElementById('pageHeader').hidden=true; document.getElementById('pickerAddCard').hidden=true;
+  document.getElementById('appScroll').classList.add('picker-subpage');
+  mainEl.innerHTML=`<section class="picker-page picker-add-page${motion}" id="pickerAddPage">
+    <button class="picker-back" id="pickerBack" type="button" data-focus-id="picker-back"><span class="picker-back-glyph" aria-hidden="true">‹</span>My cards</button>
+    <div class="picker-add-title"><h1 tabindex="-1" data-picker-page-title data-focus-id="picker-page-title">Add a card</h1></div>
+    <div class="picker-add-content"><div class="picker-search-shell" role="search"><span class="picker-search-icon" aria-hidden="true">🔍</span>
+      <input class="picker-search-input" id="cardSearch" type="search" value="${esc(CARD_QUERY)}" placeholder="Search cards, banks, airlines…" autocomplete="off" spellcheck="false" aria-label="Search cards, banks, and airlines">
+      <button class="picker-search-clear" id="pickerSearchClear" type="button" aria-label="Clear card search" hidden>✕</button></div>
+      <div id="pickerBrowseContent">${pickerBrowseMarkup()}</div><div id="pickerSearchContent" hidden></div>
+    </div></section>`;
+  PICKER_ROUTE_MOTION='';
+  document.getElementById('pickerBack').onclick=closePickerRoute;
+  mainEl.querySelectorAll('[data-picker-route]').forEach(button=>button.onclick=()=>openPickerRoute(button.dataset.pickerRoute,button.dataset.pickerValue||''));
+  document.getElementById('pickerCustomRow').onclick=()=>openCustomCardStep({backLabel:'Add a card'});
+  const input=document.getElementById('cardSearch'); input.oninput=updatePickerSearch;
+  input.onkeydown=event=>{ if(event.key==='Escape'&&input.value){event.preventDefault();input.value='';updatePickerSearch();} };
+  document.getElementById('pickerSearchClear').onclick=()=>{input.value='';updatePickerSearch();input.focus();};
+  updatePickerSearch();
+}
+function pickerCustomTileMarkup(label,subline){
+  return `<div class="picker-card-tile"><div class="picker-card-placeholder" aria-hidden="true">+</div>
+    <div class="picker-card-name">${esc(label)}</div>${subline?`<div class="picker-card-subline">${esc(subline)}</div>`:''}
+    <button class="picker-tile-action" type="button" data-picker-custom>Create</button></div>`;
+}
+function pickerCardTileMarkup(card){
+  return `<div class="picker-card-tile">${pickerArtMarkup(card,'picker-card-art','(max-width:560px) calc((100vw - 52px)/2), 250px')}
+    <div class="picker-card-name">${esc(card.name)}</div><div class="picker-card-subline">${esc(bestForCard(card))}</div>${pickerActionMarkup(card,'tile')}</div>`;
+}
+function genericPickerRouteDetails(){
+  const route=CARD_PICKER_ROUTE;
+  if(route.kind==='issuer'){
+    const issuer=PICKER_ISSUERS.find(item=>item.name===route.value), article=route.value==='Amex'?'an':'a';
+    const cards=pickerProductionCards().filter(card=>card.issuer===route.value), available=cards.filter(card=>!S.myCards.includes(card.id)).length;
+    return {title:`Add ${article} ${route.value} card`,logo:issuer?.logo||'',cards,
+      count:`${available} ${available===1?'card':'cards'} to add · co-brands appear here and under their brand`,
+      customLabel:`Custom ${route.value} card`,customSub:'bank pre-filled',preset:{issuer:route.value,backLabel:route.value}};
+  }
+  const group=PICKER_GROUPS.find(item=>item.route===route.value), cards=pickerCatalogGroupCards(route.value);
+  return {title:group?.label||'Cards',glyph:group?.glyph||'…',cards,
+    count:`${cards.length} ${cards.length===1?'card':'cards'}`,customLabel:'Custom card',customSub:'',
+    preset:{backLabel:group?.label||'Add a card'}};
+}
+function renderGenericPickerPage(){
+  const details=genericPickerRouteDetails(), motion=PICKER_ROUTE_MOTION?` is-${PICKER_ROUTE_MOTION}`:'';
+  const icon=details.logo?`<img class="picker-page-logo" src="${pickerLogoPath(details.logo)}" alt="">`:`<span class="picker-page-glyph" aria-hidden="true">${details.glyph}</span>`;
+  mainEl.innerHTML=`<section class="picker-page picker-catalog-page${motion}"><button class="picker-back" id="pickerBack" type="button" data-focus-id="picker-back"><span class="picker-back-glyph" aria-hidden="true">‹</span>Add a card</button>
+    <div class="picker-page-heading">${icon}<h1 tabindex="-1" data-picker-page-title data-focus-id="picker-page-title">${esc(details.title)}</h1></div>
+    <div class="picker-page-count">${esc(details.count)}</div>
+    <div class="picker-card-grid">${details.cards.map(pickerCardTileMarkup).join('')}${pickerCustomTileMarkup(details.customLabel,details.customSub)}</div></section>`;
+  PICKER_ROUTE_MOTION=''; bindPickerSubpage(details.preset);
+}
+function bindPickerSubpage(customPreset){
+  document.getElementById('pickerBack').onclick=closePickerRoute; bindPickerAddButtons(mainEl);
+  const custom=mainEl.querySelector('[data-picker-custom]'); if(custom) custom.onclick=()=>openCustomCardStep(customPreset);
+}
+function renderCards(){
+  const route=CARD_PICKER_ROUTE.kind;
+  document.getElementById('appScroll').classList.toggle('picker-subpage',route!=='hub');
+  document.getElementById('appScroll').classList.remove('picker-searching');
+  document.body.classList.toggle('card-picker-no-nav',route==='custom');
+  document.body.classList.remove('card-picker-searching');
+  if(route==='hub') renderPickerHub();
+  else{
+    document.getElementById('brand').hidden=true; document.getElementById('pageHeader').hidden=true; document.getElementById('pickerAddCard').hidden=true;
+    if(route==='add') renderPickerAddPage();
+    else if(route==='custom') renderCustomCardPage();
+    else renderGenericPickerPage();
+  }
+}
+function openPickerRoute(kind,value='',extra={}){
+  if(kind==='add') CARD_QUERY='';
+  CARD_PICKER_ROUTE={kind,value,...extra}; PICKER_ROUTE_MOTION='push';
+  const depth=(Number(history.state?.pickerDepth)||0)+1;
+  history.pushState({view:'cards',cardPickerRoute:{...CARD_PICKER_ROUTE},cardQuery:CARD_QUERY,pickerDepth:depth},'',location.pathname+location.search);
+  render(); scrollAppTo({top:0,behavior:'auto'});
+  if(kind==='custom') document.getElementById('customCardName')?.focus({preventScroll:true}); else restoreFocus('picker-page-title');
+}
+function openCustomCardStep(preset={}){
+  const parent={kind:CARD_PICKER_ROUTE.kind,value:CARD_PICKER_ROUTE.value||''};
+  openPickerRoute('custom',preset.issuer||'',{issuer:preset.issuer||'',backLabel:preset.backLabel||'Add a card',parent});
+}
+function closePickerRoute(){
+  if(history.state?.view==='cards'&&history.state?.cardPickerRoute) history.back();
+  else{
+    const route=CARD_PICKER_ROUTE, parent=route.kind==='custom'&&route.parent?route.parent:route.kind==='add'?{kind:'hub',value:''}:{kind:'add',value:''};
+    CARD_PICKER_ROUTE={...parent}; PICKER_ROUTE_MOTION='pop'; render(); scrollAppTo({top:0,behavior:'auto'});
+    restoreFocus(parent.kind==='hub'?'pickerAddCard':'picker-page-title');
+  }
+}
+function announcePicker(message){
+  const live=document.getElementById('pickerLive'); live.textContent=''; requestAnimationFrame(()=>live.textContent=message);
+}
+function movePickerCardTo(id,targetIndex){
+  const from=S.myCards.indexOf(id), to=Math.max(0,Math.min(S.myCards.length-1,targetIndex)); if(from<0||from===to) return;
+  S.myCards.splice(from,1); S.myCards.splice(to,0,id); saveState(S); renderCards(); restoreFocus(`picker-drag-${id}`);
+  announcePicker(`${getCard(id).name} moved to priority ${to+1}`);
+}
+function pickerDragScrollMotion(pointerY,rect){
+  const edge=Math.min(44,rect.height/4), topDepth=Math.max(0,rect.top+edge-pointerY), bottomDepth=Math.max(0,pointerY-(rect.bottom-edge)), direction=bottomDepth>topDepth?1:topDepth>0?-1:0;
+  const edgePressure=Math.min(1,Math.max(topDepth,bottomDepth)/edge), overshoot=direction>0?Math.max(0,pointerY-rect.bottom):direction<0?Math.max(0,rect.top-pointerY):0, overshootPressure=Math.min(1,overshoot/(edge*2));
+  return{direction,speed:120*edgePressure*edgePressure+180*overshootPressure};
+}
+function bindPickerHeldRows(scope){
+  scope.querySelectorAll('[data-picker-filter]').forEach(button=>{
+    button.addEventListener('focus',()=>button.scrollIntoView({block:'nearest',inline:'nearest'}));
+    button.onclick=()=>{
+      const key=button.dataset.pickerFilter; CARD_FILTER=CARD_FILTER===key?null:key; renderCards(); restoreFocus(`picker-filter-${key}`);
+    };
+  });
+  scope.querySelectorAll('[data-picker-edit]').forEach(button=>button.onclick=()=>openEditor(button.dataset.pickerEdit,button));
+  scope.querySelectorAll('[data-picker-held]').forEach(row=>row.onclick=event=>{
+    if(event.target.closest('[data-picker-edit],[data-picker-drag]')) return;
+    row.querySelector('[data-picker-edit]')?.click();
+  });
+  scope.querySelectorAll('[data-picker-drag]').forEach(handle=>{
+    const id=handle.dataset.pickerDrag;
+    handle.onkeydown=event=>{
+      if(!['ArrowUp','ArrowDown'].includes(event.key)) return; event.preventDefault();
+      movePickerCardTo(id,S.myCards.indexOf(id)+(event.key==='ArrowUp'?-1:1));
+    };
+    handle.onpointerdown=event=>{
+      if(event.pointerType==='mouse'&&event.button!==0) return;
+      const row=handle.closest('.picker-held-row'), list=handle.closest('.picker-held-list'), startY=event.clientY;
+      const startRect=row.getBoundingClientRect(), grabOffset=startY-startRect.top, pointerId=event.pointerId;
+      const startScrollTop=list.scrollTop, rows=[...list.querySelectorAll('[data-picker-held]')], startIndex=rows.indexOf(row), rowHeight=startRect.height;
+      const metrics=rows.map((candidate,index)=>{const rect=candidate.getBoundingClientRect();return{candidate,index,center:rect.top+list.scrollTop+rect.height/2};});
+      let currentY=startY, targetIndex=startIndex, frame=0, active=true, lastFrame=null;
+      const visualTop=()=>{
+        const bounds=list.getBoundingClientRect();
+        const minTop=bounds.top+2, maxTop=Math.max(minTop,bounds.bottom-rowHeight-2), clampedTop=Math.max(minTop,Math.min(maxTop,currentY-grabOffset));
+        return clampedTop;
+      };
+      const paint=()=>{
+        const naturalTop=startRect.top-(list.scrollTop-startScrollTop);
+        row.style.transform=`translateY(${visualTop()-naturalTop}px)`;
+      };
+      const preview=()=>{
+        const dragCenter=visualTop()+rowHeight/2+list.scrollTop;
+        targetIndex=metrics.filter(item=>item.candidate!==row&&dragCenter>item.center).length;
+        rows.forEach((candidate,index)=>{if(candidate===row)return;const shift=targetIndex>startIndex&&index>startIndex&&index<=targetIndex?-rowHeight:targetIndex<startIndex&&index>=targetIndex&&index<startIndex?rowHeight:0;candidate.style.transform=shift?`translateY(${shift}px)`:'';});
+      };
+      const autoScroll=now=>{
+        if(!active) return;
+        const rect=list.getBoundingClientRect(), {direction,speed}=pickerDragScrollMotion(currentY,rect);
+        const elapsed=lastFrame===null?0:Math.min(80,Math.max(0,now-lastFrame)); lastFrame=now;
+        const delta=direction*speed*elapsed/1000, before=list.scrollTop;
+        if(delta){list.scrollTop+=delta;if(list.scrollTop!==before){paint();preview();}}
+        frame=requestAnimationFrame(autoScroll);
+      };
+      const cleanup=()=>{
+        if(!active) return;
+        active=false; cancelAnimationFrame(frame);
+        window.removeEventListener('pointermove',moveEvent); window.removeEventListener('pointerup',finish); window.removeEventListener('pointercancel',cancel); window.removeEventListener('blur',cancelOnBlur); handle.removeEventListener('lostpointercapture',cancel);
+        try{if(handle.hasPointerCapture(pointerId)) handle.releasePointerCapture(pointerId);}catch(ignore){}
+        row.classList.remove('is-dragging'); list.classList.remove('is-sorting'); rows.forEach(candidate=>candidate.style.removeProperty('transform'));
+      };
+      const moveEvent=move=>{if(move.pointerId!==pointerId)return;currentY=move.clientY;paint();preview();};
+      const finish=end=>{if(end.pointerId!==pointerId)return;currentY=end.clientY;preview();cleanup();movePickerCardTo(id,targetIndex);};
+      const cancel=end=>{if(end.pointerId!==pointerId)return;cleanup();};
+      const cancelOnBlur=()=>cleanup();
+      row.classList.add('is-dragging'); list.classList.add('is-sorting');
+      window.addEventListener('pointermove',moveEvent); window.addEventListener('pointerup',finish); window.addEventListener('pointercancel',cancel); window.addEventListener('blur',cancelOnBlur); handle.addEventListener('lostpointercapture',cancel);
+      try{handle.setPointerCapture(event.pointerId);}catch(ignore){}
+      event.preventDefault(); paint(); preview(); frame=requestAnimationFrame(autoScroll);
+    };
+  });
+}
+function bindPickerAddButtons(scope){ scope.querySelectorAll('[data-picker-add]').forEach(button=>button.onclick=()=>addPickerCard(button.dataset.pickerAdd)); }
+function addPickerCard(cardId){
+  const card=getCard(cardId); if(!card||S.myCards.includes(cardId)) return;
+  S.myCards.push(cardId); saveState(S);
+  if(CARD_PICKER_ROUTE.kind==='add'&&CARD_QUERY.trim()) updatePickerSearch(); else renderCards();
+  restoreFocus(`picker-action-${cardId}`); announcePicker(`${card.name} added to My cards`);
+}
+function removeCardFromLineup(cardId){
+  const mutationNow=new Date(), card=getCard(cardId), heldIds=[...S.myCards], index=heldIds.indexOf(cardId), nextId=heldIds[index+1]||heldIds[index-1];
+  for(const record of Object.values(S.recurringSetups)) if(record.cardId===cardId) suspendRecurringSetup(record.cardId,record.benefitId,'card-removed',mutationNow);
+  S.myCards=S.myCards.filter(id=>id!==cardId);
+  if(S.custom.some(item=>item.id===cardId)){
+    S.custom=S.custom.filter(item=>item.id!==cardId);
+    delete S.overrides[cardId];
+  }
+  saveState(S,mutationNow); render(); restoreFocus(nextId?`card-row-${nextId}`:'pickerAddCard'); toast(`${card.name} removed`);
+}
 
 function openEditor(id,opener){
   const card = getCard(id); const rates = cardRates(card);
@@ -1628,7 +2221,8 @@ function openEditor(id,opener){
         <input id="rate-${c.id}" type="text" inputmode="decimal" data-rk="${c.id}" value="${r? r.v+(r.u==='x'?'x':'%') :''}" placeholder="—">`;
     }).join('') +
     `</div><p class="hint" style="margin-top:10px">Enter like <b>3x</b> (points) or <b>5%</b> (cash back). Blank = falls back to "everything else". Rules drift — edit here when issuers change them.</p>
-    <div style="display:flex; gap:8px; margin-top:12px"><button class="pill primary" id="saveRates" style="flex:1">Save</button></div>`;
+    <div style="display:flex; gap:8px; margin-top:12px"><button class="pill primary" id="saveRates" style="flex:1">Save</button>
+      <button class="pill" id="removeCard" style="color:var(--warn)">Remove</button></div>`;
   openModal('[data-rk]',opener);
   document.getElementById('closex').onclick=closeModal;
   document.getElementById('saveRates').onclick=()=>{
@@ -1638,33 +2232,112 @@ function openEditor(id,opener){
       const m = t.match(/^([\d.]+)\s*(x|%)?$/i); if(!m) return;
       ov[inp.dataset.rk] = {v:parseFloat(m[1]), u:(m[2]||'%').toLowerCase()};
     });
-    S.overrides[id]=ov; saveState(S); closeModal(false); render(); restoreFocus(`edit-card-${id}`); toast('Rates saved');
+    S.overrides[id]=ov; saveState(S); closeModal(false); render(); restoreFocus(`card-row-${id}`); toast('Rates saved');
   };
+  document.getElementById('removeCard').onclick=()=>{closeModal(false);removeCardFromLineup(id);};
 }
-function openCustomCard(opener){
-  const sheet=document.getElementById('sheet');
-  sheet.innerHTML = `<div class="sheet-head"><h3 id="sheet-title">Custom card</h3><button class="iconbtn" id="closex" aria-label="Close custom card editor"><span aria-hidden="true">✕</span></button></div>
-    <div style="display:grid; gap:8px">
-      <label class="field-label" for="ccname">Card name</label><input type="text" id="ccname" maxlength="120">
-      <label class="field-label" for="ccprog">Rewards program</label><select id="ccprog">${Object.entries(PROGRAMS).map(([k,p])=>`<option value="${k}">${p.name}</option>`).join('')}</select>
-      <p class="field-error" id="ccerror" role="status" aria-live="polite" tabindex="-1" hidden></p>
-      <button class="pill primary" id="ccsave">Create, then set rates with ✎</button></div>`;
-  openModal('#ccname',opener);
-  document.getElementById('closex').onclick=closeModal;
-  document.getElementById('ccname').addEventListener('input',event=>{
-    event.currentTarget.removeAttribute('aria-invalid'); event.currentTarget.removeAttribute('aria-describedby'); document.getElementById('ccerror').hidden=true;
-  });
-  document.getElementById('ccsave').onclick=()=>{
-    const nameInput=document.getElementById('ccname'), error=document.getElementById('ccerror'), name=nameInput.value.trim();
-    if(!name){error.textContent='Enter a card name.'; error.hidden=false; nameInput.setAttribute('aria-invalid','true'); nameInput.setAttribute('aria-describedby','ccerror'); nameInput.focus();return;}
-    if(S.custom.length>=25){error.textContent='You can add up to 25 custom cards.'; error.hidden=false; error.focus();return;}
-    const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,32)||'card';
-    let id; do{
-      const token=globalThis.crypto&&crypto.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0].toString(36).slice(0,8):Date.now().toString(36).slice(-8);
-      id=`cust_${slug}_${token}`;
-    }while(getCard(id));
-    S.custom.push({id, name, issuer:'Custom', program:document.getElementById('ccprog').value, rates:{other:{v:1,u:'%'}}, notes:''});
-    S.myCards.push(id); saveState(S); closeModal(false); render(); restoreFocus(`card-row-${id}`); toast(`${name} created`); coachWhichTab();
+const PICKER_BANK_PROGRAM={Chase:'chase',Amex:'amex',Citi:'citi','Capital One':'c1','Wells Fargo':'wf'};
+function pickerCustomRateRow(index,category='',value=''){
+  const options=[`<option value=""${category?'':' selected'}>Pick a category</option>`,...CATS.map(cat=>
+    `<option value="${cat.id}"${category===cat.id?' selected':''}>${cat.id==='other'?'Everything else':cat.name}</option>`)].join('');
+  return `<div class="picker-rate-row" data-custom-rate-row>
+    <div class="picker-rate-select-shell"><label class="sr-only" for="customRateCategory${index}">Reward category, rate ${index+1}</label>
+      <select class="picker-rate-category${category?'':' is-placeholder'}" id="customRateCategory${index}" data-custom-rate-category>${options}</select></div>
+    <div class="picker-rate-value-shell"><label class="sr-only" for="customRateValue${index}">Reward value, rate ${index+1}</label>
+      <input class="picker-rate-value" id="customRateValue${index}" data-custom-rate-value type="number" inputmode="decimal"
+        min="0" step="0.1" value="${esc(value)}" placeholder="—"><span class="picker-rate-suffix" data-custom-rate-suffix>%</span></div>
+  </div>`;
+}
+function pickerBankDisplay(issuer,prefilled){
+  const bank=PICKER_ISSUERS.find(item=>item.name===issuer), label=issuer==='Custom'?'Other bank':issuer;
+  const logo=bank?`<img class="picker-bank-logo" src="${pickerLogoPath(bank.logo)}" alt="">`:'';
+  return `<span class="picker-bank-value${issuer?'':' picker-bank-placeholder'}">${logo}<span id="pickerBankName">${esc(label||'Choose a bank')}</span></span>
+    <span class="picker-bank-hint" id="pickerBankHint">${prefilled&&issuer?'pre-filled':'choose'} ▾</span>`;
+}
+function showCustomCardError(message,control){
+  const error=document.getElementById('customCardError'); error.textContent=message; error.hidden=false;
+  if(control){control.setAttribute('aria-invalid','true');control.setAttribute('aria-describedby','customCardError');control.focus();}
+}
+function clearCustomCardError(){
+  const error=document.getElementById('customCardError'); if(error) error.hidden=true;
+  mainEl.querySelectorAll('[aria-invalid="true"]').forEach(control=>{control.removeAttribute('aria-invalid');control.removeAttribute('aria-describedby');});
+}
+function updateCustomBankDisplay(){
+  const select=document.getElementById('customCardBank'), display=document.getElementById('pickerBankDisplay'); if(!select||!display) return;
+  const prefilled=select.dataset.prefilled===select.value&&!!select.value;
+  display.innerHTML=pickerBankDisplay(select.value,prefilled);
+}
+function updateCustomRateUnit(unit){
+  const form=document.getElementById('customCardForm'); if(!form) return; form.dataset.unit=unit;
+  form.querySelector('.picker-unit-toggle').dataset.unit=unit;
+  form.querySelectorAll('[data-custom-unit]').forEach(button=>{const active=button.dataset.customUnit===unit;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',active);});
+  form.querySelectorAll('[data-custom-rate-suffix]').forEach(suffix=>suffix.textContent=unit==='x'?'×':'%');
+}
+function saveCustomCardFromPage(){
+  clearCustomCardError();
+  const nameInput=document.getElementById('customCardName'), bankSelect=document.getElementById('customCardBank'), form=document.getElementById('customCardForm');
+  const name=nameInput.value.trim(), issuer=bankSelect.value;
+  if(!name){showCustomCardError('Enter a card name.',nameInput);return;}
+  if(!issuer){showCustomCardError('Choose a bank.',bankSelect);return;}
+  if(S.custom.length>=25){showCustomCardError('You can add up to 25 custom cards.',nameInput);return;}
+  const rates={}, used=new Set(), unit=form.dataset.unit==='x'?'x':'%';
+  for(const row of form.querySelectorAll('[data-custom-rate-row]')){
+    const category=row.querySelector('[data-custom-rate-category]').value, valueInput=row.querySelector('[data-custom-rate-value]'), raw=valueInput.value.trim();
+    if(!category&&!raw) continue;
+    if(!category){showCustomCardError('Pick a category for every rate.',row.querySelector('[data-custom-rate-category]'));return;}
+    if(!raw||!Number.isFinite(Number(raw))||Number(raw)<0){showCustomCardError('Enter a valid rate for every category.',valueInput);return;}
+    if(used.has(category)){showCustomCardError('Use each reward category only once.',row.querySelector('[data-custom-rate-category]'));return;}
+    used.add(category); rates[category]={v:Number(raw),u:unit};
+  }
+  if(!Object.keys(rates).length){showCustomCardError('Add at least one earn rate.',form.querySelector('[data-custom-rate-value]'));return;}
+  const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,32)||'card';
+  let id; do{
+    const token=globalThis.crypto&&crypto.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0].toString(36).slice(0,8):Date.now().toString(36).slice(-8);
+    id=`cust_${slug}_${token}`;
+  }while(getCard(id));
+  const program=unit==='x'?(PICKER_BANK_PROGRAM[issuer]||'cash'):'cash';
+  S.custom.push({id,name,issuer,program,rates,notes:'',brand:null,hotel:false,store:false,biz:false,other:false});
+  S.myCards.push(id); saveState(S); announcePicker(`${name} saved to My cards`);
+  const depth=Number(history.state?.pickerDepth)||0;
+  CARD_PICKER_ROUTE={kind:'hub',value:''}; CARD_QUERY=''; CARD_FILTER=null; PICKER_ROUTE_MOTION='pop';
+  if(depth>0) history.go(-depth);
+  else{history.replaceState({view:'cards'},'',location.pathname+location.search);render();scrollAppTo({top:0,behavior:'auto'});restoreFocus(`card-row-${id}`);}
+}
+function renderCustomCardPage(){
+  const route=CARD_PICKER_ROUTE, issuer=route.issuer||'', backLabel=route.backLabel||'Add a card', motion=PICKER_ROUTE_MOTION?` is-${PICKER_ROUTE_MOTION}`:'';
+  const bankOptions=[`<option value=""${issuer?'':' selected'} disabled>Choose a bank</option>`,...PICKER_ISSUERS.map(item=>
+    `<option value="${esc(item.name)}"${issuer===item.name?' selected':''}>${esc(item.name)}</option>`),`<option value="Custom">Other bank</option>`].join('');
+  mainEl.innerHTML=`<section class="picker-page picker-custom-page${motion}"><button class="picker-back" id="pickerBack" type="button" data-focus-id="picker-back"><span class="picker-back-glyph" aria-hidden="true">‹</span>${esc(backLabel)}</button>
+    <div class="picker-custom-title"><h1 tabindex="-1" data-picker-page-title>Custom card</h1></div>
+    <form class="picker-custom-stack" id="customCardForm" data-unit="%" novalidate>
+      <div class="picker-custom-card"><div class="picker-field-group"><label class="picker-field-label" for="customCardName">Card name</label>
+        <div class="picker-custom-input-shell"><input class="picker-custom-name" id="customCardName" data-focus-id="customCardName" type="text" maxlength="120" placeholder="e.g. Ink Business Premier" autocomplete="off"></div></div>
+        <div class="picker-field-group"><label class="picker-field-label" for="customCardBank">Bank</label>
+          <div class="picker-bank-shell"><div class="picker-bank-display" id="pickerBankDisplay">${pickerBankDisplay(issuer,!!issuer)}</div>
+            <select class="picker-bank-select" id="customCardBank" data-prefilled="${esc(issuer)}">${bankOptions}</select></div></div>
+      </div>
+      <div class="picker-custom-card is-rates"><div class="picker-rates-head"><span class="picker-rates-label">Earn rates</span>
+        <button class="picker-add-rate" id="pickerAddRate" type="button">+ Add a rate</button></div>
+        <div class="picker-unit-toggle" data-unit="%" role="group" aria-label="Reward type"><span class="picker-unit-indicator" aria-hidden="true"></span><button class="picker-unit-button is-active" type="button" data-custom-unit="%" aria-pressed="true" aria-label="Cash back, percent">Cash back</button>
+          <button class="picker-unit-button" type="button" data-custom-unit="x" aria-pressed="false" aria-label="Points, points per dollar">Points</button></div>
+        <div id="pickerRateRows">${pickerCustomRateRow(0,'other','1.5')}${pickerCustomRateRow(1)}</div>
+      </div>
+      <p class="picker-custom-error" id="customCardError" role="status" aria-live="polite" tabindex="-1" hidden></p>
+      <button class="picker-save-custom" type="submit">Save to my cards</button>
+    </form></section>`;
+  PICKER_ROUTE_MOTION='';
+  document.getElementById('pickerBack').onclick=closePickerRoute;
+  const form=document.getElementById('customCardForm'), bank=document.getElementById('customCardBank');
+  form.addEventListener('submit',event=>{event.preventDefault();saveCustomCardFromPage();});
+  form.addEventListener('input',clearCustomCardError); form.addEventListener('change',clearCustomCardError);
+  bank.addEventListener('change',()=>{bank.dataset.prefilled='';updateCustomBankDisplay();});
+  form.querySelectorAll('[data-custom-unit]').forEach(button=>button.onclick=()=>updateCustomRateUnit(button.dataset.customUnit));
+  form.querySelectorAll('[data-custom-rate-category]').forEach(select=>select.onchange=()=>select.classList.toggle('is-placeholder',!select.value));
+  document.getElementById('pickerAddRate').onclick=()=>{
+    const rows=document.getElementById('pickerRateRows'), index=rows.querySelectorAll('[data-custom-rate-row]').length;
+    rows.insertAdjacentHTML('beforeend',pickerCustomRateRow(index));
+    const select=rows.querySelector(`#customRateCategory${index}`); select.onchange=()=>select.classList.toggle('is-placeholder',!select.value); select.focus();
+    updateCustomRateUnit(form.dataset.unit);
   };
 }
 
@@ -1981,12 +2654,13 @@ function bindPromoActions(){
   document.getElementById('promos-back')?.addEventListener('click',backFromPromos);
   document.getElementById('ics')?.addEventListener('click',downloadICS);
   document.getElementById('quarterly-filter')?.addEventListener('change',event=>{
-    RADAR_FILTER=event.currentTarget.checked?'quarterly':'all'; history.replaceState({promosView:'radar',radarFilter:RADAR_FILTER},'',location.pathname+location.search); render(); restoreFocus('quarterly-filter');
+    RADAR_FILTER=event.currentTarget.checked?'quarterly':'all'; history.replaceState({view:'promos',promosView:'radar',radarFilter:RADAR_FILTER},'',location.pathname+location.search); render(); restoreFocus('quarterly-filter');
     const count=RADAR_FILTER==='quarterly'?buildQuarterlyTasks(new Date()).length:buildRadarTasks(new Date()).active.length;
     const message=RADAR_FILTER==='quarterly'?`Showing ${count} quarterly categor${count===1?'y':'ies'}.`:'Showing all Benefit Radar items.';
     requestAnimationFrame(()=>{ const status=document.getElementById('radar-filter-status'); if(status) status.textContent=message; });
   });
-  mainEl.querySelectorAll('[data-go-cards]').forEach(b=>b.onclick=()=>{endPromosVisit();TAB='cards';PROMOS_VIEW='overview';RADAR_FILTER='all';render();restoreFocus('add-card-heading');});
+  mainEl.querySelectorAll('[data-go-cards]').forEach(b=>b.onclick=()=>{endPromosVisit();TAB='cards';PROMOS_VIEW='overview';RADAR_FILTER='all';
+    CARD_PICKER_ROUTE={kind:'hub',value:''};CARD_QUERY='';CARD_FILTER=null;history.replaceState({view:'cards'},'',location.pathname+location.search);render();restoreFocus('pickerAddCard');});
   mainEl.querySelectorAll('[data-task-check]').forEach(cb=>cb.onchange=()=>{
     const mutationNow=new Date(), task=findCurrentTaskOrRefresh(cb.dataset.taskCheck,mutationNow); if(!task) return;
     const currentState=task.closed?'closed':task.unavailable?'unavailable':'open';
@@ -2015,7 +2689,7 @@ function renderPromos(){
 }
 function openPromosSubview(filter='all'){
   if(PROMOS_VIEW==='radar'&&RADAR_FILTER===filter) return; PROMOS_VIEW='radar'; RADAR_FILTER=filter; TAB='promos'; beginRadarVisit(new Date());
-  history.pushState({promosView:'radar',radarFilter:filter},'',location.pathname+location.search); render(); scrollAppTo({top:0,behavior:'auto'});
+  history.pushState({view:'promos',promosView:'radar',radarFilter:filter},'',location.pathname+location.search); render(); scrollAppTo({top:0,behavior:'auto'});
   requestAnimationFrame(()=>document.getElementById('hdr').focus?.());
 }
 function backFromPromos(){
@@ -2069,7 +2743,7 @@ function exportSetupState(now=new Date()){
   const stripSnapshots=r=>{const {labelSnapshot,cardNameSnapshot,...rest}=r;return rest;};
   const recurringSetups=Object.values(S.recurringSetups).filter(r=>S.myCards.includes(r.cardId)&&RADAR_BENEFIT_MAP[r.cardId+':'+r.benefitId]?.recurringEligible).map(r=>({...r}));
   return {schemaVersion:CURRENT_SCHEMA_VERSION,catalogVersion:RADAR_CATALOG_VERSION,myCards:[...S.myCards],overrides:structuredClone(S.overrides),cpp:structuredClone(S.cpp),
-    custom:structuredClone(S.custom),coachDone:!!S.coachDone,enrollments:Object.values(S.enrollments).map(stripSnapshots),
+    custom:structuredClone(S.custom),enrollments:Object.values(S.enrollments).map(stripSnapshots),
     completions:Object.values(S.completions).filter(r=>currentPeriodForRecord(r,now)).map(stripSnapshots),
     radarHidden:Object.values(S.radarHidden).map(r=>({...r})),radarSkips:Object.values(S.radarSkips).filter(r=>new Date(r.expiresAt)>now&&r.periodKey===currentPeriodForTask(r.taskKind,r.cardId,r.itemId,now)).map(r=>({...r})),recurringSetups};
 }
@@ -2151,10 +2825,23 @@ document.addEventListener('keydown',e=>{
   if(e.shiftKey&&document.activeElement===first){ e.preventDefault(); last.focus(); }
   else if(!e.shiftKey&&document.activeElement===last){ e.preventDefault(); first.focus(); }
 });
-history.replaceState({promosView:PROMOS_VIEW,radarFilter:RADAR_FILTER},'',location.pathname+location.search);
+history.replaceState({view:TAB,promosView:PROMOS_VIEW,radarFilter:RADAR_FILTER,pickerDepth:0},'',location.pathname+location.search);
 window.addEventListener('popstate',e=>{
-  const normalized=normalizePromosHistory(e.state); PROMOS_VIEW=normalized.view; RADAR_FILTER=normalized.filter; beginRadarVisit(new Date());
-  TAB='promos'; render(); scrollAppTo({top:0,behavior:'auto'}); requestAnimationFrame(()=>document.getElementById('hdr').focus());
+  if(e.state?.view==='cards'){
+    if(TAB==='promos') endPromosVisit(); TAB='cards'; CARD_QUERY=typeof e.state.cardQuery==='string'?e.state.cardQuery:'';
+    CARD_PICKER_ROUTE=e.state.cardPickerRoute&&['add','issuer','category','custom'].includes(e.state.cardPickerRoute.kind)?{...e.state.cardPickerRoute}:{kind:'hub',value:''};
+    if(CARD_PICKER_ROUTE.kind!=='hub') CARD_FILTER=null;
+    PICKER_ROUTE_MOTION='pop'; render(); scrollAppTo({top:0,behavior:'auto'});
+    const focusTarget=CARD_PICKER_ROUTE.kind==='hub'?'pickerAddCard':CARD_PICKER_ROUTE.kind==='custom'?'customCardName':CARD_PICKER_ROUTE.kind==='add'&&CARD_QUERY.trim()?'cardSearch':'picker-page-title';
+    restoreFocus(focusTarget); return;
+  }
+  const nextView=['which','benefits','promos','settings'].includes(e.state?.view)?e.state.view:'which';
+  if(TAB==='promos'&&nextView!=='promos') endPromosVisit();
+  TAB=nextView; CARD_PICKER_ROUTE={kind:'hub',value:''}; CARD_QUERY=''; CARD_FILTER=null;
+  if(TAB==='promos'){
+    const normalized=normalizePromosHistory(e.state); PROMOS_VIEW=normalized.view; RADAR_FILTER=normalized.filter; beginRadarVisit(new Date());
+  }else{PROMOS_VIEW='overview';RADAR_FILTER='all';}
+  render(); scrollAppTo({top:0,behavior:'auto'}); requestAnimationFrame(()=>document.getElementById('hdr').focus());
 });
 function refreshIfCalendarChanged(){
   const now=new Date(), currentDayKey=localIsoDate(localDay(now)), currentMonthKey=periodInfo('month',now).key, previousMonthKey=renderedMonthKey;
@@ -2167,12 +2854,15 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 window.addEventListener('pageshow',refreshIfCalendarChanged);
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   const nextTab=b.dataset.tab; if(TAB==='promos'&&nextTab!=='promos') endPromosVisit();
-  TAB=nextTab; PROMOS_VIEW='overview'; RADAR_FILTER='all'; history.replaceState({promosView:'overview',radarFilter:'all'},'',location.pathname+location.search);
+  TAB=nextTab; PROMOS_VIEW='overview'; RADAR_FILTER='all';
+  if(TAB==='cards'){CARD_PICKER_ROUTE={kind:'hub',value:''};CARD_QUERY='';CARD_FILTER=null;}
+  history.replaceState({view:TAB,promosView:'overview',radarFilter:'all',pickerDepth:0},'',location.pathname+location.search);
   if(TAB==='promos') beginRadarVisit(new Date());
   render(); scrollAppTo({top:0,behavior:'auto'});
   if(window.visualViewport?.scale>1.01) requestAnimationFrame(()=>document.getElementById('hdr').focus());
 });
 document.getElementById('storageBackup').onclick=()=>copySetupLink();
+document.getElementById('pickerAddCard').onclick=()=>openPickerRoute('add');
 if(TAB==='promos') beginRadarVisit(new Date());
 render();
 if(startupNotice) setTimeout(()=>toast(startupNotice,3600),0);
