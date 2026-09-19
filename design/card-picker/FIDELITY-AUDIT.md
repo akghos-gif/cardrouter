@@ -359,6 +359,17 @@ screens.
 | no live-region values | dynamic search/rate rows | result-count announcement and numbered rate-control names | index.html:2012-2013,2244-2247 | MISMATCH (D20) |
 | three visible custom-form concepts | custom page | name, bank, rates only; metadata defaults null/false in model | index.html:2299,2312-2326 | MATCH |
 
+## Saved custom-card artwork correction (D27)
+
+The seven reference screens do not depict a saved custom card. Its fallback artwork now distinguishes an existing card from a creation control; the source screenshots and all creation artwork remain unchanged. At 390×844, rendered light/dark wallet rows retain their art column, spacing, priority, title, and subtitle structure; only saved custom-card artwork changes. Checked at 320px, 390px, 1280px, and a 195px zoom-equivalent viewport without document overflow. The existing narrow-layout rule hides all held-card artwork at 195px. Browser regressions: 83/83 passed, including saved-card editing and preservation of the creation plus icons.
+
+| design file value | element it came from | implementation value | file:line | MATCH/MISMATCH |
+| --- | --- | --- | --- | --- |
+| 58×37px; 5px radius | My cards artwork | 58×37px; 5px radius | index.html:291 | MATCH |
+| unspecified for saved custom cards | saved-card border | 1px solid; light `#c7cbd1`, dark `#697381` | index.html:393 | MISMATCH (D27) |
+| unspecified for saved custom cards | saved-card fill and markings | light `#eef0f3` / `#69717f`; dark `#22262e` / `#aeb6c2` | index.html:394 | MISMATCH (D27) |
+| unspecified for saved custom cards | decorative SVG | 100% width/height; 58×37 viewBox; band (8,9), 42×6; detail (8,24), 12×3; both radii 1 SVG unit | index.html:394,1377 | MISMATCH (D27) |
+
 ## Dark mode (design-unspecified)
 
 The reference has no dark screens. Every shipping dark value is therefore a deliberate,

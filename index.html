@@ -390,8 +390,8 @@
   .picker-card-placeholder{display:flex; align-items:center; justify-content:center; width:100%; aspect-ratio:1.586;
     box-sizing:border-box; border:1.5px dashed var(--picker-placeholder-border); border-radius:7px;
     background:var(--picker-placeholder-fill); color:var(--picker-placeholder); font-size:28px; font-weight:300; line-height:1}
-  .picker-art-placeholder{display:flex; align-items:center; justify-content:center; border:1px dashed var(--picker-placeholder-border);
-    background:var(--picker-placeholder-fill); color:var(--picker-placeholder); font-weight:500; line-height:1}
+  .picker-saved-card-art{display:flex; align-items:center; justify-content:center; border:1px solid var(--picker-placeholder-border);
+    background:var(--picker-placeholder-fill); color:var(--picker-secondary)}.picker-saved-card-art svg{display:block; width:100%; height:100%; fill:currentColor}
   .picker-card-name{font-size:13px; font-weight:600; line-height:1.25; overflow-wrap:anywhere}
   .picker-card-subline{color:var(--picker-secondary); font-size:11.5px; font-weight:400; line-height:1.25; overflow-wrap:anywhere}
 
@@ -1374,7 +1374,7 @@ function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;
 function pickerLogoPath(file){ return `${PICKER_ASSET_ROOT}/logos/${file}`; }
 function pickerCardArtPath(cardId,width=112){ return `${PICKER_ASSET_ROOT}/cards/card-${cardId}-${width}.webp`; }
 function pickerArtMarkup(card,className,sizes){
-  if(!CARD_DB.some(item=>item.id===card.id)) return `<span class="${className} picker-art-placeholder" aria-hidden="true">+</span>`;
+  if(!CARD_DB.some(item=>item.id===card.id)) return `<span class="${className} picker-saved-card-art" aria-hidden="true"><svg viewBox="0 0 58 37" focusable="false"><rect x="8" y="9" width="42" height="6" rx="1"/><rect x="8" y="24" width="12" height="3" rx="1"/></svg></span>`;
   return `<img class="${className}" src="${pickerCardArtPath(card.id)}" srcset="${pickerCardArtPath(card.id)} 112w, ${pickerCardArtPath(card.id,360)} 360w" sizes="${sizes}" alt="" decoding="async">`;
 }
 function formatPickerRate(rate){ return `${String(Number(rate.v))}${rate.u==='x'?'×':'%'}`; }

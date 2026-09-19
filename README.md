@@ -21,6 +21,8 @@ Tap a purchase category — dining, groceries, gas, flights, hotels, and more �
 - **Quarterly reminders:** download a generic `.ics` calendar file with four recurring reminders and no card or activity data.
 - **Per-device setups and setup links:** each person's setup lives in their own browser. A setup link carries cards, settings, benefit enrollments, recurring charge confirmations, items hidden from Benefit Radar, skipped periods, and current checkmarks. Imported recurring confirmations do not hide monthly reminders until confirmed again in Benefit Radar on the receiving device; completion history is omitted.
 
+Saved custom cards use a neutral card silhouette in My cards. The dashed card with a plus is reserved for creating a custom card.
+
 ## Install on iPhone
 
 1. Host `index.html` anywhere static — GitHub Pages works free:
