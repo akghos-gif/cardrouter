@@ -885,6 +885,28 @@ document.getElementById('app').addEventListener('load',async()=>{
       equal(doc.getElementById('customCardBank').value,''); assert(doc.getElementById('pickerBack').textContent.includes('Add a card'));
     });
   });
+  test('saved custom cards use a card icon while creation controls retain their plus',async()=>{
+    const custom={id:'cust_saved',name:'Chase Freedom',issuer:'Chase',program:'cash',rates:{gas:{v:5,u:'%'},other:{v:1,u:'%'}},notes:''};
+    await withAppState({schemaVersion:4,myCards:['csp',custom.id],custom:[custom]},async(win,doc,frame)=>{
+      frame.style.width='390px'; frame.style.height='844px';
+      doc.querySelector('nav button[data-tab="cards"]').click(); await afterRender(win);
+      const row=doc.querySelector('[data-picker-held="cust_saved"]'), art=row.querySelector('.picker-held-art');
+      assert(art.querySelector('svg'),'Saved custom card should have a neutral card silhouette');
+      assert(!art.textContent.includes('+'),'Saved cards must not look like create controls');
+      equal(art.getAttribute('aria-hidden'),'true'); equal(win.getComputedStyle(art).borderTopStyle,'solid');
+      equal(art.getBoundingClientRect().width,58); equal(art.getBoundingClientRect().height,37);
+      assert(doc.querySelector('[data-picker-held="csp"] img').src.endsWith('card-csp-112.webp'),'Catalog artwork should remain intact');
+      equal(row.querySelector('.picker-held-best').textContent,'5% gas');
+      row.querySelector('[data-picker-edit]').click(); await afterRender(win);
+      assert(doc.getElementById('sheet').textContent.includes(custom.name),'Saved custom card must still open its rate editor');
+    });
+    await withAppState({schemaVersion:4,myCards:[]},async(win,doc)=>{
+      doc.querySelector('nav button[data-tab="cards"]').click(); doc.getElementById('pickerAddCard').click(); await afterRender(win);
+      equal(doc.querySelector('.picker-custom-row-art').textContent,'+');
+      doc.querySelector('[data-picker-route="issuer"][data-picker-value="Chase"]').click(); await afterRender(win);
+      equal(doc.querySelector('.picker-card-placeholder').textContent,'+');
+    });
+  });
   test('picker catalog is exactly the production 28 in design order',()=>{
     const expected=['csr','csp','freedom_flex','cfu','ink_cash','prime_visa','united_explorer','sw_priority',
       'amex_gold','amex_plat','bcp','bce','biz_plat','biz_gold','bbp','bbc','custom_cash','double_cash',
